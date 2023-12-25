@@ -1,10 +1,18 @@
 import { BrowserRouter } from 'react-router-dom';
+
 import { AppRoutes } from './routes';
+import { AppThemeProvider } from './shared/contexts';
+import { SideBar } from './shared/components';
 
 export const App = () => {
   return (
-    <BrowserRouter>
-      <AppRoutes />
-    </BrowserRouter>
+    <AppThemeProvider>
+      <BrowserRouter>
+        
+        <SideBar/>
+
+        <AppRoutes />
+      </BrowserRouter>
+    </AppThemeProvider>
   );
 }
