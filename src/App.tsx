@@ -8,10 +8,9 @@ export const App = () => {
   return (
     <AppThemeProvider>
       <BrowserRouter>
-        
-        <SideBar/>
-
-        <AppRoutes />
+        <SideBar>
+          <AppRoutes />
+        </SideBar>
       </BrowserRouter>
     </AppThemeProvider>
   );
