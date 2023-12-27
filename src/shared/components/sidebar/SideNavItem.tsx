@@ -26,10 +26,10 @@ export const SideNavItem: React.FC<SideNavItemProps> = (props) => {
         color='info'
         sx={{
           alignItems: 'center',
-          borderRadius: 1,
+          borderRadius: 2,
           display: 'flex',
           justifyContent: 'flex-start',
-          my: '5px',
+          my: '8px',
           py: '0px',
           textAlign: 'left',
           width: '100%',
@@ -50,6 +50,7 @@ export const SideNavItem: React.FC<SideNavItemProps> = (props) => {
               display: 'inline-flex',
               justifyContent: 'center',
               mr: 1,
+              ml: 3,
               ...(active && {
                 color: 'rgba(99, 102, 241)'
               })
@@ -63,11 +64,12 @@ export const SideNavItem: React.FC<SideNavItemProps> = (props) => {
           sx={{
             color: 'rgba(255, 255, 255, 0.5)',
             flexGrow: 1,
-            fontSize: 9,
+            fontSize: 14,
             fontWeight: 600,
-            lineHeight: '21px',
+            lineHeight: '35px',
             whiteSpace: 'nowrap',
             textTransform: 'none',
+            ml: 1,
             ...(active && {
               color: 'rgb(255, 255, 255, 1)'
             })

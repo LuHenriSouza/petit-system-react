@@ -11,54 +11,42 @@ export const items = [
         title: 'Caixa',
         path: '/caixa',
         icon: (
-            <ShoppingCartRoundedIcon style={{
-                fontSize: '12px'
-            }} />
+            <ShoppingCartRoundedIcon fontSize='small' />
         )
     },
     {
         title: 'Produtos',
         path: '/produtos',
         icon: (
-            <LocalOfferRoundedIcon style={{
-                fontSize: '12px'
-            }} />
+            <LocalOfferRoundedIcon fontSize='small' />
         )
     },
     {
         title: 'Estoque',
         path: '/estoque',
         icon: (
-            <ArchiveRoundedIcon style={{
-                fontSize: '12px'
-            }} />
+            <ArchiveRoundedIcon fontSize='small' />
         )
     },
     {
         title: 'Grupos',
         path: '/grupos',
         icon: (
-            <FolderRoundedIcon style={{
-                fontSize: '12px'
-            }} />
+            <FolderRoundedIcon fontSize='small' />
         )
     },
     {
         title: 'Fechamentos',
         path: '/fechamentos',
         icon: (
-            <RequestQuoteRoundedIcon style={{
-                fontSize: '12px'
-            }} />
+            <RequestQuoteRoundedIcon fontSize='small' />
         )
     },
     {
         title: 'Validades',
         path: '/validades',
         icon: (
-            <DateRangeRoundedIcon style={{
-                fontSize: '12px'
-            }} />
+            <DateRangeRoundedIcon fontSize='small' />
         )
     }
 ];
