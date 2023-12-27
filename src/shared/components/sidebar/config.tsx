@@ -1,5 +1,4 @@
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
-import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
@@ -7,29 +6,21 @@ import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 
 export const items = [
-    {
-        title: 'Dashboard',
-        path: '/dashboard',
-        icon: (
-            <DashboardRoundedIcon style={{
-                fontSize: '12px'
-            }} />
-        )
-    },
-    {
-        title: 'Products',
-        path: '/produtos',
-        icon: (
-            <LocalOfferRoundedIcon style={{
-                fontSize: '12px'
-            }} />
-        )
-    },
+
     {
         title: 'Caixa',
         path: '/caixa',
         icon: (
             <ShoppingCartRoundedIcon style={{
+                fontSize: '12px'
+            }} />
+        )
+    },
+    {
+        title: 'Produtos',
+        path: '/produtos',
+        icon: (
+            <LocalOfferRoundedIcon style={{
                 fontSize: '12px'
             }} />
         )

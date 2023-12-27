@@ -20,6 +20,12 @@ export const DarkTheme = createTheme({
         background: {
             paper: 'rgb(28, 37, 54)',
             default: '#efefef',
+        },
+        info: {
+            main: '#eee',
+            light: '#6200ea',
+            dark: '#411d98',
+            contrastText: '#242105',
         }
     }
 });
