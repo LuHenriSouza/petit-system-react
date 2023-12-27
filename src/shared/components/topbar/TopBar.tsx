@@ -1,4 +1,4 @@
-import { Avatar, Badge, IconButton, Stack, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Badge, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
 
 // ICONS
 // import SearchIcon from '@mui/icons-material/Search';
@@ -21,7 +21,7 @@ export const TopBar: React.FC = () => {
 				position: 'sticky',
 				top: 0,
 				width: '100%',
-				height: theme.spacing(4),
+				height: theme.spacing(8),
 				zIndex: theme.zIndex.appBar,
 				overflow: 'visible'
 			}}>
@@ -31,7 +31,7 @@ export const TopBar: React.FC = () => {
 					justifyContent="space-between"
 					spacing={2}
 					sx={{
-						minHeight: 33,
+						minHeight: theme.spacing(8),
 						pr: 3,
 						pl: 1,
 					}}
@@ -42,38 +42,37 @@ export const TopBar: React.FC = () => {
 						spacing={2}
 					>
 						{smDown && (
-							<IconButton onClick={toggleDrawerOpen} size="small">
-								<MenuIcon style={{ fontSize: '12px' }} />
+							<IconButton onClick={toggleDrawerOpen}>
+								<MenuIcon fontSize='small' />
 							</IconButton>
 						)}
 					</Stack>
 					<Stack
 						alignItems="center"
 						direction="row"
-						spacing={3}
+						spacing={5}
 					>
 
-						<IconButton size="small">
-							<Badge
-								badgeContent={1}
-								color="success"
-								variant="dot"
-								overlap="circular"
-								invisible
-								
-							>
+						<Tooltip title="Notificações">
+							<IconButton>
+								<Badge
+									badgeContent={4}
+									color="success"
+									variant="dot"
+								>
 
-								<NotificationsIcon style={{ fontSize: '12px' }} />
+									<NotificationsIcon fontSize='small' />
 
-							</Badge>
-						</IconButton>
+								</Badge>
+							</IconButton>
+						</Tooltip>
 						<Avatar
 							// onClick={accountPopover.handleOpen}
 							// ref={accountPopover.anchorRef}
 							sx={{
 								cursor: 'pointer',
-								height: 20,
-								width: 20
+								height: theme.spacing(5),
+								width: theme.spacing(5)
 							}}
 						/>
 					</Stack>
