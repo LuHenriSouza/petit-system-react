@@ -1,4 +1,4 @@
-import { Avatar, Badge, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Badge, IconButton, Stack, useMediaQuery, useTheme } from '@mui/material';
 
 // ICONS
 // import SearchIcon from '@mui/icons-material/Search';
@@ -21,8 +21,9 @@ export const TopBar: React.FC = () => {
 				position: 'sticky',
 				top: 0,
 				width: '100%',
-				height: theme.spacing(5),
-				zIndex: theme.zIndex.appBar
+				height: theme.spacing(4),
+				zIndex: theme.zIndex.appBar,
+				overflow: 'visible'
 			}}>
 				<Stack
 					alignItems="center"
@@ -30,7 +31,7 @@ export const TopBar: React.FC = () => {
 					justifyContent="space-between"
 					spacing={2}
 					sx={{
-						minHeight: 39,
+						minHeight: 33,
 						pr: 3,
 						pl: 1,
 					}}
@@ -41,50 +42,38 @@ export const TopBar: React.FC = () => {
 						spacing={2}
 					>
 						{smDown && (
-							<IconButton onClick={toggleDrawerOpen}>
-								<MenuIcon style={{ fontSize: '15px' }} />
+							<IconButton onClick={toggleDrawerOpen} size="small">
+								<MenuIcon style={{ fontSize: '12px' }} />
 							</IconButton>
 						)}
-						{/* <Tooltip title="Search">
-							<IconButton>
-
-								<SearchIcon style={{ fontSize: '15px' }} />
-
-							</IconButton>
-						</Tooltip> */}
 					</Stack>
 					<Stack
 						alignItems="center"
 						direction="row"
 						spacing={3}
 					>
-						{/* <Tooltip title="Contacts">
-							<IconButton>
 
-								<PersonIcon style={{ fontSize: '15px' }} />
+						<IconButton size="small">
+							<Badge
+								badgeContent={1}
+								color="success"
+								variant="dot"
+								overlap="circular"
+								invisible
+								
+							>
 
-							</IconButton>
-						</Tooltip> */}
-						<Tooltip title="Notifications">
-							<IconButton>
-								<Badge
-									badgeContent={4}
-									color="success"
-									variant="dot"
-								>
+								<NotificationsIcon style={{ fontSize: '12px' }} />
 
-									<NotificationsIcon style={{ fontSize: '15px' }} />
-
-								</Badge>
-							</IconButton>
-						</Tooltip>
+							</Badge>
+						</IconButton>
 						<Avatar
 							// onClick={accountPopover.handleOpen}
 							// ref={accountPopover.anchorRef}
 							sx={{
 								cursor: 'pointer',
-								height: 30,
-								width: 30
+								height: 20,
+								width: 20
 							}}
 						/>
 					</Stack>
