@@ -5,9 +5,10 @@ import { TopBar } from '../components';
 interface ILayoutMainProps {
     children: React.ReactNode;
     title: string
+    subTitle: string
 }
 
-export const LayoutMain: React.FC<ILayoutMainProps> = ({ children, title }) => {
+export const LayoutMain: React.FC<ILayoutMainProps> = ({ children, title, subTitle }) => {
     const theme = useTheme();
     const smDown = useMediaQuery(theme.breakpoints.down('sm'))
 
@@ -19,61 +20,16 @@ export const LayoutMain: React.FC<ILayoutMainProps> = ({ children, title }) => {
                 </Box>
             </Box>
             <Box marginLeft={2} marginTop={0}>
-                <Box padding={1} display={'flex'} alignItems={'center'} height={theme.spacing(5)}>
-                    <Typography variant={smDown ? 'h6' : 'h5'} whiteSpace={'nowrap'} overflow={'hidden'} textOverflow={'ellipsis'}>
+                <Box padding={2} display={'flex'} height={theme.spacing(8)} flexDirection={'column'}>
+                    <Typography variant={smDown ? 'h4' : 'h3'} whiteSpace={'nowrap'} textOverflow={'ellipsis'}>
                         {title}
                     </Typography>
+                    <Typography variant={'h6'} whiteSpace={'nowrap'} textOverflow={'ellipsis'} sx={{ ml: 2, fontWeight: 400, color: 'rgba(0,0,0,0.6)' }}>
+                        {subTitle}
+                    </Typography>
                 </Box>
-                <Box>
-                    Barra de Ferramentas
-                </Box>
-                <Box flex={1} overflow={'auto'}>
+                <Box flex={1} margin={1} marginTop={3}>
                     {children}
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
-                    <br />
                 </Box>
             </Box>
         </Box>
