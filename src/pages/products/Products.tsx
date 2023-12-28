@@ -1,13 +1,14 @@
-import { Box, Button, Icon, IconButton, LinearProgress, Pagination, Paper, Table, TableBody, TableCell, TableFooter, TableHead, TableRow, TextField, useMediaQuery, useTheme } from '@mui/material';
+import { Box, Button, Fab, Icon, Pagination, Paper, Table, TableBody, TableCell, TableFooter, TableHead, TableRow, TextField, useMediaQuery, useTheme } from '@mui/material';
 import { LayoutMain } from '../../shared/layouts';
-
+import Swal from 'sweetalert2'
 // ICONS
 import AddIcon from '@mui/icons-material/Add';
-import { useSearchParams } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useEffect, useMemo, useState } from 'react';
 import { IProduct, ProductService } from '../../shared/services/api';
 import { Environment } from '../../shared/environment';
 import { useDebounce } from '../../shared/hooks';
+import './../../shared/css/sweetAlert.css'
 
 export const Products: React.FC = () => {
     const theme = useTheme()
@@ -17,7 +18,7 @@ export const Products: React.FC = () => {
 
     const [rows, setRows] = useState<IProduct[]>([]);
     const [totalCount, setTotalCount] = useState(0);
-    const [isLoading, setIsLoading] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
 
     const search = useMemo(() => {
         return searchParams.get('search') || ''
@@ -29,10 +30,10 @@ export const Products: React.FC = () => {
     useEffect(() => {
         debounce(() => {
 
-            setIsLoading(true);
+            // setIsLoading(true);
             ProductService.getAll(Number(page), search)
                 .then((result) => {
-                    setIsLoading(false);
+                    // setIsLoading(false);
                     if (result instanceof Error) {
                         alert(result.message);
                     } else {
@@ -45,7 +46,33 @@ export const Products: React.FC = () => {
         });
     }, [search, page, debounce]);
 
+    const handleDelete = (id: number, name: string) => {
+        Swal.fire({
+            title: 'Tem Certeza?',
+            text: `Apagar "${name}" ?`,
+            icon: 'warning',
+            iconColor: theme.palette.error.main,
+            showCancelButton: true,
+            confirmButtonColor: theme.palette.error.main,
+            cancelButtonColor: '#aaa',
+            confirmButtonText: 'Deletar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                ProductService.deleteById(id).then((result) => {
+                    if (result instanceof Error) {
+                        alert(result.message);
+                    } else {
+                        Swal.fire({
+                            title: 'Deletado!',
+                            text: 'Produto apagado.',
+                            icon: 'success',
+                        });
+                    }
+                });
 
+            }
+        });
+    };
     return (
         <LayoutMain title="Produtos" subTitle='Cadastre, edite e remova produtos'>
             <Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
@@ -56,8 +83,10 @@ export const Products: React.FC = () => {
                         value={search}
                         onChange={(event) => { setSearchParams({ search: event.target.value }, { replace: true }) }}
                     />
-                    {(!smDown && <Button variant="contained"><AddIcon sx={{ mr: 1 }} />Novo Produto</Button>)}
-                    {(smDown && <Button variant="contained"><AddIcon /></Button>)}
+                    <Link to={'/produtos/novo'}>
+                        {(!smDown && <Button variant="contained"><AddIcon sx={{ mr: 1 }} />Novo Produto</Button>)}
+                        {(smDown && <Button variant="contained"><AddIcon /></Button>)}
+                    </Link>
                 </Box>
             </Paper>
 
@@ -81,12 +110,12 @@ export const Products: React.FC = () => {
                                 {(!smDown && <TableCell>{row.sector}</TableCell>)}
                                 <TableCell>{row.price}</TableCell>
                                 <TableCell>
-                                    <IconButton size="small">
+                                    <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2 }} onClick={() => handleDelete(row.id, row.name)}>
                                         <Icon>delete</Icon>
-                                    </IconButton>
-                                    <IconButton size="small">
+                                    </Fab>
+                                    <Fab size="medium" color="warning" aria-label="add">
                                         <Icon>edit</Icon>
-                                    </IconButton>
+                                    </Fab>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -97,13 +126,13 @@ export const Products: React.FC = () => {
                     )}
 
                     <TableFooter>
-                        {(isLoading &&
+                        {/* {(isLoading && !isLoading &&
                             <TableRow>
                                 <TableCell colSpan={5}>
                                     <LinearProgress variant='indeterminate' />
                                 </TableCell>
                             </TableRow>
-                        )}
+                        )} */}
                         {(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
                             <TableRow>
                                 <TableCell colSpan={3}>
