@@ -29,22 +29,26 @@ export const Products: React.FC = () => {
     }, [searchParams]);
     useEffect(() => {
         debounce(() => {
-
-            // setIsLoading(true);
-            ProductService.getAll(Number(page), search)
-                .then((result) => {
-                    // setIsLoading(false);
-                    if (result instanceof Error) {
-                        alert(result.message);
-                    } else {
-                        console.log(result);
-
-                        setTotalCount(result.totalCount);
-                        setRows(result.data);
-                    }
-                });
+            listProducts();
         });
     }, [search, page, debounce]);
+
+
+    const listProducts = () => {
+        // setIsLoading(true);
+        ProductService.getAll(Number(page), search)
+            .then((result) => {
+                // setIsLoading(false);
+                if (result instanceof Error) {
+                    alert(result.message);
+                } else {
+                    console.log(result);
+
+                    setTotalCount(result.totalCount);
+                    setRows(result.data);
+                }
+            });
+    }
 
     const handleDelete = (id: number, name: string) => {
         Swal.fire({
@@ -67,6 +71,7 @@ export const Products: React.FC = () => {
                             text: 'Produto apagado.',
                             icon: 'success',
                         });
+                        listProducts();
                     }
                 });
 
