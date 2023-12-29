@@ -31,6 +31,7 @@ export const Products: React.FC = () => {
         debounce(() => {
             listProducts();
         });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [search, page, debounce]);
 
 
@@ -90,7 +91,7 @@ export const Products: React.FC = () => {
                     />
                     <Link to={'/produtos/novo'}>
                         {(!smDown && <Button variant="contained"><AddIcon sx={{ mr: 1 }} />Novo Produto</Button>)}
-                        {(smDown && <Button variant="contained"><AddIcon /></Button>)}
+                        {(smDown && <Button variant="contained" sx={{ ml: 2 }}><AddIcon /></Button>)}
                     </Link>
                 </Box>
             </Paper>
@@ -114,7 +115,7 @@ export const Products: React.FC = () => {
                                 <TableCell>{row.name}</TableCell>
                                 {(!smDown && <TableCell>{row.sector}</TableCell>)}
                                 <TableCell>{row.price}</TableCell>
-                                <TableCell>
+                                {(!smDown && <TableCell>
                                     <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2 }} onClick={() => handleDelete(row.id, row.name)}>
                                         <Icon>delete</Icon>
                                     </Fab>
@@ -122,6 +123,16 @@ export const Products: React.FC = () => {
                                         <Icon>edit</Icon>
                                     </Fab>
                                 </TableCell>
+                                )}
+                                {(smDown && <TableCell>
+                                    <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, mb: 1 }} onClick={() => handleDelete(row.id, row.name)}>
+                                        <Icon>delete</Icon>
+                                    </Fab>
+                                    <Fab size="medium" color="warning" aria-label="add">
+                                        <Icon>edit</Icon>
+                                    </Fab>
+                                </TableCell>
+                                )}
                             </TableRow>
                         ))}
                     </TableBody>
@@ -145,6 +156,7 @@ export const Products: React.FC = () => {
                                         page={Number(page)}
                                         count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
                                         onChange={(_, newPage) => setSearchParams({ search, page: newPage.toString() }, { replace: true })}
+                                        siblingCount={smDown ? 0 : 1}
                                     />
                                 </TableCell>
                             </TableRow>
