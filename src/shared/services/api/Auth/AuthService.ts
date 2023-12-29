@@ -1,20 +1,5 @@
 import { Api } from "../axios-config";
 
-// enum EUserRole {
-//     Employee = 'employee',
-//     Admin = 'admin',
-// }
-
-
-
-// interface IUser {
-//     id: number,
-//     name: string,
-//     email: string,
-//     password: string,
-//     role: EUserRole,
-// }
-
 interface IResponse {
     accessToken: string
 }

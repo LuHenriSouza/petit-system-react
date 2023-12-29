@@ -2,10 +2,8 @@ import { BrowserRouter } from 'react-router-dom';
 import './shared/services/translations/Yup';
 
 import { AppRoutes } from './routes';
-import { AppDrawerProvider, AppThemeProvider } from './shared/contexts';
+import { AppDrawerProvider, AppThemeProvider, AuthProvider } from './shared/contexts';
 import { Login, SideBar } from './shared/components';
-import { AuthProvider } from './shared/contexts/AuthContext';
-
 
 export const App = () => {
   return (
