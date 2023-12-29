@@ -32,17 +32,7 @@ const login = async (email: string, password: string): Promise<IResponse | Error
     }
 }
 
-const signup = () => {
-
-}
-
-const logout = () => {
-
-}
-
 export const AuthService = {
     login,
-    signup,
-    logout
 
 }   

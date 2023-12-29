@@ -22,7 +22,9 @@ const getAll = async (page = 1, filter = ''): Promise<TProductTotalCount | Error
     try {
         const urlRelativa = `/product?page=${page}&limit=${Environment.LIMITE_DE_LINHAS}&filter=${filter}`;
 
-        const { data, headers } = await Api.get(urlRelativa);
+        const { data, headers } = await Api.get(urlRelativa, { headers:{
+            Authorization: `Bearer ${localStorage.getItem('APP_ACCESS_TOKEN')}`
+        }});
 
         if (data) {
             return {

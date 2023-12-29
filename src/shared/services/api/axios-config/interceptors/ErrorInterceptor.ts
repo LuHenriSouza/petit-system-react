@@ -7,9 +7,10 @@ export const errorInterceptor = (error: AxiosError) => {
 
     if (error.response?.status === 401) {
         console.log('axios/errorInterceptor: ' + localStorage.getItem('APP_ACCESS_TOKEN'));
-        localStorage.removeItem('APP_ACCESS_TOKEN')
-        return Promise.reject(new Error('Não Autorizado.'));
-
+        if (!localStorage.getItem('APP_ACCESS_TOKEN')) {
+            localStorage.removeItem('APP_ACCESS_TOKEN')
+            return Promise.reject(new Error('Não Autorizado.'));
+        }
     }
 
     return Promise.reject(error);
