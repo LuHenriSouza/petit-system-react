@@ -1,4 +1,4 @@
-import { Avatar, Badge, IconButton, Stack, Tooltip, useMediaQuery, useTheme } from '@mui/material';
+import { Avatar, Badge, IconButton, Menu, MenuItem, Stack, Tooltip, Typography, useMediaQuery, useTheme } from '@mui/material';
 
 // ICONS
 // import SearchIcon from '@mui/icons-material/Search';
@@ -7,13 +7,32 @@ import MenuIcon from '@mui/icons-material/Menu';
 import NotificationsIcon from '@mui/icons-material/Notifications';
 
 
+import { useState } from 'react';
 import { Box } from '@mui/system';
 import { useDrawerContext } from '../../contexts';
+import { useAuthContext } from '../../contexts/AuthContext';
 
 export const TopBar: React.FC = () => {
 	const { toggleDrawerOpen } = useDrawerContext();
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+	const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+	const { logout } = useAuthContext();
+
+
+	const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+		setAnchorElUser(event.currentTarget);
+	};
+	const handleCloseUserMenu = () => {
+		setAnchorElUser(null);
+	};
+	const handleLogout = () => {
+		handleCloseUserMenu();
+		logout();
+
+	}
+
+
 	return (
 		<>
 			<Box sx={{
@@ -67,17 +86,39 @@ export const TopBar: React.FC = () => {
 							</IconButton>
 						</Tooltip>
 						<Avatar
-							// onClick={accountPopover.handleOpen}
-							// ref={accountPopover.anchorRef}
+							onClick={handleOpenUserMenu}
 							sx={{
 								cursor: 'pointer',
 								height: theme.spacing(5),
 								width: theme.spacing(5)
 							}}
 						/>
+						<Menu
+							sx={{
+								mt: '48px', "& .MuiMenu-paper":
+									{ backgroundColor: "#fff", },
+							}}
+							id="menu-appbar"
+							anchorEl={anchorElUser}
+							anchorOrigin={{
+								vertical: 'top',
+								horizontal: 'right',
+							}}
+							keepMounted
+							transformOrigin={{
+								vertical: 'top',
+								horizontal: 'right',
+							}}
+							open={Boolean(anchorElUser)}
+							onClose={handleCloseUserMenu}
+						>
+							<MenuItem onClick={handleLogout}>
+								<Typography textAlign="center">Logout</Typography>
+							</MenuItem>
+						</Menu>
 					</Stack>
 				</Stack>
-			</Box>
+			</Box >
 		</>
 	);
 };

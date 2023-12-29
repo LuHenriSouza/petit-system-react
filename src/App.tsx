@@ -1,19 +1,26 @@
 import { BrowserRouter } from 'react-router-dom';
+import './shared/services/translations/Yup';
 
 import { AppRoutes } from './routes';
 import { AppDrawerProvider, AppThemeProvider } from './shared/contexts';
-import { SideBar } from './shared/components';
+import { Login, SideBar } from './shared/components';
+import { AuthProvider } from './shared/contexts/AuthContext';
+
 
 export const App = () => {
   return (
-    <AppThemeProvider>
-      <AppDrawerProvider>
-        <BrowserRouter>
-          <SideBar>
-            <AppRoutes />
-          </SideBar>
-        </BrowserRouter>
-      </AppDrawerProvider >
-    </AppThemeProvider>
+    <AuthProvider>
+      <AppThemeProvider>
+        <Login>
+          <AppDrawerProvider>
+            <BrowserRouter>
+              <SideBar>
+                <AppRoutes />
+              </SideBar>
+            </BrowserRouter>
+          </AppDrawerProvider >
+        </Login>
+      </AppThemeProvider>
+    </AuthProvider>
   );
 }
