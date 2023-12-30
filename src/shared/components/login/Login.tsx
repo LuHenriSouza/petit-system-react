@@ -20,7 +20,7 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 
 
 	// eslint-disable-next-line react-hooks/rules-of-hooks
-	const passwordInputRef = useRef(null)
+	const passwordInputRef = useRef<HTMLInputElement>(null)
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [email, setEmail] = useState('');
 	// eslint-disable-next-line react-hooks/rules-of-hooks
@@ -60,7 +60,6 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 		setEmailError('');
 		if (e.code === 'Enter' || e.key === 'Enter') {
 
-			// @ts-expect-error: focus see a null element but the element is assigned later in the code
 			passwordInputRef.current?.focus();
 		}
 
