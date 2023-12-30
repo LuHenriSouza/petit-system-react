@@ -122,6 +122,7 @@ export const NewProduct: React.FC = () => {
 									inputRef={inputPrice}
 									onKeyDown={e => handleKeyDownPrice(e)}
 									autoComplete="off"
+									valueDefault='R$ 0.00'
 								/>
 							</Box>
 						</Box>

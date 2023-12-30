@@ -17,13 +17,14 @@ export interface IMenuItens {
 interface IVSelectProps {
     menuItens: IMenuItens[],
     label: string,
-    name: string
+    name: string,
+    defaultSelected?: number
 }
 
-export const VSelect: React.FC<IVSelectProps> = ({ menuItens, label, name }) => {
+export const VSelect: React.FC<IVSelectProps> = ({ menuItens, label, name, defaultSelected }) => {
     const { fieldName, registerField, defaultValue, error, clearError } = useField(name);
 
-    const [value, setValue] = useState(defaultValue || '');
+    const [value, setValue] = useState(defaultSelected ? defaultSelected : defaultValue || '');
 
     const handleChange = (event: SelectChangeEvent) => {
         setValue(event.target.value as string);

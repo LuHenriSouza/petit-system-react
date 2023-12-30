@@ -5,11 +5,13 @@ import { useField } from '@unform/core';
 
 type TVTextFieldProps = TextFieldProps & {
   name: string;
+  valueDefault?: string;
 }
-export const VTextField: React.FC<TVTextFieldProps> = ({ name, ...rest }) => {
+
+export const VTextField: React.FC<TVTextFieldProps> = ({ name, valueDefault, ...rest }) => {
   const { fieldName, registerField, defaultValue, error, clearError } = useField(name);
 
-  const [value, setValue] = useState(name == 'price' ? 'R$ 0.00' : defaultValue || '');
+  const [value, setValue] = useState(valueDefault ? valueDefault : defaultValue || '');
 
 
   useEffect(() => {
@@ -37,8 +39,8 @@ export const VTextField: React.FC<TVTextFieldProps> = ({ name, ...rest }) => {
       } : e => setValue(e.target.value)}
 
       {...rest}
-      
-      onKeyDown={(e) => {error ? clearError() : undefined; rest.onKeyDown?.(e)}}
+
+      onKeyDown={(e) => { error ? clearError() : undefined; rest.onKeyDown?.(e) }}
     />
   );
 };
