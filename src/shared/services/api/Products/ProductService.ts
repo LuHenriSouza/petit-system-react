@@ -78,25 +78,25 @@ const deleteById = async (id: number): Promise<void | Error> => {
     }
 };
 
-// const getById = async (id: number): Promise<IProduct | Error> => {
-//     try {
-//         const { data } = await Api.get(`/product/${id}`);
+const getById = async (id: number): Promise<IProduct | Error> => {
+    try {
+        const { data } = await Api.get(`/product/${id}`, Autorization());
 
-//         if (data) {
-//             return data;
-//         }
+        if (data) {
+            return data;
+        }
 
-//         return new Error('Erro ao consultar o registro.');
-//     } catch (error) {
-//         console.error(error);
-//         return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
-//     }
-// };
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
 
 export const ProductService = {
     getAll,
     create,
     updateById,
     deleteById,
-    // getById,
+    getById,
 };
