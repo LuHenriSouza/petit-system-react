@@ -41,6 +41,7 @@ const formValidation: yup.Schema<IFormDataValidated> = yup.object().shape({
 
 
 export const NewProduct: React.FC = () => {
+	const inputCode = useRef<HTMLInputElement>(null);
 	const inputName = useRef<HTMLInputElement>(null);
 	const inputPrice = useRef<HTMLInputElement>(null);
 	const formRef = useRef<FormHandles>(null);
@@ -49,7 +50,7 @@ export const NewProduct: React.FC = () => {
 
 	const handleKeyDownCode = (e: React.KeyboardEvent<HTMLDivElement>) => {
 		if (e.code === 'Enter' || e.key === 'Enter') inputName.current?.focus();
-
+		setQuerryError(false);
 	};
 
 	const handleKeyDownName = (e: React.KeyboardEvent<HTMLDivElement>) => {
@@ -69,14 +70,25 @@ export const NewProduct: React.FC = () => {
 
 			if (result instanceof Error) {
 				setQuerryError(true);
+				inputCode.current?.focus();
 			} else {
 				setQuerryError(false);
 				Swal.fire({
 					icon: "success",
 					title: "Produto cadastrado com sucesso!",
 					showConfirmButton: false,
-					timer: 1500
+					timer: 1500,
+					didClose() {
+						formRef.current?.setFieldValue('code', '');
+						formRef.current?.setFieldValue('name', '');
+						formRef.current?.setFieldValue('sector', 0);
+						formRef.current?.setFieldValue('price', 'R$ 0.00');
+						inputCode.current?.focus();
+					},
 				});
+
+
+
 			}
 		} catch (errors) {
 			if (errors instanceof yup.ValidationError) {
@@ -85,7 +97,17 @@ export const NewProduct: React.FC = () => {
 					if (!e.path) return;
 					validatenErrors[e.path] = e.message;
 				});
+				if (inputCode.current) {
+					inputCode.current.value = '';
+				}
 
+				if (inputName.current) {
+					inputName.current.value = '';
+				}
+
+				if (inputPrice.current) {
+					inputPrice.current.value = '';
+				}
 				formRef.current?.setErrors(validatenErrors)
 				return;
 			}
@@ -107,7 +129,7 @@ export const NewProduct: React.FC = () => {
 					>
 						<Box display={'flex'} flexDirection={'column'} gap={3} sx={{ mt: 2 }}>
 							<Box width={180}>
-								<VTextField name='code' label={'Código'} onKeyDown={e => handleKeyDownCode(e)} autoComplete="off" />
+								<VTextField name='code' label={'Código'} onKeyDown={e => handleKeyDownCode(e)} autoComplete="off" inputRef={inputCode} />
 							</Box>
 							<Box width={300}>
 								<VTextField name='name' label={'Nome'} inputRef={inputName} onKeyDown={e => handleKeyDownName(e)} autoComplete="off" />
