@@ -200,7 +200,7 @@ export const Products: React.FC = () => {
                                         {(!smDown && <TableCell>{row.code}</TableCell>)}
                                         <TableCell>{row.name}</TableCell>
                                         {(!smDown && <TableCell>{row.sector}</TableCell>)}
-                                        <TableCell>{row.price}</TableCell>
+                                        <TableCell>R$ {row.price}</TableCell>
                                         <TableCell>
                                             {(!isEdit &&
                                                 <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>

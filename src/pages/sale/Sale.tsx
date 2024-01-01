@@ -10,15 +10,19 @@ import AddShoppingCartRoundedIcon from '@mui/icons-material/AddShoppingCartRound
 import Swal from 'sweetalert2'
 
 export const Sale: React.FC = () => {
-	const [openFincash, setOpenFincash] = useState<Error | IFincash>(Error('default'));
-	const [products, setProducts] = useState<IProduct[]>([]);
+
+	const theme = useTheme()
+	const navigate = useNavigate();
+	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+
 	const [code, setCode] = useState('');
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [notFound, setNotFound] = useState(false);
+	const [products, setProducts] = useState<IProduct[]>([]);
+	const [lastResult, setLastResult] = useState('');
+	const [openFincash, setOpenFincash] = useState<Error | IFincash>(Error('default'));
+
 	const codeInputRef = useRef<HTMLInputElement>();
-	const navigate = useNavigate();
-	const theme = useTheme()
-	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
 	useEffect(() => {
 
@@ -73,12 +77,14 @@ export const Sale: React.FC = () => {
 	const handleEnter = async (e: React.KeyboardEvent<HTMLDivElement>) => {
 		setNotFound(false);
 		if (e.code === 'Enter' || e.key === 'Enter') {
-			if (!code.trim()) return;
+			if (!code.trim() && !lastResult.trim()) return;
 
-			const result = await ProductService.getByCode(code);
+			const result = await ProductService.getByCode(code.trim() ? code : lastResult);
+			
 			if (result instanceof Error) {
 				setNotFound(true);
 			} else {
+				setLastResult(code.trim() ? code : lastResult);
 				// Check if the product is already in the products array
 				const existingProductIndex = products.findIndex((p) => p.code === result.code);
 
