@@ -15,6 +15,7 @@ export interface IProduct {
     name: string,
     sector: number,
     price: number,
+    quantity?: number;
     created_at: Date,
     updated_at: Date,
     deleted_at?: Date
@@ -93,10 +94,26 @@ const getById = async (id: number): Promise<IProduct | Error> => {
     }
 };
 
+const getByCode = async (code: string): Promise<IProduct | Error> => {
+    try {
+        const { data } = await Api.get(`/product/${code}`, Autorization());
+
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
 export const ProductService = {
     getAll,
     create,
-    updateById,
-    deleteById,
     getById,
+    getByCode,
+    deleteById,
+    updateById,
 };

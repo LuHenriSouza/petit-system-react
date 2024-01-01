@@ -195,7 +195,7 @@ export const Products: React.FC = () => {
                         <TableBody>
                             {rows.map(row => (
                                 isEdit !== row.id ?
-                                    <TableRow key={row.id}>
+                                    <TableRow key={row.id} hover>
 
                                         {(!smDown && <TableCell>{row.code}</TableCell>)}
                                         <TableCell>{row.name}</TableCell>
@@ -223,7 +223,7 @@ export const Products: React.FC = () => {
                                         </TableCell>
                                     </TableRow >
                                     :
-                                    <TableRow key={row.id}>
+                                    <TableRow key={row.id} hover>
                                         <TableCell>{row.code}</TableCell>
                                         <TableCell>
                                             <Box maxWidth={330}>
@@ -241,6 +241,7 @@ export const Products: React.FC = () => {
                                                     label={'Preço'}
                                                     autoComplete="off"
                                                     valueDefault={`R$ ${row.price}`}
+                                                    cash
                                                 />
                                             </Box>
                                         </TableCell>

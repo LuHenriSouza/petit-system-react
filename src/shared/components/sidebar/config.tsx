@@ -4,6 +4,7 @@ import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
+import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
 
 export const items = [
 
@@ -48,5 +49,10 @@ export const items = [
         icon: (
             <DateRangeRoundedIcon fontSize='small' />
         )
+    },
+    {
+        title: 'Vendas',
+        path: '/vendas',
+        icon: (<LocalMallRoundedIcon fontSize='small' />)
     }
 ];

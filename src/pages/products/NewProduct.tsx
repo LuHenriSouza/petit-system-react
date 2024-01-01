@@ -145,6 +145,7 @@ export const NewProduct: React.FC = () => {
 									onKeyDown={e => handleKeyDownPrice(e)}
 									autoComplete="off"
 									valueDefault='R$ 0.00'
+									cash
 								/>
 							</Box>
 						</Box>

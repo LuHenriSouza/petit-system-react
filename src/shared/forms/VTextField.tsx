@@ -6,9 +6,10 @@ import { useField } from '@unform/core';
 type TVTextFieldProps = TextFieldProps & {
   name: string;
   valueDefault?: string;
+  cash?: boolean
 }
 
-export const VTextField: React.FC<TVTextFieldProps> = ({ name, valueDefault, ...rest }) => {
+export const VTextField: React.FC<TVTextFieldProps> = ({ name, valueDefault, cash, ...rest }) => {
   const { fieldName, registerField, defaultValue, error, clearError } = useField(name);
 
   const [value, setValue] = useState(valueDefault ? valueDefault : defaultValue || '');
@@ -32,7 +33,7 @@ export const VTextField: React.FC<TVTextFieldProps> = ({ name, valueDefault, ...
 
       value={value || ''}
 
-      onChange={name == 'price' ? (event) => {
+      onChange={cash ? (event) => {
         let value = event.target.value.replace(/[^0-9]/g, '');
         value = "R$ " + (Number(value) / 100).toFixed(2);
         setValue(value);
