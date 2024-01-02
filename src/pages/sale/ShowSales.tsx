@@ -1,4 +1,4 @@
-import { Box, Fab, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Fab, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Typography, useMediaQuery, useTheme } from "@mui/material";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
@@ -52,11 +52,11 @@ export const ShowSales: React.FC = () => {
 							<Table sx={{ minWidth: 650 }} aria-label="simple table">
 								<TableHead>
 									<TableRow>
-										<TableCell width={100}>Caixa</TableCell>
 										<TableCell>Venda</TableCell>
 										<TableCell>Horário</TableCell>
 										<TableCell>Valor</TableCell>
 										<TableCell>Ações</TableCell>
+										<TableCell>Observações</TableCell>
 
 									</TableRow>
 								</TableHead>
@@ -64,7 +64,6 @@ export const ShowSales: React.FC = () => {
 								<TableBody>
 									{rows.map((row, index) => (
 										<TableRow key={index}>
-											<TableCell width={100}>Caixa</TableCell>
 											<TableCell>{row.sale_id}</TableCell>
 											<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
 											<TableCell>R$ {row.totalValue}</TableCell>
@@ -82,6 +81,11 @@ export const ShowSales: React.FC = () => {
 														<VisibilityRoundedIcon color="info" />
 													</Fab>
 												</Link>
+											</TableCell>
+											<TableCell sx={{ maxWidth: 120 }}>
+												<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={6}>
+													{row.obs}
+												</Typography>
 											</TableCell>
 										</TableRow>
 									))}

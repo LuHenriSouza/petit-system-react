@@ -79,7 +79,7 @@ export const NewProduct: React.FC = () => {
 					icon: "success",
 					title: "Produto cadastrado com sucesso!",
 					showConfirmButton: false,
-					timer: 1500,
+					timer: 1000,
 					didClose() {
 						formRef.current?.setFieldValue('code', '');
 						formRef.current?.setFieldValue('name', '');

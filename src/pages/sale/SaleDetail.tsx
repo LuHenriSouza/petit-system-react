@@ -1,21 +1,41 @@
-import { useEffect, useMemo, useState } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
-import { FincashService, IFincash, IProduct, ISaleDetail, ISaleRaw, ProductService, SaleService } from "../../shared/services/api";
-import { LayoutMain } from "../../shared/layouts";
-import { Box, Button, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
-
-import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
+import {
+	Box,
+	Table,
+	Paper,
+	Button,
+	useTheme,
+	TableRow,
+	TextField,
+	TableHead,
+	TableCell,
+	TableBody,
+	Typography,
+	Pagination,
+	TableContainer,
+	useMediaQuery
+} from "@mui/material";
+import Swal from 'sweetalert2'
 import { format } from 'date-fns';
+import './../../shared/css/sweetAlert.css'
+import { LayoutMain } from "../../shared/layouts";
+import { useEffect, useMemo, useState } from "react";
 import { Environment } from "../../shared/environment";
+import { Link, useParams, useSearchParams } from "react-router-dom";
+import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
+import { FincashService, IFincash, IProduct, ISaleDetail, ISaleRaw, ProductService, SaleService } from "../../shared/services/api";
+
 
 export const SaleDetail: React.FC = () => {
 	const { id } = useParams();
+	const [obs, setObs] = useState('');
 	const [sale, setSale] = useState<ISaleRaw>();
 	const [fincash, setFincash] = useState<IFincash>();
+	const [totalCountPage, setTotalCountPage] = useState(0);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const [totalProductsPrice, setTotalProductsPrice] = useState(0);
 	const [saleDetail, setSaleDetail] = useState<ISaleDetail[]>([]);
 	const [productDetails, setProductDetails] = useState<Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[]>([]);
-	const [searchParams, setSearchParams] = useSearchParams();
-	const [totalCountPage, setTotalCountPage] = useState(0);
+
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -32,6 +52,7 @@ export const SaleDetail: React.FC = () => {
 				if (saleFetch instanceof Error) return 'sale not found';
 				setSale(saleFetch);
 
+				saleFetch.obs && setObs(saleFetch.obs);
 
 				const fincashFetch = await FincashService.getById(Number(saleFetch.fincash_id));
 				if (fincashFetch instanceof Error) return 'fincash not found';
@@ -42,6 +63,7 @@ export const SaleDetail: React.FC = () => {
 				if (SaleDetailFetch instanceof Error) return 'Products not found';
 				setSaleDetail(SaleDetailFetch.data);
 				setTotalCountPage(SaleDetailFetch.totalCount);
+				setTotalProductsPrice(SaleDetailFetch.totalValue);
 
 				const productIds = SaleDetailFetch.data.map((saleDetail) => saleDetail.prod_id);
 				const productDetailsArray: Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[] = [];
@@ -54,10 +76,7 @@ export const SaleDetail: React.FC = () => {
 						productDetailsArray.push({ id: productId, name: product.name, price: product.price });
 					}
 				}
-				setProductDetails(productDetailsArray)
-				console.log('productDetails: ')
-				console.log(productDetails)
-
+				setProductDetails(productDetailsArray);
 
 			} catch (e) {
 
@@ -67,6 +86,26 @@ export const SaleDetail: React.FC = () => {
 
 		fetchData();
 	}, [page]);
+
+	const handleClickAdd = async () => {
+		const result = await SaleService.createObs(Number(id), { obs: obs.trim() });
+
+		if (result instanceof Error) {
+			return Swal.fire({
+				icon: "error",
+				title: "Atenção",
+				text: "Observação não pode ser vazia",
+				showConfirmButton: true,
+			});
+		}
+
+		Swal.fire({
+			icon: "success",
+			title: "Sucesso!",
+			text: "Observação adicionada com sucesso!",
+			showConfirmButton: true,
+		});
+	};
 
 	return (
 		<LayoutMain title={"Venda " + id} subTitle={"Venda " + id}>
@@ -79,8 +118,8 @@ export const SaleDetail: React.FC = () => {
 			</Paper>
 			<Paper variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 				<Box minHeight={550} margin={5}>
-					<Typography variant="h4" margin={1}>Caixa: {fincash?.opener}</Typography>
-					<Typography variant="h5" margin={1}>Data: {sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : 'Data não disponível'}</Typography>
+					<Typography variant="h4" margin={1}>{sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : 'Data não disponível'}</Typography>
+					<Typography variant="h5" margin={1}>Caixa: {fincash?.opener}</Typography>
 					<Typography variant="h6" margin={1}>Produtos:</Typography>
 					<TableContainer sx={{ minHeight: 428 }}>
 						<Table>
@@ -108,11 +147,11 @@ export const SaleDetail: React.FC = () => {
 							</TableBody>
 						</Table>
 					</TableContainer>
-					<Box>
+					<Box display={'flex'} justifyContent={'space-between'}>
 						{/* PAGINATION */}
 						{(totalCountPage > 0 && totalCountPage > Environment.LIMITE_DE_LINHAS) && (
 							<TableRow>
-								<TableCell colSpan={3}>
+								<TableCell colSpan={5}>
 									<Pagination
 										page={Number(page)}
 										count={Math.ceil(totalCountPage / Environment.LIMITE_DE_LINHAS)}
@@ -122,17 +161,26 @@ export const SaleDetail: React.FC = () => {
 								</TableCell>
 							</TableRow>
 						)}
+
+						{(totalCountPage <= 0 || totalCountPage <= Environment.LIMITE_DE_LINHAS) && (
+							<Box></Box>
+						)}
+
+
+						<Typography variant="h6" sx={{ mt: 3, mr: 20 }}>Total: R$ {totalProductsPrice}</Typography>
 					</Box>
 					<Box >
 						<TextField
-							id="outlined-multiline-static"
-							label="Observações"
 							rows={4}
-							multiline
 							fullWidth
+							multiline
 							sx={{ mt: 2 }}
+							value={obs}
+							onChange={(e) => setObs(e.target.value)}
+							label="Observações"
+							id="outlined-multiline-static"
 						/>
-						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large">
+						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd}>
 							Adicionar Observação
 						</Button>
 					</Box>
