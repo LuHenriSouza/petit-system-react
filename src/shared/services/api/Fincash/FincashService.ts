@@ -19,39 +19,53 @@ export interface IFincash {
     created_at: Date,
     updated_at: Date,
     deleted_at?: Date,
-
+    
 }
 
 // type TProductTotalCount = {
-//     data: IFincash[];
-//     totalCount: number;
-// }
-
-
-const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
-    try {
-        const { data } = await Api.post<IFincash>('/fincash', dados, Autorization());
-
-        if (data) {
-            return data.id;
-        }
-
-        return new Error('Erro ao criar o registro.');
-    } catch (error) {
+    //     data: IFincash[];
+    //     totalCount: number;
+    // }
+    
+    
+    const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
+        try {
+            const { data } = await Api.post<IFincash>('/fincash', dados, Autorization());
+            
+            if (data) {
+                return data.id;
+            }
+            
+            return new Error('Erro ao criar o registro.');
+        } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao criar o registro.');
     }
 };
 
-
-const getOpenFincash = async (): Promise<IFincash | Error> => {
+const getById = async (id: number): Promise<IFincash | Error> => {
     try {
-        const { data } = await Api.get<IFincash>('/fincash/verify', Autorization());
+        const { data } = await Api.get(`/fincash/${id}`, Autorization());
 
         if (data) {
             return data;
         }
 
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
+const getOpenFincash = async (): Promise<IFincash | Error> => {
+    try {
+        const { data } = await Api.get<IFincash>('/fincash/verify', Autorization());
+        
+        if (data) {
+            return data;
+        }
+        
         return new Error('Erro ao achar o registro.');
     } catch (error) {
         console.error(error);
@@ -97,26 +111,12 @@ const getOpenFincash = async (): Promise<IFincash | Error> => {
 //     }
 // };
 
-// const getById = async (id: number): Promise<IProduct | Error> => {
-//     try {
-//         const { data } = await Api.get(`/product/${id}`, Autorization());
-
-//         if (data) {
-//             return data;
-//         }
-
-//         return new Error('Erro ao consultar o registro.');
-//     } catch (error) {
-//         console.error(error);
-//         return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
-//     }
-// };
 
 export const FincashService = {
     create,
+    getById,
     getOpenFincash,
     //     getAll,
     //     updateById,
     //     deleteById,
-    //     getById,
 };
