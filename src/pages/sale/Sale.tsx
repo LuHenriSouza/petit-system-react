@@ -46,11 +46,12 @@ export const Sale: React.FC = () => {
 	useEffect(() => {
 		const totalCalc = products.map((prod) => {
 			const calc = (prod.quantity || 0) * prod.price;
-			return calc;
+			const calc100 = calc*100;
+			return calc100;
 		})
 
 
-		setTotalPrice(totalCalc.reduce((total, currentItem) => total + currentItem, 0))
+		setTotalPrice(totalCalc.reduce((total, currentItem) => total + currentItem, 0)/100);
 
 	}, [products]);
 
