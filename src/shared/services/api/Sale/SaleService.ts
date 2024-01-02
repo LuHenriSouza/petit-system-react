@@ -44,6 +44,10 @@ export interface ISaleDetail {
 
 }
 
+type TSaleDetailTotalCount = {
+    data: ISaleDetail[];
+    totalCount: number;
+}
 
 type TSaleTotalCount = {
     data: IGetSales[];
@@ -65,11 +69,14 @@ const create = async (dados: Omit<ISale, 'id'>[]): Promise<number | Error> => {
     }
 };
 
-const getAllById = async (id: number): Promise<ISaleDetail[] | Error> => {
+const getAllById = async (id: number, page = 1): Promise<TSaleDetailTotalCount | Error> => {
     try {
-        const { data } = await Api.get(`/sale/${id}`, Autorization());
+        const { data, headers } = await Api.get(`/sale/${id}?page=${page}&limit=${Environment.LIMITE_DE_LINHAS}`, Autorization());
         if (data) {
-            return data;
+            return {
+                data,
+                totalCount: Number(headers['x-total-count'] || Environment.LIMITE_DE_LINHAS),
+            };
         }
 
         return new Error('Erro ao listar os registros.');

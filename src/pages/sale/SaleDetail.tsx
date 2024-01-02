@@ -1,11 +1,12 @@
-import { useEffect, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FincashService, IFincash, IProduct, ISaleDetail, ISaleRaw, ProductService, SaleService } from "../../shared/services/api";
 import { LayoutMain } from "../../shared/layouts";
-import { Box, Button, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField, Typography } from "@mui/material";
+import { Box, Button, Pagination, Paper, Table, TableBody, TableCell, TableFooter, TableHead, TableRow, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { format } from 'date-fns';
+import { Environment } from "../../shared/environment";
 
 export const SaleDetail: React.FC = () => {
 	const { id } = useParams();
@@ -13,6 +14,15 @@ export const SaleDetail: React.FC = () => {
 	const [fincash, setFincash] = useState<IFincash>();
 	const [saleDetail, setSaleDetail] = useState<ISaleDetail[]>([]);
 	const [productDetails, setProductDetails] = useState<Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[]>([]);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const [totalCountPage, setTotalCountPage] = useState(0);
+	const theme = useTheme();
+	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+
+	const page = useMemo(() => {
+		return searchParams.get('page') || 1;
+	}, [searchParams]);
+
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -28,11 +38,12 @@ export const SaleDetail: React.FC = () => {
 				setFincash(fincashFetch);
 
 
-				const SaleDetailFetch = await SaleService.getAllById(Number(id));
+				const SaleDetailFetch = await SaleService.getAllById(Number(id), Number(page));
 				if (SaleDetailFetch instanceof Error) return 'Products not found';
-				setSaleDetail(SaleDetailFetch);
+				setSaleDetail(SaleDetailFetch.data);
+				setTotalCountPage(SaleDetailFetch.totalCount);
 
-				const productIds = SaleDetailFetch.map((saleDetail) => saleDetail.prod_id);
+				const productIds = SaleDetailFetch.data.map((saleDetail) => saleDetail.prod_id);
 				const productDetailsArray: Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[] = [];
 
 				for (const productId of productIds) {
@@ -44,7 +55,6 @@ export const SaleDetail: React.FC = () => {
 					}
 				}
 				setProductDetails(productDetailsArray)
-
 				console.log('productDetails: ')
 				console.log(productDetails)
 
@@ -56,7 +66,8 @@ export const SaleDetail: React.FC = () => {
 		}
 
 		fetchData();
-	}, []);
+	}, [page]);
+
 	return (
 		<LayoutMain title={"Venda " + id} subTitle={"Venda " + id}>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
@@ -94,8 +105,22 @@ export const SaleDetail: React.FC = () => {
 							)
 							)}
 						</TableBody>
+						<TableFooter>
+							{(totalCountPage > 0 && totalCountPage > Environment.LIMITE_DE_LINHAS) && (
+								<TableRow>
+									<TableCell colSpan={3}>
+										<Pagination
+											page={Number(page)}
+											count={Math.ceil(totalCountPage / Environment.LIMITE_DE_LINHAS)}
+											onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+											siblingCount={smDown ? 0 : 1}
+										/>
+									</TableCell>
+								</TableRow>
+							)}
+						</TableFooter>
 					</Table>
-					<Box style={{ position: 'sticky', bottom: '16px', padding: '16px', background: '#fff' }}>
+					<Box >
 						<TextField
 							id="outlined-multiline-static"
 							label="Observações"

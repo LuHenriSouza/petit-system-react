@@ -1,9 +1,7 @@
 import { Button } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
 import { useDrawerContext } from '../shared/contexts';
-import { Dashboard, Products, NewProduct, UpdateProduct, Sale, NewFincash } from '../pages';
-import { ShowSales } from '../pages/sale/ShowSales';
-import { SaleDetail } from '../pages/sale/SaleDetail';
+import { Dashboard, Products, NewProduct, UpdateProduct, Sale, NewFincash, ShowSales, SaleDetail } from '../pages';
 
 export const AppRoutes = () => {
     const { toggleDrawerOpen } = useDrawerContext();
@@ -22,7 +20,7 @@ export const AppRoutes = () => {
             <Route path="/caixa/novo" element={<NewFincash />} />
             <Route path="/vendas" element={<ShowSales />} />
             <Route path="/vendas/:id" element={<SaleDetail />} />
-            
+
         </Routes>
     );
 }

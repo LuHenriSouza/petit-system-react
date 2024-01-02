@@ -197,7 +197,7 @@ export const Sale: React.FC = () => {
 								</Table>
 							</TableContainer>
 						</Box>
-						<Box display={'flex'} gap={38}>
+						<Box display={'flex'} gap={38} marginTop={3}>
 							<Button
 								variant="contained"
 								sx={{ mb: 2, ml: 3 }}

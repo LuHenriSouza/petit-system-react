@@ -7,4 +7,6 @@ export * from './products/UpdateProduct';
 
 // Fincash
 export * from './sale/Sale';
+export * from './sale/ShowSales';
 export * from './sale/NewFincash';
+export * from './sale/SaleDetail';
