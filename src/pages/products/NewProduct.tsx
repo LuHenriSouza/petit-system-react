@@ -1,4 +1,5 @@
-import { Form } from '@unform/web'
+import { Form } from '@unform/web';
+import { Link } from 'react-router-dom';
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { VTextField } from '../../shared/forms/VTextField';
@@ -7,8 +8,9 @@ import { useRef, useState } from 'react';
 import { FormHandles } from '@unform/core';
 import { ProductService } from '../../shared/services/api';
 import * as yup from 'yup';
-import Swal from 'sweetalert2'
-import './../../shared/css/sweetAlert.css'
+import Swal from 'sweetalert2';
+import './../../shared/css/sweetAlert.css';
+import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 
 const selectManuItens: IMenuItens[] = [
 	{ text: '1 - Bebidas', value: '1' },
@@ -119,6 +121,13 @@ export const NewProduct: React.FC = () => {
 	return (
 		<>
 			<LayoutMain title="Novo Produto" subTitle="Cadastre um Produto">
+				<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
+					<Box display={'flex'} justifyContent={'space-between'}>
+						<Link to={'/produtos'}>
+							<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
+						</Link>
+					</Box>
+				</Paper>
 				<Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
 					{(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}

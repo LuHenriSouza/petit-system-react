@@ -9,8 +9,9 @@ import { IProduct, ProductService } from '../../shared/services/api';
 import * as yup from 'yup';
 import Swal from 'sweetalert2'
 import './../../shared/css/sweetAlert.css'
-import { useParams } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 
 const selectManuItens: IMenuItens[] = [
     { text: '1 - Bebidas', value: '1' },
@@ -123,6 +124,13 @@ export const UpdateProduct: React.FC = () => {
         <>
             {(data ?
                 <LayoutMain title="Editar Produto" subTitle="Edite um Produto">
+                    <Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
+                        <Box display={'flex'} justifyContent={'space-between'}>
+                            <Link to={'/produtos'}>
+                                <Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
+                            </Link>
+                        </Box>
+                    </Paper>
                     <Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                         <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
                         {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
@@ -133,7 +141,7 @@ export const UpdateProduct: React.FC = () => {
                         >
                             <Box display={'flex'} flexDirection={'column'} gap={3} sx={{ mt: 2 }}>
                                 <Box width={180}>
-                                    <VTextField sx={{backgroundColor: '#eee'}} name='code' label={'Código'} onKeyDown={e => handleKeyDownCode(e)} autoComplete="off" valueDefault={data.code} inputProps={{
+                                    <VTextField sx={{ backgroundColor: '#eee' }} name='code' label={'Código'} onKeyDown={e => handleKeyDownCode(e)} autoComplete="off" valueDefault={data.code} inputProps={{
                                         readOnly: Boolean(true)
                                     }} />
                                 </Box>
