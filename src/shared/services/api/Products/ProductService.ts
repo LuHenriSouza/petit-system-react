@@ -96,7 +96,7 @@ const getById = async (id: number): Promise<IProduct | Error> => {
 
 const getByCode = async (code: string): Promise<IProduct | Error> => {
     try {
-        const { data } = await Api.get(`/product/${code}`, Autorization());
+        const { data } = await Api.get(`/product/code/${code}`, Autorization());
 
         if (data) {
             return data;
