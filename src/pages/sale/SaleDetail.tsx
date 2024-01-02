@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import { FincashService, IFincash, IProduct, ISaleDetail, ISaleRaw, ProductService, SaleService } from "../../shared/services/api";
 import { LayoutMain } from "../../shared/layouts";
-import { Box, Button, Pagination, Paper, Table, TableBody, TableCell, TableFooter, TableHead, TableRow, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography, useMediaQuery, useTheme } from "@mui/material";
 
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { format } from 'date-fns';
@@ -82,44 +82,47 @@ export const SaleDetail: React.FC = () => {
 					<Typography variant="h4" margin={1}>Caixa: {fincash?.opener}</Typography>
 					<Typography variant="h5" margin={1}>Data: {sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : 'Data não disponível'}</Typography>
 					<Typography variant="h6" margin={1}>Produtos:</Typography>
-					<Table>
-						<TableHead>
-							<TableRow>
-								<TableCell>Produto</TableCell>
-								<TableCell>Preço Atual</TableCell>
-								<TableCell>Preço Vendido</TableCell>
-								<TableCell>Quantidade</TableCell>
-								<TableCell>Preço Total</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{saleDetail.map((saleDetail, index) =>
-							(
-								<TableRow key={saleDetail.prod_id}>
-									<TableCell>{productDetails[index]?.name}</TableCell>
-									<TableCell>{productDetails[index]?.price}</TableCell>
-									<TableCell>{saleDetail.price}</TableCell>
-									<TableCell>{saleDetail.quantity}</TableCell>
-									<TableCell>{saleDetail.pricetotal}</TableCell>
-								</TableRow >
-							)
-							)}
-						</TableBody>
-						<TableFooter>
-							{(totalCountPage > 0 && totalCountPage > Environment.LIMITE_DE_LINHAS) && (
+					<TableContainer sx={{ minHeight: 428 }}>
+						<Table>
+							<TableHead>
 								<TableRow>
-									<TableCell colSpan={3}>
-										<Pagination
-											page={Number(page)}
-											count={Math.ceil(totalCountPage / Environment.LIMITE_DE_LINHAS)}
-											onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
-											siblingCount={smDown ? 0 : 1}
-										/>
-									</TableCell>
+									<TableCell>Produto</TableCell>
+									<TableCell>Preço Atual</TableCell>
+									<TableCell>Preço Vendido</TableCell>
+									<TableCell>Quantidade</TableCell>
+									<TableCell>Preço Total</TableCell>
 								</TableRow>
-							)}
-						</TableFooter>
-					</Table>
+							</TableHead>
+							<TableBody>
+								{saleDetail.map((saleDetail, index) =>
+								(
+									<TableRow key={saleDetail.prod_id}>
+										<TableCell>{productDetails[index]?.name}</TableCell>
+										<TableCell>{productDetails[index]?.price}</TableCell>
+										<TableCell>{saleDetail.price}</TableCell>
+										<TableCell>{saleDetail.quantity}</TableCell>
+										<TableCell>{saleDetail.pricetotal}</TableCell>
+									</TableRow >
+								)
+								)}
+							</TableBody>
+						</Table>
+					</TableContainer>
+					<Box>
+						{/* PAGINATION */}
+						{(totalCountPage > 0 && totalCountPage > Environment.LIMITE_DE_LINHAS) && (
+							<TableRow>
+								<TableCell colSpan={3}>
+									<Pagination
+										page={Number(page)}
+										count={Math.ceil(totalCountPage / Environment.LIMITE_DE_LINHAS)}
+										onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+										siblingCount={smDown ? 0 : 1}
+									/>
+								</TableCell>
+							</TableRow>
+						)}
+					</Box>
 					<Box >
 						<TextField
 							id="outlined-multiline-static"
