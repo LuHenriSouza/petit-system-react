@@ -1,10 +1,12 @@
-import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
-import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
-import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
-import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
+import LocalShippingIcon from '@mui/icons-material/LocalShipping';
+import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
+import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
+import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
+import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
+import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 
 export const items = [
 
@@ -37,6 +39,13 @@ export const items = [
         )
     },
     {
+        title: 'Saídas',
+        path: '/saidas',
+        icon: (
+            <CurrencyExchangeIcon fontSize='small' />
+        )
+    },
+    {
         title: 'Fechamentos',
         path: '/fechamentos',
         icon: (
@@ -54,5 +63,10 @@ export const items = [
         title: 'Vendas',
         path: '/vendas',
         icon: (<LocalMallRoundedIcon fontSize='small' />)
+    },
+    {
+        title: 'Fornecedores',
+        path: '/fornecedores',
+        icon: (<LocalShippingIcon fontSize='small' />)
     }
 ];

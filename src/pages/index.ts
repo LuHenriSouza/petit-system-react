@@ -10,3 +10,10 @@ export * from './sale/Sale';
 export * from './sale/ShowSales';
 export * from './sale/NewFincash';
 export * from './sale/SaleDetail';
+
+// Outflow
+export * from './outflow/OutFlow';
+
+// Suppliers
+export * from './suppliers/Suppliers';
+
