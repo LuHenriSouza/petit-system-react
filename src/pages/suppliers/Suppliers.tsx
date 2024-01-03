@@ -92,7 +92,7 @@ export const Suppliers: React.FC = () => {
 			return Swal.fire({
 				icon: "error",
 				title: "Atenção",
-				text: "Nome não pode ser vazio",
+				text: "Nome deve ter pelo menos 3 caracteres",
 				showConfirmButton: true,
 			});
 		}

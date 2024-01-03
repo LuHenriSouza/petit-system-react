@@ -1,18 +1,35 @@
-import { Alert, Box, Button, Fab, Icon, Pagination, Paper, Table, TableBody, TableCell, TableFooter, TableHead, TableRow, TextField, useMediaQuery, useTheme } from '@mui/material';
-import AddIcon from '@mui/icons-material/Add';
-import { LayoutMain } from '../../shared/layouts';
-import Swal from 'sweetalert2'
-import './../../shared/css/sweetAlert.css'
-import { Link, useSearchParams } from 'react-router-dom';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { IProduct, ProductService } from '../../shared/services/api';
-import { Environment } from '../../shared/environment';
-import { useDebounce } from '../../shared/hooks';
-import { FormHandles } from '@unform/core';
-import { Form } from '@unform/web'
-import { VTextField } from '../../shared/forms/VTextField';
-import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
+import {
+    Box,
+    Fab,
+    Icon,
+    Table,
+    Alert,
+    Paper,
+    Button,
+    TableRow,
+    useTheme,
+    TextField,
+    TableBody,
+    TableHead,
+    TableCell,
+    Pagination,
+    TableFooter,
+    useMediaQuery,
+} from '@mui/material';
 import * as yup from 'yup';
+import Swal from 'sweetalert2'
+import { Form } from '@unform/web'
+import './../../shared/css/sweetAlert.css'
+import { FormHandles } from '@unform/core';
+import AddIcon from '@mui/icons-material/Add';
+import { useDebounce } from '../../shared/hooks';
+import { LayoutMain } from '../../shared/layouts';
+import { Environment } from '../../shared/environment';
+import { Link, useSearchParams } from 'react-router-dom';
+import { VTextField } from '../../shared/forms/VTextField';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
+import { IProduct, ProductService } from '../../shared/services/api';
 
 const selectManuItens: IMenuItens[] = [
     { text: '1 - Bebidas', value: '1' },
@@ -22,14 +39,14 @@ const selectManuItens: IMenuItens[] = [
 ];
 
 interface IFormDataValidated {
-    id: number
+    id: number;
     name: string;
     sector: number;
     price: number;
 }
 
 interface IFormData {
-    id: string
+    id: string;
     name: string;
     sector: number;
     price: string;
@@ -47,12 +64,13 @@ const formValidation: yup.Schema<IFormDataValidated> = yup.object().shape({
 export const Products: React.FC = () => {
     const theme = useTheme();
     const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+
     const { debounce } = useDebounce();
     const [searchParams, setSearchParams] = useSearchParams();
 
-    const [rows, setRows] = useState<IProduct[]>([]);
-    const [totalCount, setTotalCount] = useState(0);
     const [isEdit, setIsEdit] = useState(0);
+    const [totalCount, setTotalCount] = useState(0);
+    const [rows, setRows] = useState<IProduct[]>([]);
     const [querryError, setQuerryError] = useState(false);
     // const [isLoading, setIsLoading] = useState(false);
 
@@ -82,10 +100,8 @@ export const Products: React.FC = () => {
                 if (result instanceof Error) {
                     alert(result.message);
                 } else {
-                    console.log(result);
-
-                    setTotalCount(result.totalCount);
                     setRows(result.data);
+                    setTotalCount(result.totalCount);
                 }
             });
     }
@@ -200,7 +216,16 @@ export const Products: React.FC = () => {
 
                                         {(!smDown && <TableCell>{row.code}</TableCell>)}
                                         <TableCell>{row.name}</TableCell>
-                                        {(!smDown && <TableCell>{row.sector}</TableCell>)}
+                                        {(!smDown && (
+                                            <TableCell>{
+                                                row.sector === 1 ? '1 - Bebidas' :
+                                                    row.sector === 2 ? '2 - Chocolates' :
+                                                        row.sector === 3 ? '3 - Salgadinhos' :
+                                                            row.sector === 4 ? '4 - Sorvetes' :
+                                                                `${row.sector} - Desconhecido`
+                                            }
+                                            </TableCell>
+                                        ))}
                                         <TableCell>R$ {row.price}</TableCell>
                                         <TableCell>
                                             {(!isEdit &&
@@ -233,7 +258,7 @@ export const Products: React.FC = () => {
                                             </Box>
                                         </TableCell>
                                         <TableCell>
-                                            <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} />
+                                            <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio'/>
                                         </TableCell>
                                         <TableCell>
                                             <Box width={180}>

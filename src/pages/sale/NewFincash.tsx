@@ -94,15 +94,15 @@ export const NewFincash: React.FC = () => {
     return (
 
         <LayoutMain title="Novo Caixa" subTitle="Abrir um novo caixa">
-            <Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+            <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                 <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
                 <Form onSubmit={handleSubmit} placeholder={''} ref={formRef}>
                     <Box display={'flex'} gap={7} marginBottom={4}>
                         <Box width={300}>
-                            <VTextField label={'Nome'} name="opener" />
+                            <VTextField label={'Nome'} name="opener" autoComplete="off" />
                         </Box>
                         <Box width={300}>
-                            <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash />
+                            <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash autoComplete="off" />
                         </Box>
                         <Button variant="contained" size="large" sx={{ width: 120 }} onClick={() => formRef.current?.submitForm()}><OpenInBrowserIcon sx={{ mr: 1 }} />Abrir</Button>
                     </Box>

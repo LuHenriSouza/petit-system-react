@@ -179,6 +179,7 @@ export const SaleDetail: React.FC = () => {
 							onChange={(e) => setObs(e.target.value)}
 							label="Observações"
 							id="elevation-multiline-static"
+							autoComplete="off"
 						/>
 						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd}>
 							Adicionar Observação

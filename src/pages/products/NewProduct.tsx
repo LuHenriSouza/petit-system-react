@@ -144,7 +144,7 @@ export const NewProduct: React.FC = () => {
 								<VTextField name='name' label={'Nome'} inputRef={inputName} onKeyDown={e => handleKeyDownName(e)} autoComplete="off" />
 							</Box>
 							<Box width={200}>
-								<VSelect name='sector' label='Setor' menuItens={selectManuItens} />
+								<VSelect name='sector' label='Setor' menuItens={selectManuItens} messageError='Setor não pode ser vazio' />
 							</Box>
 							<Box width={180}>
 								<VTextField

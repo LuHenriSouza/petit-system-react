@@ -18,17 +18,21 @@ interface IVSelectProps {
     menuItens: IMenuItens[],
     label: string,
     name: string,
-    defaultSelected?: number
+    messageError?: string,
+    defaultSelected?: number,
+    onValueChange?: (selectedValue: string) => void;
 }
 
-export const VSelect: React.FC<IVSelectProps> = ({ menuItens, label, name, defaultSelected }) => {
+export const VSelect: React.FC<IVSelectProps> = ({ menuItens, label, name, defaultSelected, messageError, onValueChange }) => {
     const { fieldName, registerField, defaultValue, error, clearError } = useField(name);
 
     const [value, setValue] = useState(defaultSelected ? defaultSelected : defaultValue || '');
 
     const handleChange = (event: SelectChangeEvent) => {
         setValue(event.target.value as string);
-        error && clearError()
+        error && clearError();
+
+        onValueChange?.(event.target.value);
     };
 
 
@@ -50,7 +54,9 @@ export const VSelect: React.FC<IVSelectProps> = ({ menuItens, label, name, defau
                         MenuProps: {
                             MenuListProps: {
                                 sx: {
-                                    backgroundColor: '#fff'
+                                    maxHeight: 250,
+                                    overflowY: 'auto',
+                                    backgroundColor: '#fff',
                                 }
                             }
                         }
@@ -69,7 +75,7 @@ export const VSelect: React.FC<IVSelectProps> = ({ menuItens, label, name, defau
                         ))
                     }
                 </Select>
-                <FormHelperText>{!!error && 'Setor não pode ser vazio'}</FormHelperText>
+                <FormHelperText>{!!error && messageError ? messageError : error}</FormHelperText>
             </FormControl>
         </Box >
     );
