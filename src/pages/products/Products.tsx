@@ -210,7 +210,7 @@ export const Products: React.FC = () => {
                                             )}
                                             {(smDown &&
                                                 <Link to={'/produtos/edit/' + row.id}>
-                                                    <Fab size="medium" color="warning" aria-label="add" onClick={() => handleEditMode(row.id)}>
+                                                    <Fab size="medium" color="warning" aria-label="add">
                                                         <Icon>edit</Icon>
                                                     </Fab>
                                                 </Link>

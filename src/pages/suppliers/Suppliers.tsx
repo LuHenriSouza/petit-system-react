@@ -1,4 +1,4 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fab, Icon, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -58,6 +58,33 @@ export const Suppliers: React.FC = () => {
 				}
 			});
 	};
+	const handleDelete = (id: number, name: string) => {
+		Swal.fire({
+			title: 'Tem Certeza?',
+			text: `Apagar "${name}" ?`,
+			icon: 'warning',
+			iconColor: theme.palette.error.main,
+			showCancelButton: true,
+			confirmButtonColor: theme.palette.error.main,
+			cancelButtonColor: '#aaa',
+			confirmButtonText: 'Deletar'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				SupplierService.deleteById(id).then((result) => {
+					if (result instanceof Error) {
+						alert(result.message);
+					} else {
+						Swal.fire({
+							title: 'Deletado!',
+							text: 'Produto apagado.',
+							icon: 'success',
+						});
+						listSuppliers();
+					}
+				});
+			}
+		});
+	}
 
 	const handleSubmit = async () => {
 		const result = await SupplierService.create({ name: name.trim() });
@@ -98,11 +125,12 @@ export const Suppliers: React.FC = () => {
 				</Box>
 			</Paper>
 			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-				<TableContainer sx={{ minHeight: 428 }}>
+				<TableContainer>
 					<Table>
 						<TableHead>
 							<TableRow>
 								<TableCell>Fornecedor</TableCell>
+								<TableCell align="center">Ações</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -110,6 +138,12 @@ export const Suppliers: React.FC = () => {
 							(
 								<TableRow key={row.id}>
 									<TableCell>{row.name}</TableCell>
+									<TableCell align="center">
+										<Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
+											<Icon>delete</Icon>
+
+										</Fab>
+									</TableCell>
 								</TableRow >
 							)
 							)}
