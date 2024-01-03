@@ -124,14 +124,14 @@ export const UpdateProduct: React.FC = () => {
         <>
             {(data ?
                 <LayoutMain title="Editar Produto" subTitle="Edite um Produto">
-                    <Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
+                    <Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }} variant="elevation">
                         <Box display={'flex'} justifyContent={'space-between'}>
                             <Link to={'/produtos'}>
                                 <Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
                             </Link>
                         </Box>
                     </Paper>
-                    <Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+                    <Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                         <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
                         {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
                         <Form

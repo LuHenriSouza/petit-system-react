@@ -69,9 +69,9 @@ export const NewFincash: React.FC = () => {
                     title: "Caixa aberto com sucesso!",
                     showConfirmButton: false,
                     timer: 1500,
-                    didClose() {
-                        setAtt(1);					},
                 });
+                setAtt(1);
+
             }
 
         } catch (errors) {
@@ -94,7 +94,7 @@ export const NewFincash: React.FC = () => {
     return (
 
         <LayoutMain title="Novo Caixa" subTitle="Abrir um novo caixa">
-            <Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+            <Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                 <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
                 <Form onSubmit={handleSubmit} placeholder={''} ref={formRef}>
                     <Box display={'flex'} gap={7} marginBottom={4}>

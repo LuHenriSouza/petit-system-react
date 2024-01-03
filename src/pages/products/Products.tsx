@@ -160,13 +160,14 @@ export const Products: React.FC = () => {
 
     return (
         <LayoutMain title="Produtos" subTitle='Cadastre, edite e remova produtos'>
-            <Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
+            <Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }} variant="elevation">
                 <Box display={'flex'} justifyContent={'space-between'}>
                     <TextField
                         size="small"
                         placeholder={'Pesquisar'}
                         value={search}
                         onChange={(event) => { setSearchParams({ search: event.target.value }, { replace: true }) }}
+                        autoComplete="off"
                     />
                     <Link to={'/produtos/novo'}>
                         {(!smDown && <Button variant="contained"><AddIcon sx={{ mr: 1 }} />Novo Produto</Button>)}
@@ -175,7 +176,7 @@ export const Products: React.FC = () => {
                 </Box>
             </Paper>
 
-            <Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+            <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                 {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
                 <Form
                     onSubmit={handleSubmit}

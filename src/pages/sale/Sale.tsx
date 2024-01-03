@@ -3,7 +3,7 @@ import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useRef, useState } from "react";
 import { FincashService, IFincash, SaleService, ISale } from "../../shared/services/api";
 import { useNavigate } from "react-router-dom";
-import { IProduct, ProductService } from './../../shared/services/api/Products/ProductService';
+import { IProduct, ProductService } from './../../shared/services/api/';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import AddShoppingCartRoundedIcon from '@mui/icons-material/AddShoppingCartRounded';
@@ -142,7 +142,7 @@ export const Sale: React.FC = () => {
 		<LayoutMain title="Vender" subTitle="">
 			<Grid container spacing={2}>
 				<Grid item xs={6}>
-					<Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+					<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Box display={'flex'}>
 							<TextField
 								fullWidth
@@ -154,7 +154,7 @@ export const Sale: React.FC = () => {
 							/>
 						</Box>
 					</Paper>
-					<Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+					<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						{(notFound && <Alert severity="error">Nenhum produto encontrado com este código !</Alert>)}
 						<Box display={'flex'} minHeight={550}>
 							<TableContainer>
@@ -212,7 +212,7 @@ export const Sale: React.FC = () => {
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
-					<Paper component={Paper} variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+					<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						TABLE
 					</Paper>
 				</Grid>

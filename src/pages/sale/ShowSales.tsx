@@ -46,7 +46,7 @@ export const ShowSales: React.FC = () => {
 	return (
 		<>
 			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do dia"}>
-				<Paper variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Box minHeight={550}>
 						<TableContainer>
 							<Table sx={{ minWidth: 650 }} aria-label="simple table">

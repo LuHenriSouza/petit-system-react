@@ -116,7 +116,7 @@ export const SaleDetail: React.FC = () => {
 					</Link>
 				</Box>
 			</Paper>
-			<Paper variant="outlined" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 				<Box minHeight={550} margin={5}>
 					<Typography variant="h4" margin={1}>{sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : 'Data não disponível'}</Typography>
 					<Typography variant="h5" margin={1}>Caixa: {fincash?.opener}</Typography>
@@ -178,7 +178,7 @@ export const SaleDetail: React.FC = () => {
 							value={obs}
 							onChange={(e) => setObs(e.target.value)}
 							label="Observações"
-							id="outlined-multiline-static"
+							id="elevation-multiline-static"
 						/>
 						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd}>
 							Adicionar Observação

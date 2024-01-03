@@ -1,5 +1,5 @@
-import { Environment } from '../../../environment';
-import { Api } from '../axios-config';
+import { Environment } from '../../environment';
+import { Api } from './axios-config';
 
 const Autorization = () => {
     return {
