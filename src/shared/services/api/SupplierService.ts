@@ -20,9 +20,9 @@ type TProductTotalCount = {
     totalCount: number;
 }
 
-const getAll = async (page = 1, filter = ''): Promise<TProductTotalCount | Error> => {
+const getAll = async (page = 1, filter = '', limit?: number): Promise<TProductTotalCount | Error> => {
     try {
-        const urlRelativa = `/supplier?page=${page}&limit=${Environment.LIMITE_DE_LINHAS}&filter=${filter}`;
+        const urlRelativa = `/supplier?page=${page}&limit=${limit ? limit : Environment.LIMITE_DE_LINHAS}&filter=${filter}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
