@@ -1,16 +1,16 @@
-import { Form } from '@unform/web';
-import { Link } from 'react-router-dom';
-import { Alert, Box, Button, Paper, Typography } from "@mui/material";
-import { LayoutMain } from "../../shared/layouts";
-import { VTextField } from '../../shared/forms/VTextField';
-import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
-import { useRef, useState } from 'react';
-import { FormHandles } from '@unform/core';
-import { ProductService } from '../../shared/services/api';
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
+import { Link } from 'react-router-dom';
+import { useRef, useState } from 'react';
+import { FormHandles } from '@unform/core';
 import './../../shared/css/sweetAlert.css';
+import { VForm } from '../../shared/forms/VForm';
+import { LayoutMain } from "../../shared/layouts";
+import { VTextField } from '../../shared/forms/VTextField';
+import { ProductService } from '../../shared/services/api';
+import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
+import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 
 const selectManuItens: IMenuItens[] = [
 	{ text: '1 - Bebidas', value: '1' },
@@ -131,7 +131,7 @@ export const NewProduct: React.FC = () => {
 				<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
 					{(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
-					<Form
+					<VForm
 						onSubmit={handleSubmit}
 						placeholder={''}
 						ref={formRef}
@@ -159,7 +159,7 @@ export const NewProduct: React.FC = () => {
 							</Box>
 						</Box>
 						<Button type='button' variant='contained' size={'large'} sx={{ my: 1, mt: 3 }} onClick={() => formRef.current?.submitForm()}>Cadastrar</Button>
-					</Form>
+					</VForm>
 				</Paper >
 			</LayoutMain >
 		</>

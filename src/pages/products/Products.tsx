@@ -18,10 +18,10 @@ import {
 } from '@mui/material';
 import * as yup from 'yup';
 import Swal from 'sweetalert2'
-import { Form } from '@unform/web'
 import './../../shared/css/sweetAlert.css'
 import { FormHandles } from '@unform/core';
 import AddIcon from '@mui/icons-material/Add';
+import { VForm } from '../../shared/forms/VForm';
 import { useDebounce } from '../../shared/hooks';
 import { LayoutMain } from '../../shared/layouts';
 import { Environment } from '../../shared/environment';
@@ -195,7 +195,7 @@ export const Products: React.FC = () => {
 
             <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto', minHeight: 600 }}>
                 {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
-                <Form
+                <VForm
                     onSubmit={handleSubmit}
                     placeholder={''}
                     ref={formRef}
@@ -310,7 +310,7 @@ export const Products: React.FC = () => {
                             )}
                         </TableFooter>
                     </Table>
-                </Form>
+                </VForm>
             </Paper>
         </LayoutMain >
     );

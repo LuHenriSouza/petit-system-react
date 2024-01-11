@@ -14,10 +14,10 @@ import {
 	TableContainer,
 } from "@mui/material";
 import * as yup from 'yup';
-import Swal from 'sweetalert2'
-import { Form } from '@unform/web'
+import Swal from 'sweetalert2';
 import './../../shared/css/sweetAlert.css'
 import { FormHandles } from '@unform/core';
+import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import { EOutflowType } from "./enum/EOutflowType";
 import { Environment } from "../../shared/environment";
@@ -273,7 +273,7 @@ export const OutFlow: React.FC = () => {
 				<Grid item xs={6}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Typography variant="h5" sx={{ m: 2 }}>Nova Saída:</Typography>
-						<Form ref={formRef} onSubmit={handleSubmit} placeholder={''}>
+						<VForm ref={formRef} onSubmit={handleSubmit} placeholder={''}>
 							<Box display={'flex'} flexDirection={'column'} gap={3} margin={3}>
 								<Box display={'flex'} gap={5}>
 									<Box width={200}>
@@ -308,7 +308,7 @@ export const OutFlow: React.FC = () => {
 								/>
 								<Button variant="contained" onClick={() => formRef.current?.submitForm()}>Confirmar</Button>
 							</Box>
-						</Form>
+						</VForm>
 					</Paper>
 				</Grid>
 			</Grid>
