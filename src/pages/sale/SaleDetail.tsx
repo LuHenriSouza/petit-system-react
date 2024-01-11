@@ -12,7 +12,8 @@ import {
 	Typography,
 	Pagination,
 	TableContainer,
-	useMediaQuery
+	useMediaQuery,
+	Skeleton
 } from "@mui/material";
 import Swal from 'sweetalert2'
 import { format } from 'date-fns';
@@ -118,8 +119,8 @@ export const SaleDetail: React.FC = () => {
 			</Paper>
 			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 				<Box minHeight={550} margin={5}>
-					<Typography variant="h4" margin={1}>{sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : 'Data não disponível'}</Typography>
-					<Typography variant="h5" margin={1}>Caixa: {fincash?.opener}</Typography>
+					<Typography variant="h4" margin={1}>{sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : <Skeleton sx={{ maxWidth: 400 }} />}</Typography>
+					<Typography variant="h5" margin={1}>{fincash?.opener ? 'Caixa:' + fincash.opener : <Skeleton sx={{ maxWidth: 100 }} />}</Typography>
 					<Typography variant="h6" margin={1}>Produtos:</Typography>
 					<TableContainer sx={{ minHeight: 428 }}>
 						<Table>
@@ -133,7 +134,7 @@ export const SaleDetail: React.FC = () => {
 								</TableRow>
 							</TableHead>
 							<TableBody>
-								{saleDetail.map((saleDetail, index) =>
+								{saleDetail.length > 0 ? saleDetail.map((saleDetail, index) =>
 								(
 									<TableRow key={saleDetail.prod_id}>
 										<TableCell>{productDetails[index]?.name}{productDetails[index]?.deleted_at && ' (APAGADO: ' + format(productDetails[index].deleted_at as Date, 'dd/MM/yy') + ")"}</TableCell>
@@ -143,7 +144,13 @@ export const SaleDetail: React.FC = () => {
 										<TableCell>{saleDetail.pricetotal}</TableCell>
 									</TableRow >
 								)
-								)}
+								)
+									:
+
+									<TableRow>
+										<TableCell colSpan={5}> <Skeleton /></TableCell>
+									</TableRow>
+								}
 							</TableBody>
 						</Table>
 					</TableContainer>

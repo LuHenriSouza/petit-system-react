@@ -4,7 +4,7 @@ import './../../shared/css/sweetAlert.css'
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { LayoutMain } from "../../shared/layouts";
-import { Box, Button, Paper, TextField, Typography } from "@mui/material";
+import { Box, Button, Paper, Skeleton, TextField, Typography } from "@mui/material";
 import { FincashService, ICashOutflow, IFincash, ISupplier, OutflowService, SupplierService } from "../../shared/services/api";
 
 export const OutflowDetail: React.FC = () => {
@@ -66,12 +66,14 @@ export const OutflowDetail: React.FC = () => {
 	return (
 		<LayoutMain title={"Saída " + id} subTitle={"Saída " + id}>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
-				<Box minHeight={450} margin={5}>
-					<Typography variant="h4" margin={1}>Caixa: {fincash?.opener}</Typography>
-					<Typography variant="h5" margin={1}>{outflow?.created_at ? ("Hora: " + format(outflow.created_at, 'HH:mm')) : 'Data não disponível'}</Typography>
-					<Typography variant="h5" margin={1}>Tipo: {outflow?.type}</Typography>
-					{supplier && (<Typography variant="h6" margin={1}>Fornecedor: {supplier.name}</Typography>)}
-					<Typography variant="h6" margin={1}>Valor: R$ {outflow?.value}</Typography>
+				<Box margin={5}>
+					<Typography variant="h4" margin={1}>{fincash?.opener ? 'Caixa: ' + fincash.opener : <Skeleton sx={{ maxWidth: 300 }} />}</Typography>
+					<Typography variant="h5" margin={1}>{outflow?.created_at ? ("Hora: " + format(outflow.created_at, 'HH:mm')) : <Skeleton sx={{ maxWidth: 200 }} />}</Typography>
+					<Typography variant="h5" margin={1}>{outflow?.type ? 'Tipo: ' + outflow.type : <Skeleton sx={{ maxWidth: 300 }} />}</Typography>
+					{supplier && (<Typography variant="h6" margin={1}>{supplier.name ? 'Fornecedor: ' + supplier.name : <Skeleton sx={{ maxWidth: 200 }} />}</Typography>)}
+					<Typography variant="h6" margin={1}>{outflow?.value ? 'Valor: R$ ' + outflow.value : <Skeleton sx={{ maxWidth: 150 }} />}</Typography>
+				</Box>
+				<Box display={'flex'} flexDirection={'column'} gap={2} margin={2}>
 					<TextField
 						rows={4}
 						fullWidth
@@ -83,7 +85,7 @@ export const OutflowDetail: React.FC = () => {
 						id="elevation-multiline-static"
 						autoComplete="off"
 					/>
-					<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleSubmit}>
+					<Button variant="contained" color="primary" size="large" onClick={handleSubmit} sx={{ maxWidth: 250 }}>
 						Alterar Descrição
 					</Button>
 				</Box>
