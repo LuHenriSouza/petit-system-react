@@ -12,6 +12,7 @@ import {
     NewFincash,
     SaleDetail,
     UpdateProduct,
+    OutflowDetail,
 } from '../pages';
 
 export const AppRoutes = () => {
@@ -34,6 +35,7 @@ export const AppRoutes = () => {
 
             {/* Saidas */}
             <Route path="/saidas" element={<OutFlow />} />
+            <Route path="/saidas/:id" element={<OutflowDetail />} />
 
             {/* Fornecedores */}
             <Route path="/fornecedores" element={<Suppliers />} />

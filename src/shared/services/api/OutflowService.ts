@@ -45,7 +45,7 @@ const create = async (dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_a
 
 const getAllById = async (page = 1, id: number): Promise<TProductTotalCount | Error> => {
     try {
-        const urlRelativa = `/cashoutflow/${id}?page=${page}&limit=6`;
+        const urlRelativa = `/cashoutflow/all/${id}?page=${page}&limit=6`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
@@ -62,15 +62,29 @@ const getAllById = async (page = 1, id: number): Promise<TProductTotalCount | Er
 };
 
 
+const getById = async (id: number): Promise<ICashOutflow | Error> => {
+    try {
+        const { data } = await Api.get(`/cashoutflow/${id}`, Autorization());
 
-// const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
-//     try {
-//         await Api.put(`/product/${id}`, dados, Autorization());
-//     } catch (error) {
-//         console.error(error);
-//         return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
-//     }
-// };
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
+const updateDescById = async (id: number, dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_at' | 'type' | 'fincash_id' | 'value'> ): Promise<void | Error> => {
+    try {
+        await Api.put(`/cashoutflow/${id}`, dados, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
+    }
+};
 
 // const deleteById = async (id: number): Promise<void | Error> => {
 //     try {
@@ -81,25 +95,11 @@ const getAllById = async (page = 1, id: number): Promise<TProductTotalCount | Er
 //     }
 // };
 
-// const getById = async (id: number): Promise<IProduct | Error> => {
-//     try {
-//         const { data } = await Api.get(`/product/${id}`, Autorization());
-
-//         if (data) {
-//             return data;
-//         }
-
-//         return new Error('Erro ao consultar o registro.');
-//     } catch (error) {
-//         console.error(error);
-//         return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
-//     }
-// };
 
 export const OutflowService = {
     create,
+    getById,
     getAllById,
-    // getById,
+    updateDescById,
     // deleteById,
-    // updateById,
 };

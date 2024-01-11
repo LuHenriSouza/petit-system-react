@@ -13,6 +13,7 @@ export * from './sale/SaleDetail';
 
 // Outflow
 export * from './outflow/OutFlow';
+export * from './outflow/OutflowDetail';
 
 // Suppliers
 export * from './suppliers/Suppliers';
