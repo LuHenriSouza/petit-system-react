@@ -124,7 +124,7 @@ export const Suppliers: React.FC = () => {
 					{(smDown && <Button variant="contained" onClick={handleClickOpen} sx={{ ml: 2 }}><AddIcon /></Button>)}
 				</Box>
 			</Paper>
-			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto', minHeight: 600 }}>
 				<TableContainer>
 					<Table>
 						<TableHead>

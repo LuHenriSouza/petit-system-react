@@ -73,7 +73,7 @@ export const SaleDetail: React.FC = () => {
 					if (product instanceof Error) {
 						console.error(`Product not found for product id: ${productId}`);
 					} else {
-						productDetailsArray.push({ id: productId, name: product.name, price: product.price });
+						productDetailsArray.push({ id: productId, name: product.name, price: product.price, deleted_at: product.deleted_at });
 					}
 				}
 				setProductDetails(productDetailsArray);
@@ -136,7 +136,7 @@ export const SaleDetail: React.FC = () => {
 								{saleDetail.map((saleDetail, index) =>
 								(
 									<TableRow key={saleDetail.prod_id}>
-										<TableCell>{productDetails[index]?.name}</TableCell>
+										<TableCell>{productDetails[index]?.name}{productDetails[index]?.deleted_at && ' (APAGADO: ' + format(productDetails[index].deleted_at as Date, 'dd/MM/yy') + ")"}</TableCell>
 										<TableCell>{productDetails[index]?.price}</TableCell>
 										<TableCell>{saleDetail.price}</TableCell>
 										<TableCell>{saleDetail.quantity}</TableCell>

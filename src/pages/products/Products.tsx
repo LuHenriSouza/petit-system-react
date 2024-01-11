@@ -115,6 +115,7 @@ export const Products: React.FC = () => {
             showCancelButton: true,
             confirmButtonColor: theme.palette.error.main,
             cancelButtonColor: '#aaa',
+            cancelButtonText: 'Cancelar',
             confirmButtonText: 'Deletar'
         }).then((result) => {
             if (result.isConfirmed) {
@@ -192,7 +193,7 @@ export const Products: React.FC = () => {
                 </Box>
             </Paper>
 
-            <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+            <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto', minHeight: 600 }}>
                 {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
                 <Form
                     onSubmit={handleSubmit}
@@ -258,7 +259,7 @@ export const Products: React.FC = () => {
                                             </Box>
                                         </TableCell>
                                         <TableCell>
-                                            <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio'/>
+                                            <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio' />
                                         </TableCell>
                                         <TableCell>
                                             <Box width={180}>
