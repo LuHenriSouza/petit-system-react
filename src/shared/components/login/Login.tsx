@@ -1,7 +1,7 @@
 import { Avatar, Box, Button, Card, CardActions, CardContent, TextField, Typography } from "@mui/material";
 import { useAuthContext } from "../../contexts/AuthContext";
 import logo from './../sidebar/img/Petit-logo.png'
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as yup from 'yup';
 
 const loginSchema = yup.object().shape({
@@ -15,20 +15,24 @@ interface ILoginProps {
 }
 
 export const Login: React.FC<ILoginProps> = ({ children }) => {
-	const { isAuthenticated, login } = useAuthContext();
-	if (isAuthenticated) return <>{children}</>
-
 
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const passwordInputRef = useRef<HTMLInputElement>(null)
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [email, setEmail] = useState('');
 	// eslint-disable-next-line react-hooks/rules-of-hooks
+	const [isLoaded, setIsLoaded] = useState(false);
+	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [password, setPassword] = useState('');
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [emailError, setEmailError] = useState('');
 	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [passwordError, setPasswordError] = useState('');
+	const { isAuthenticated, login } = useAuthContext();
+
+	useEffect(() => {
+		setIsLoaded(true);
+	}, [isAuthenticated]);
 
 
 	const handleSubmit = async () => {
@@ -70,7 +74,7 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 		if (e.code === 'Enter' || e.key === 'Enter') handleSubmit();
 	}
 
-	return (
+	return (!isLoaded ? <>CARREGANDO</> : !isAuthenticated ?
 		<Box
 			height={'100vh'}
 			display={'flex'}
@@ -118,5 +122,7 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 				</CardActions>
 			</Card>
 		</Box>
+		:
+		<>{children}</>
 	);
 };
