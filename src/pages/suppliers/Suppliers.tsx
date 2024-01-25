@@ -23,12 +23,20 @@ export const Suppliers: React.FC = () => {
 
 	const [name, setName] = useState('');
 
+	const [isEdit, setIsEdit] = useState(false);
+	const [idForEdit, setIdForEdit] = useState(0);
+
 	const handleClickOpen = () => {
 		setOpen(true);
 	};
 
 	const handleClose = () => {
 		setOpen(false);
+		debounce(() => {
+			debounce(() => {
+				setIsEdit(false);
+			});
+		});
 	};
 
 	const search = useMemo(() => {
@@ -58,6 +66,7 @@ export const Suppliers: React.FC = () => {
 				}
 			});
 	};
+
 	const handleDelete = (id: number, name: string) => {
 		Swal.fire({
 			title: 'Tem Certeza?',
@@ -86,6 +95,13 @@ export const Suppliers: React.FC = () => {
 		});
 	}
 
+	const handleEdit = (id: number, name: string) => {
+		setName(name);
+		setIsEdit(true);
+		setIdForEdit(id);
+		handleClickOpen();
+	}
+
 	const handleSubmit = async () => {
 		const result = await SupplierService.create({ name: name.trim() });
 		if (result instanceof Error) {
@@ -107,6 +123,31 @@ export const Suppliers: React.FC = () => {
 		setName('');
 		listSuppliers();
 
+	}
+
+	const handleSubmitEdit = async () => {
+		const result = await SupplierService.updateById(idForEdit, { name: name.trim() });
+		if (result instanceof Error) {
+			return Swal.fire({
+				icon: "error",
+				title: "Atenção",
+				text: "Nome deve ter pelo menos 3 caracteres",
+				showConfirmButton: true,
+			});
+		}
+
+		Swal.fire({
+			icon: "success",
+			title: "Sucesso!",
+			text: "Fornecedor editado com sucesso!",
+			showConfirmButton: false,
+			timer: 1000
+		});
+		setName('');
+		setIdForEdit(0);
+		setIsEdit(false);
+		listSuppliers();
+		handleClose();
 	}
 
 	return (
@@ -139,8 +180,12 @@ export const Suppliers: React.FC = () => {
 								<TableRow key={row.id}>
 									<TableCell>{row.name}</TableCell>
 									<TableCell align="center">
-										<Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
+										<Fab size="medium" color="error" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
 											<Icon>delete</Icon>
+
+										</Fab>
+										<Fab size="medium" color="warning" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleEdit(row.id, row.name)}>
+											<Icon>edit</Icon>
 
 										</Fab>
 									</TableCell>
@@ -177,10 +222,10 @@ export const Suppliers: React.FC = () => {
 					"& .MuiDialog-paper":
 						{ backgroundColor: "#fff", }
 				}}>
-				<DialogTitle>Cadastrar</DialogTitle>
+				<DialogTitle>{isEdit ? 'Editar' : 'Cadastrar'}</DialogTitle>
 				<DialogContent>
 					<DialogContentText>
-						Cadastrar fornecedor
+						{isEdit ? 'Editar' : 'Cadastrar'} fornecedor
 					</DialogContentText>
 					<TextField
 						autoFocus
@@ -197,7 +242,7 @@ export const Suppliers: React.FC = () => {
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleClose}>Cancelar</Button>
-					<Button onClick={handleSubmit}>Cadastrar</Button>
+					<Button onClick={isEdit ? handleSubmitEdit : handleSubmit}>Cadastrar</Button>
 				</DialogActions>
 			</Dialog>
 		</LayoutMain>
