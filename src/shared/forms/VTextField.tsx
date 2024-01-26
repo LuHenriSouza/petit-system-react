@@ -33,13 +33,17 @@ export const VTextField: React.FC<TVTextFieldProps> = ({ name, valueDefault, cas
 
       value={value || ''}
 
-      onChange={cash ? (event) => {
-        let value = event.target.value.replace(/[^0-9]/g, '');
-        value = "R$ " + (Number(value) / 100).toFixed(2);
-        setValue(value);
-      } : e => setValue(e.target.value)}
-
       {...rest}
+
+      onChange={cash ?
+        (event) => {
+          let value = event.target.value.replace(/[^0-9]/g, '');
+          value = "R$ " + (Number(value) / 100).toFixed(2);
+          setValue(value);
+          rest.onChange?.(event);
+        }
+        :
+        (e) => { setValue(e.target.value); rest.onChange?.(e) }}
 
       onKeyDown={(e) => { error ? clearError() : undefined; rest.onKeyDown?.(e) }}
     />

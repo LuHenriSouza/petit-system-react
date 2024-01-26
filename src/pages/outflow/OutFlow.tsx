@@ -102,7 +102,7 @@ export const OutFlow: React.FC = () => {
 					text: "Nenhum caixa aberto encontrado!",
 					showConfirmButton: true,
 				});
-				navigate('/');
+				navigate('/caixa/novo');
 			} else {
 				setFincash(fincashFetch)
 				listOutflows(fincashFetch)
@@ -251,7 +251,7 @@ export const OutFlow: React.FC = () => {
 										})}
 									</TableBody>
 									{totalCount === 0 && (
-										<caption>Nenhuma venda efetuada</caption>
+										<caption>Nenhuma saída registrada</caption>
 									)}
 								</Table>
 							</TableContainer>

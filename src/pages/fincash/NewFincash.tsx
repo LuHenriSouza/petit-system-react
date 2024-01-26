@@ -43,6 +43,10 @@ export const NewFincash: React.FC = () => {
         const fetchData = async () => {
             const result = await FincashService.getOpenFincash();
             setOpenFincash(result);
+
+            const lastFincash = await FincashService.getLastFincash();
+            if (!(lastFincash instanceof Error))
+                formRef.current?.setFieldValue('value', `R$ ${lastFincash.finalValue}`);
         }
         if (!smDown) {
             fetchData();
@@ -50,7 +54,7 @@ export const NewFincash: React.FC = () => {
             alert('Essa tela não funciona em smartphones')
             navigate('/');
         }
-    }, [att]);
+    }, [att, navigate, smDown]);
 
     if (!(openFincash instanceof Error)) {
         navigate('/caixa');

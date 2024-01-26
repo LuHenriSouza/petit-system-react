@@ -8,7 +8,6 @@ export * from './products/UpdateProduct';
 // Fincash
 export * from './sale/Sale';
 export * from './sale/ShowSales';
-export * from './sale/NewFincash';
 export * from './sale/SaleDetail';
 
 // Outflow
@@ -18,3 +17,6 @@ export * from './outflow/OutflowDetail';
 // Suppliers
 export * from './suppliers/Suppliers';
 
+// Fincash
+export * from './fincash/NewFincash';
+export * from './fincash/CloseFincash';

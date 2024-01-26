@@ -32,6 +32,7 @@ export const Suppliers: React.FC = () => {
 
 	const handleClose = () => {
 		setOpen(false);
+		setName('');
 		debounce(() => {
 			debounce(() => {
 				setIsEdit(false);
