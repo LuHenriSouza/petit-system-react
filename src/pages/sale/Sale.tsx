@@ -151,6 +151,7 @@ export const Sale: React.FC = () => {
 								inputRef={codeInputRef}
 								onKeyDown={handleEnter}
 								value={code} onChange={(e) => setCode(e.target.value)}
+								autoComplete="off"
 							/>
 						</Box>
 					</Paper>

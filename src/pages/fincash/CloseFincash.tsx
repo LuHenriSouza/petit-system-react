@@ -1,4 +1,4 @@
-import { Box, Button, Grid, Paper, Typography } from "@mui/material";
+import { Box, Button, Paper, Typography } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { VForm } from "../../shared/forms/VForm";
 import { VTextField } from "../../shared/forms/VTextField";
@@ -9,8 +9,13 @@ import Swal from "sweetalert2";
 import { FincashService, IFincash } from "../../shared/services/api";
 import { useNavigate } from "react-router-dom";
 
+interface IFinishParams {
+	FinalTotalValue: string
+}
+
 export const CloseFincash: React.FC = () => {
-	const formRef = useRef<FormHandles>(null);
+	const formValueRef = useRef<FormHandles>(null);
+	const formCalcRef = useRef<FormHandles>(null);
 
 	const navigate = useNavigate();
 
@@ -49,7 +54,7 @@ export const CloseFincash: React.FC = () => {
 			}
 		}
 		fetchData();
-	},[navigate]);
+	}, [navigate]);
 
 	const calculateTotalValue = (updatedValues: Record<string, number>) => {
 		let total = 0;
@@ -72,7 +77,38 @@ export const CloseFincash: React.FC = () => {
 		});
 	}
 
-	const handleSubmit = async () => {
+	const handleSubmitValue = async (data: IFinishParams) => {
+		const getNumbers = data.FinalTotalValue.split(' ');
+		const value = getNumbers[1];
+		Swal.fire({
+			title: 'Fechar Caixa',
+			text: `Tem certeza que deseja fechar o caixa com "R$ ${value}" ?`,
+			icon: 'warning',
+			showCancelButton: true,
+			cancelButtonColor: '#aaa',
+			cancelButtonText: 'Cancelar',
+			confirmButtonText: 'Fechar'
+		}).then((result) => {
+			if (result.isConfirmed) {
+				if (fincash) {
+					FincashService.finish(fincash.id, Number(value)).then((result) => {
+						if (result instanceof Error) {
+							alert(result.message);
+						} else {
+							Swal.fire({
+								title: 'Finalizado!',
+								text: 'Caixa Finalizado com sucesso !',
+								icon: 'success',
+							});
+							navigate('/caixa/novo');
+						}
+					});
+				}
+			}
+		});
+	}
+
+	const handleSubmitCalc = async () => {
 		const updatedTotalValue = calculateTotalValue(denominationValues);
 
 		Swal.fire({
@@ -105,81 +141,111 @@ export const CloseFincash: React.FC = () => {
 
 	return (
 		<LayoutMain title="Fechamentos" subTitle="Feche o caixa">
-			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }} variant="elevation">
+			<Box display={'flex'} gap={2}>
+				<Paper sx={{ backgroundColor: '#fff', px: 3, py: 1, mr: 5, width: '50%' }} variant="elevation">
+					<VForm onSubmit={handleSubmitValue} placeholder={''} ref={formValueRef}>
+						<Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
+							<Typography variant="h4" fontWeight={'bold'} mt={5} ml={5}>
+								Valor Final
+							</Typography>
+							<Box display={'flex'} gap={5} justifyContent={'center'} maxWidth={'100%'} m={5} mb={8}>
+								<VTextField name="FinalTotalValue" fullWidth={false} cash valueDefault="R$ 0.00" />
+								<Button
+									variant="contained"
+									onClick={() => formValueRef.current?.submitForm()}
+									sx={{ minHeight: 35, minWidth: 110 }}
+								>
+									<SportsScoreRoundedIcon sx={{ mr: 1 }} />
+									Fechar Caixa
+								</Button>
+							</Box>
+						</Box>
+					</VForm>
+				</Paper>
+				<Typography variant="h4" fontWeight={'bold'} mr={5} mt={25}>
+					OU
+				</Typography>
+				<Paper sx={{ backgroundColor: '#fff', px: 3, py: 1, mr: 5, width: '50%' }} variant="elevation">
+					<VForm onSubmit={handleSubmitCalc} placeholder={''} ref={formCalcRef}>
+						<Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
+							<Typography variant="h4" fontWeight={'bold'} mt={5} ml={5}>
+								Calculadora
+							</Typography>
 
-				<VForm onSubmit={handleSubmit} placeholder={''} ref={formRef}>
-					<Grid container sx={{ m: 3 }}>
-						<Grid item xs={3}>
-							<Box display={'flex'} flexDirection={'column'} gap={1}>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 0.05</Typography>
-									<VTextField onChange={(e) => handleChange(e, '0.05')} name="0.05" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
+							<Box m={3} display={'flex'} justifyContent={'center'} gap={10}>
+								<Box>
+									<Box display={'flex'} flexDirection={'column'} gap={1}>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 0.05</Typography>
+											<VTextField onChange={(e) => handleChange(e, '0.05')} name="0.05" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 0.10</Typography>
+											<VTextField onChange={(e) => handleChange(e, '0.10')} name="0.10" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 0.25</Typography>
+											<VTextField onChange={(e) => handleChange(e, '0.25')} name="0.25" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 0.50</Typography>
+											<VTextField onChange={(e) => handleChange(e, '0.50')} name="0.50" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 1.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '1.00')} name="1.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 2.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '2.00')} name="2.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+									</Box>
 								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 0.10</Typography>
-									<VTextField onChange={(e) => handleChange(e, '0.10')} name="0.10" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 0.25</Typography>
-									<VTextField onChange={(e) => handleChange(e, '0.25')} name="0.25" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 0.50</Typography>
-									<VTextField onChange={(e) => handleChange(e, '0.50')} name="0.50" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 1.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '1.00')} name="1.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 2.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '2.00')} name="2.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
+								<Box>
+									<Box display={'flex'} flexDirection={'column'} gap={1}>
+
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 5.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '5.00')} name="5.00" sx={{ maxWidth: 100, ml: 2 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 10.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '10.00')} name="10.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 20.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '20.00')} name="20.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 50.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '50.00')} name="50.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 100.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '100.00')} name="100.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+										<Box display={'flex'} gap={1} alignItems={'center'}>
+											<Typography>R$ 200.00</Typography>
+											<VTextField onChange={(e) => handleChange(e, '200.00')} name="200.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+										</Box>
+									</Box>
 								</Box>
 							</Box>
-						</Grid>
-						<Grid item xs={6}>
-							<Box display={'flex'} flexDirection={'column'} gap={1}>
-
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 5.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '5.00')} name="5.00" sx={{ maxWidth: 100, ml: 2 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 10.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '10.00')} name="10.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 20.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '20.00')} name="20.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 50.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '50.00')} name="50.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 100.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '100.00')} name="100.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
-								<Box display={'flex'} gap={1} alignItems={'center'}>
-									<Typography>R$ 200.00</Typography>
-									<VTextField onChange={(e) => handleChange(e, '200.00')} name="200.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" />
-								</Box>
+							<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} gap={0} m={2} ml={8} mr={12} mt={4} maxWidth={'100%'}>
+								<Typography variant="h5">Total: R$ {totalValue}</Typography>
+								<Button
+									variant="contained"
+									onClick={() => formCalcRef.current?.submitForm()}
+									sx={{ minHeight: 45, minWidth: 110 }}
+								>
+									<SportsScoreRoundedIcon sx={{ mr: 1 }} />
+									Fechar Caixa
+								</Button>
 							</Box>
-						</Grid>
-					</Grid>
-					<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} gap={10} m={2} ml={8} mt={4} maxWidth={'31%'}>
-						<Typography variant="h5">Total: R$ {totalValue}</Typography>
-						<Button
-							variant="contained"
-							onClick={() => formRef.current?.submitForm()}
-							sx={{ minHeight: 45, minWidth: 110 }}
-						>
-							<SportsScoreRoundedIcon sx={{ mr: 1 }} />
-							Fechar Caixa
-						</Button>
-					</Box>
-				</VForm>
-			</Paper>
+						</Box>
+					</VForm>
+				</Paper>
+			</Box>
 		</LayoutMain >
 	);
 };
