@@ -14,6 +14,7 @@ import {
     CloseFincash,
     UpdateProduct,
     OutflowDetail,
+    Groups,
 } from '../pages';
 
 export const AppRoutes = () => {
@@ -44,6 +45,8 @@ export const AppRoutes = () => {
             {/* Fechamentos */}
             <Route path='/fechamentos' element={<CloseFincash />} />
 
+            {/* Grupos */}
+            <Route path='/grupos' element={<Groups />} />
         </Routes>
     );
 }

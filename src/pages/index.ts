@@ -20,3 +20,6 @@ export * from './suppliers/Suppliers';
 // Fincash
 export * from './fincash/NewFincash';
 export * from './fincash/CloseFincash';
+
+// Groups
+export * from './groups/Groups';
