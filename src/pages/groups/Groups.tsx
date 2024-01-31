@@ -94,7 +94,7 @@ export const Groups: React.FC = () => {
   // Prod In Group
   const [prodGroupRows, setProdGroupRows] = useState<IProduct[]>([]);
   const [prodGroupTotalCount, setProdGroupTotalCount] = useState(0);
-  const [NAProd, setNAProd] = useState(false);
+  const [NAProd, setNAProd] = useState(true);
 
   const prodInGroupSearch = useMemo(() => {
     return searchParams.get("prodInGroupSearch") || "";
@@ -167,7 +167,7 @@ export const Groups: React.FC = () => {
     if (response instanceof Error) {
       Swal.fire({
         icon: "error",
-        title: "Nome não pode ser vazio",
+        title: "Nome muito pequeno !",
         showConfirmButton: false,
         timer: 1000,
       });
