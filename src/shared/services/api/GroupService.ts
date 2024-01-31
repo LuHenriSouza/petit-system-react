@@ -95,6 +95,15 @@ const putProdInGroup = async (group_id: number, prod_id: number): Promise<number
     }
 };
 
+const removeProdFromGroup = async (group_id: number, prod_id: number) => {
+    try {
+        await Api.post(`/group/product/remove/${group_id}`, { prod_id }, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao apagar o registro.');
+    }
+}
+
 // const updateById = async (id: number, dados: Omit<IGroup, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
 //         await Api.put(`/product/${id}`, dados, Autorization());
@@ -136,4 +145,5 @@ export const GroupService = {
     // updateById,
     putProdInGroup,
     getProdsByGroup,
+    removeProdFromGroup,
 };
