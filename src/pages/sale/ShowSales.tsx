@@ -1,12 +1,26 @@
-import { Box, Fab, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, Typography, useMediaQuery, useTheme } from "@mui/material";
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import {
+	Box,
+	Fab,
+	Paper,
+	Table,
+	useTheme,
+	TableRow,
+	TableCell,
+	TableBody,
+	TableHead,
+	Pagination,
+	Typography,
+	useMediaQuery,
+	TableContainer,
+} from "@mui/material";
+import Swal from "sweetalert2";
+import { format } from 'date-fns';
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
 import { Environment } from "../../shared/environment";
-import { format } from 'date-fns';
-import Swal from "sweetalert2";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
 
 export const ShowSales: React.FC = () => {
 	const theme = useTheme();
@@ -66,7 +80,7 @@ export const ShowSales: React.FC = () => {
 		<>
 			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do dia"}>
 				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-					<Box minHeight={550}>
+					<Box minHeight={625}>
 						<TableContainer>
 							<Table sx={{ minWidth: 650 }} aria-label="simple table">
 								<TableHead>
@@ -113,25 +127,21 @@ export const ShowSales: React.FC = () => {
 								{totalCount === 0 && (
 									<caption>Nenhuma venda efetuada</caption>
 								)}
-								<TableFooter>
-									{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
-										<TableRow>
-											<TableCell colSpan={3}>
-												<Pagination
-													page={Number(page)}
-													count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-													onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
-													siblingCount={smDown ? 0 : 1}
-												/>
-											</TableCell>
-										</TableRow>
-									)}
-								</TableFooter>
 							</Table>
 						</TableContainer>
-
-
 					</Box>
+					{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
+						<TableRow>
+							<TableCell colSpan={3}>
+								<Pagination
+									page={Number(page)}
+									count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
+									onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+									siblingCount={smDown ? 0 : 1}
+								/>
+							</TableCell>
+						</TableRow>
+					)}
 				</Paper>
 			</LayoutMain >
 		</>
