@@ -2,31 +2,31 @@ import { Box, Fab, Pagination, Paper, Table, TableBody, TableCell, TableContaine
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
-import { IGetSales, SaleService } from "../../shared/services/api";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
 import { Environment } from "../../shared/environment";
 import { format } from 'date-fns';
+import Swal from "sweetalert2";
 
 export const ShowSales: React.FC = () => {
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+	const navigate = useNavigate();
+
 
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [rows, setRows] = useState<IGetSales[]>([]);
 	const [totalCount, setTotalCount] = useState(0);
-
-	const search = useMemo(() => {
-		return searchParams.get('search') || ''
-	}, [searchParams])
+	const [fincash, setFincash] = useState<IFincash>();
 
 	const page = useMemo(() => {
 		return searchParams.get('page') || 1;
 	}, [searchParams]);
 
 
-	const listSales = () => {
+	const listSales = (fincashData: IFincash) => {
 
-		SaleService.getSales(Number(page), search)
+		SaleService.getSalesByFincash(fincashData.id, Number(page))
 			.then((result) => {
 				if (result instanceof Error) {
 					alert(result.message);
@@ -40,8 +40,27 @@ export const ShowSales: React.FC = () => {
 	}
 
 	useEffect(() => {
-		listSales();
-	}, [search, page]);
+		const fetchData = async () => {
+			if (!fincash) {
+				const fincashData = await FincashService.getOpenFincash();
+				if (fincashData instanceof Error) {
+					Swal.fire({
+						icon: "error",
+						title: "Erro",
+						text: "Nenhum caixa aberto encontrado!",
+						showConfirmButton: true,
+					});
+					navigate('/caixa/novo');
+				} else {
+					setFincash(fincashData);
+					listSales(fincashData);
+				}
+			} else {
+				listSales(fincash);
+			}
+		}
+		fetchData();
+	}, [page]);
 
 	return (
 		<>
@@ -62,8 +81,8 @@ export const ShowSales: React.FC = () => {
 								</TableHead>
 
 								<TableBody>
-									{rows.map((row, index) => (
-										<TableRow key={index}>
+									{rows?.map((row) => (
+										<TableRow key={row.sale_id}>
 											<TableCell>{row.sale_id}</TableCell>
 											<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
 											<TableCell>R$ {row.totalValue}</TableCell>
@@ -101,7 +120,7 @@ export const ShowSales: React.FC = () => {
 												<Pagination
 													page={Number(page)}
 													count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-													onChange={(_, newPage) => setSearchParams({ search, page: newPage.toString() }, { replace: true })}
+													onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
 													siblingCount={smDown ? 0 : 1}
 												/>
 											</TableCell>

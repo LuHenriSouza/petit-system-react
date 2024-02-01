@@ -131,12 +131,32 @@ const createObs = async (id: number, data: Omit<ISaleRaw, 'id' | 'fincash_id' | 
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
     }
-}
+};
+
+const getSalesByFincash = async (fincash_id: number, page = 1, limit = Environment.LIMITE_DE_LINHAS): Promise<TSaleTotalCount | Error> => {
+    try {
+        const { data, headers } = await Api.get(`/sale/fincash/${fincash_id}?page=${page}&limit=${limit}`, Autorization());
+        if (data) {
+            console.log('test:')
+            console.log(data)
+            return {
+                data: data,
+                totalCount: Number(headers['x-total-count'] || Environment.LIMITE_DE_LINHAS),
+            };
+        }
+
+        return new Error('Erro ao listar os registros.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
+    }
+};
 
 export const SaleService = {
     create,
-    getAllById,
-    getSales,
     getById,
+    getSales,
     createObs,
+    getAllById,
+    getSalesByFincash,
 };
