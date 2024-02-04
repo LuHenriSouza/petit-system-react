@@ -14,5 +14,5 @@ export const Environment = {
     /**
      * Url base de consultado dos dados dessa aplicação
      */
-    URL_BASE: 'http://127.0.0.1:3333',
+    URL_BASE: 'https://petit-api.vercel.app',
 };
