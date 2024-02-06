@@ -1,4 +1,5 @@
 export * from './SaleService';
+export * from './StockService';
 export * from './GroupService';
 export * from './ProductService';
 export * from './FincashService';

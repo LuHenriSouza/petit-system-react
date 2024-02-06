@@ -1,38 +1,33 @@
 import {
-  GroupService,
-  IGroup,
-  IProduct,
-  ProductService,
-} from "../../shared/services/api";
-import {
-  Alert,
+  Fab,
   Box,
+  Icon,
+  Grid,
+  Table,
+  Paper,
+  Alert,
   Button,
   Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Fab,
-  Grid,
-  Icon,
-  Pagination,
-  Paper,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
+  useTheme,
   TableRow,
   TextField,
-  useTheme,
+  TableCell,
+  TableHead,
+  TableBody,
+  Pagination,
+  DialogTitle,
+  DialogActions,
+  DialogContent,
 } from "@mui/material";
-import RemoveIcon from "@mui/icons-material/Remove";
-import { LayoutMain } from "../../shared/layouts";
-import { useEffect, useMemo, useState } from "react";
-import AddIcon from "@mui/icons-material/Add";
-import { useDebounce } from "../../shared/hooks";
-import { useSearchParams } from "react-router-dom";
 import Swal from "sweetalert2";
+import AddIcon from "@mui/icons-material/Add";
 import UndoIcon from "@mui/icons-material/Undo";
+import { useDebounce } from "../../shared/hooks";
+import { LayoutMain } from "../../shared/layouts";
+import { useSearchParams } from "react-router-dom";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { useEffect, useMemo, useState } from "react";
+import { IGroup, IProduct, GroupService, ProductService } from "../../shared/services/api";
 
 const PROD_ROW_LIMIT = 7;
 const GROUP_ROW_LIMIT = 5;
@@ -443,12 +438,12 @@ export const Groups: React.FC = () => {
                           {prod.sector === 1
                             ? "1 - Bebidas"
                             : prod.sector === 2
-                            ? "2 - Chocolates"
-                            : prod.sector === 3
-                            ? "3 - Salgadinhos"
-                            : prod.sector === 4
-                            ? "4 - Sorvetes"
-                            : `${prod.sector} - Desconhecido`}
+                              ? "2 - Chocolates"
+                              : prod.sector === 3
+                                ? "3 - Salgadinhos"
+                                : prod.sector === 4
+                                  ? "4 - Sorvetes"
+                                  : `${prod.sector} - Desconhecido`}
                         </TableCell>
                         <TableCell>R$ {prod.price}</TableCell>
                         <TableCell>

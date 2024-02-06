@@ -23,3 +23,6 @@ export * from './fincash/CloseFincash';
 
 // Groups
 export * from './groups/Groups';
+
+// Stock
+export * from './stock/Stock';
