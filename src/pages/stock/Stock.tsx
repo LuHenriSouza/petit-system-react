@@ -1,10 +1,11 @@
-import { Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField } from "@mui/material";
+import { Alert, Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
 import { IProductWithStock, ProductService, StockService } from "../../shared/services/api";
 import { useSearchParams } from "react-router-dom";
 import { useDebounce } from "../../shared/hooks";
 import AddIcon from '@mui/icons-material/Add';
+import Swal from 'sweetalert2';
 
 const STOCK_ROW_LIMIT = 7;
 
@@ -16,9 +17,11 @@ export const Stock: React.FC = () => {
 	const [totalCount, setTotalCount] = useState(0);
 	const [open, setOpen] = useState(false);
 	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
-	const [selectedProd, setSelecterProd] = useState(0);
+	const [selectedProd, setSelectedProd] = useState(0);
+	const [selectedProdName, setSelectedProdName] = useState('');
 	const [qntStock, setQntStock] = useState(0);
-	
+	const [errorSelect, setErrorSelect] = useState(false);
+	const [errorQnt, setErrorQnt] = useState(false);
 	const stockPage = useMemo(() => {
 		return searchParams.get('stockPage') || 1;
 	}, [searchParams]);
@@ -41,7 +44,11 @@ export const Stock: React.FC = () => {
 
 	const handleClose = () => {
 		setOpen(false);
-		setSelecterProd(0);
+		setSelectedProd(0);
+		setSelectedProdName('');
+		setQntStock(0);
+		setErrorQnt(false);
+		setErrorSelect(false);
 	};
 
 	const getAllProducts = async () => {
@@ -65,11 +72,35 @@ export const Stock: React.FC = () => {
 		}
 	}
 
-	const handleSubmit = async () => {
+	const handleSubmit = () => {
 		if (!selectedProd) {
-			setErrorSelect(true)
+			setErrorSelect(true);
+		} else if (qntStock < 1) {
+			setErrorQnt(true);
 		} else {
-			StockService.create(selectedProd, qntStock)
+			Swal.fire({
+				title: 'Adicionar Estoque?',
+				text: `Adicionar ${qntStock} de "${selectedProdName}" ?`,
+				icon: 'warning',
+				confirmButtonText: 'Adicionar',
+				confirmButtonColor:'#090'
+			}).then(async (result) => {
+				if (result.isConfirmed) {
+					const response = await StockService.create(selectedProd, qntStock);
+					if (response instanceof Error) {
+						alert("Ocorreu um erro")
+					} else {
+						Swal.fire({
+							icon: "success",
+							title: "Estoque Adicionado!",
+							showConfirmButton: false,
+							timer: 1000
+						});
+					}
+					listStocks();
+				}
+			});
+
 		}
 	}
 
@@ -94,7 +125,7 @@ export const Stock: React.FC = () => {
 				sx={{ backgroundColor: "#fff", px: 3, py: 3, mr: 5, mb: 1 }}
 				variant="elevation"
 			>
-				<Box minHeight={500} m={1}>
+				<Box minHeight={460} m={1}>
 					<Table>
 						<TableHead>
 							<TableRow>
@@ -107,9 +138,9 @@ export const Stock: React.FC = () => {
 							{rows?.map((row) => (
 								<TableRow
 									key={row.code}
-									// selected={productSelectedRow == row.id}
 									hover
-									sx={{ cursor: "pointer" }}
+								// selected={productSelectedRow == row.id}
+								// sx={{ cursor: "pointer" }}
 								// onClick={() => handleProductRowClick(row.id)}
 								>
 									<TableCell>{row.code}</TableCell>
@@ -148,35 +179,47 @@ export const Stock: React.FC = () => {
 				}}>
 				<DialogTitle>Adicionar</DialogTitle>
 				<DialogContent>
-					<Box minHeight={250}>
-						<DialogContentText mb={2}>
-							Cadastrar estoque
-						</DialogContentText>
+					{errorSelect && (<Alert severity='error' sx={{ mb: 1 }}>Escolha um produto</Alert>)}
+					{errorQnt && (<Alert severity='warning' sx={{ mb: 1 }}>Quantidade precisa ser maior que 0</Alert>)}
+					<DialogContentText mb={4}>
+						Cadastrar estoque
+					</DialogContentText>
+					<Box minHeight={80} display={'flex'} gap={6}>
 						<Autocomplete
-							disablePortal
 							id="combo-box"
 							options={allProducts ?? []}
 							sx={{ width: 300 }}
-
 							renderOption={(props, option) => {
 								return (
 									<li {...props} key={option.id}>
-										{option.label + ' ' + option.id}
+										{option.label}
 									</li>
 								);
 							}}
 							renderInput={(params) => <TextField {...params} label="Produto" />}
 							onChange={(_, newValue) => {
 								if (newValue) {
-									setSelecterProd(newValue.id);
-								}
+									setSelectedProd(newValue.id);
+									setSelectedProdName(newValue.label);
+								} else { setSelectedProd(0); setSelectedProdName(''); }
+
+								setErrorSelect(false);
 							}}
+						/>
+						<TextField
+							name="2.00"
+							autoComplete="off"
+							label={'Quantidade'}
+							sx={{ maxWidth: 120 }}
+							inputProps={{ type: 'number' }}
+							onChange={(e) => { setQntStock(Number(e.target.value)); setErrorQnt(false); }}
+							onFocus={() => setErrorQnt(false)}
 						/>
 					</Box>
 				</DialogContent>
 				<DialogActions>
-					<Button onClick={handleClose}>Cancelar</Button>
-					<Button onClick={handleSubmit}>Cadastrar</Button>
+					<Button onClick={handleClose} variant='outlined'>Cancelar</Button>
+					<Button onClick={handleSubmit} variant='contained'>Cadastrar</Button>
 				</DialogActions>
 			</Dialog>
 		</LayoutMain>
