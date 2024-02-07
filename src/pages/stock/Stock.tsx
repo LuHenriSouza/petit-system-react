@@ -19,6 +19,7 @@ import {
 	DialogActions,
 	FormControlLabel,
 	DialogContentText,
+	Snackbar,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -53,6 +54,8 @@ export const Stock: React.FC = () => {
 	const [switchActivated, setSwitchActivated] = useState(false);
 	const [validityDate, setValidityDate] = useState<Date>();
 	const [errorDate, setErrorDate] = useState(false);
+	const [openSnack, setOpenSnack] = useState(false);
+	const [openSnackError, setOpenSnackError] = useState(false);
 
 	const stockPage = useMemo(() => {
 		return searchParams.get('stockPage') || 1;
@@ -156,7 +159,9 @@ export const Stock: React.FC = () => {
 					} else {
 						const result = await ValiditieService.create(selectedProd, validityDate, qntStock);
 						if (result instanceof Error) {
-							alert("Erro ao adicionar validade");
+							setOpenSnackError(true);
+						} else {
+							setOpenSnack(true);
 						}
 					}
 				}
@@ -304,6 +309,40 @@ export const Stock: React.FC = () => {
 					<Button onClick={handleSubmit} variant='contained'>Cadastrar</Button>
 				</DialogActions>
 			</Dialog>
+			{/* ------------------- ------------------- SNACK BAR SUCCESS ------------------- ------------------- */}
+			<Snackbar
+				open={openSnack}
+				autoHideDuration={3000}
+				onClose={() => setOpenSnack(false)}
+				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+				sx={{ height: 200, width: 600, zIndex: 999999999 }}
+			>
+				<Alert
+					onClose={() => setOpenSnack(false)}
+					severity="success"
+					variant="filled"
+					sx={{ width: '100%' }}
+				>
+					Validade cadastrada !
+				</Alert>
+			</Snackbar>
+			{/* ------------------- ------------------- SNACK BAR FAILED ------------------- ------------------- */}
+			<Snackbar
+				open={openSnackError}
+				autoHideDuration={3000}
+				onClose={() => setOpenSnackError(false)}
+				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+
+			>
+				<Alert
+					onClose={() => setOpenSnackError(false)}
+					severity="error"
+					variant="filled"
+					sx={{ width: '100%' }}
+				>
+					Erro ao cadastrar validade !
+				</Alert>
+			</Snackbar>
 		</LayoutMain>
 	);
 };
