@@ -1,13 +1,41 @@
-import { Alert, Autocomplete, Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Pagination, Paper, Table, TableBody, TableCell, TableHead, TableRow, TextField } from "@mui/material";
-import { LayoutMain } from "../../shared/layouts";
-import { useEffect, useMemo, useState } from "react";
-import { IProductWithStock, ProductService, StockService } from "../../shared/services/api";
-import { useSearchParams } from "react-router-dom";
-import { useDebounce } from "../../shared/hooks";
-import AddIcon from '@mui/icons-material/Add';
+import {
+	Box,
+	Paper,
+	Table,
+	Alert,
+	Button,
+	Dialog,
+	Switch,
+	TableRow,
+	TableBody,
+	TableCell,
+	TextField,
+	FormGroup,
+	TableHead,
+	Pagination,
+	DialogTitle,
+	Autocomplete,
+	DialogContent,
+	DialogActions,
+	FormControlLabel,
+	DialogContentText,
+} from "@mui/material";
+import * as yup from 'yup';
 import Swal from 'sweetalert2';
+import AddIcon from '@mui/icons-material/Add';
+import { useDebounce } from "../../shared/hooks";
+import { LayoutMain } from "../../shared/layouts";
+import { useSearchParams } from "react-router-dom";
+import { useEffect, useMemo, useState } from "react";
+import { IProductWithStock, ProductService, StockService, ValiditieService } from "../../shared/services/api";
+
 
 const STOCK_ROW_LIMIT = 7;
+
+const validitySchema = yup.object().shape({
+	validity: yup.date().required()
+});
+
 
 export const Stock: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
@@ -22,6 +50,10 @@ export const Stock: React.FC = () => {
 	const [qntStock, setQntStock] = useState(0);
 	const [errorSelect, setErrorSelect] = useState(false);
 	const [errorQnt, setErrorQnt] = useState(false);
+	const [switchActivated, setSwitchActivated] = useState(false);
+	const [validityDate, setValidityDate] = useState<Date>();
+	const [errorDate, setErrorDate] = useState(false);
+
 	const stockPage = useMemo(() => {
 		return searchParams.get('stockPage') || 1;
 	}, [searchParams]);
@@ -49,6 +81,7 @@ export const Stock: React.FC = () => {
 		setQntStock(0);
 		setErrorQnt(false);
 		setErrorSelect(false);
+		setSwitchActivated(false);
 	};
 
 	const getAllProducts = async () => {
@@ -72,36 +105,64 @@ export const Stock: React.FC = () => {
 		}
 	}
 
-	const handleSubmit = () => {
+	const handleSwitch = (e: React.ChangeEvent<HTMLInputElement>) => {
+		setSwitchActivated(e.target.checked);
+		if (!e.target.checked) {
+			setValidityDate(undefined);
+			setErrorDate(false);
+		}
+	}
+
+	const handleSubmit = async () => {
 		if (!selectedProd) {
 			setErrorSelect(true);
-		} else if (qntStock < 1) {
-			setErrorQnt(true);
-		} else {
-			Swal.fire({
-				title: 'Adicionar Estoque?',
-				text: `Adicionar ${qntStock} de "${selectedProdName}" ?`,
-				icon: 'warning',
-				confirmButtonText: 'Adicionar',
-				confirmButtonColor:'#090'
-			}).then(async (result) => {
-				if (result.isConfirmed) {
-					const response = await StockService.create(selectedProd, qntStock);
-					if (response instanceof Error) {
-						alert("Ocorreu um erro")
-					} else {
-						Swal.fire({
-							icon: "success",
-							title: "Estoque Adicionado!",
-							showConfirmButton: false,
-							timer: 1000
-						});
-					}
-					listStocks();
-				}
-			});
-
+			return;
 		}
+		if (qntStock < 1) {
+			setErrorQnt(true);
+			return;
+		}
+		if (switchActivated) {
+			const isValid = await validitySchema.isValid({ validity: validityDate });
+			if (!isValid) {
+				setErrorDate(true);
+				return;
+			}
+		}
+
+		Swal.fire({
+			title: 'Adicionar Estoque?',
+			text: `Adicionar ${qntStock} de "${selectedProdName}" ?`,
+			icon: 'warning',
+			confirmButtonText: 'Adicionar',
+			confirmButtonColor: '#090'
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				const response = await StockService.create(selectedProd, qntStock);
+				if (response instanceof Error) {
+					alert("Ocorreu um erro")
+				} else {
+					Swal.fire({
+						icon: "success",
+						title: "Estoque Adicionado!",
+						showConfirmButton: false,
+						timer: 1000
+					});
+				}
+				listStocks();
+				if (switchActivated) {
+					if (!validityDate) {
+						setErrorDate(true);
+					} else {
+						const result = await ValiditieService.create(selectedProd, validityDate, qntStock);
+						if (result instanceof Error) {
+							alert("Erro ao adicionar validade");
+						}
+					}
+				}
+			}
+		});
+
 	}
 
 	return (
@@ -181,6 +242,7 @@ export const Stock: React.FC = () => {
 				<DialogContent>
 					{errorSelect && (<Alert severity='error' sx={{ mb: 1 }}>Escolha um produto</Alert>)}
 					{errorQnt && (<Alert severity='warning' sx={{ mb: 1 }}>Quantidade precisa ser maior que 0</Alert>)}
+					{errorDate && (<Alert severity='warning' sx={{ mb: 1 }}>Data inválida</Alert>)}
 					<DialogContentText mb={4}>
 						Cadastrar estoque
 					</DialogContentText>
@@ -207,7 +269,6 @@ export const Stock: React.FC = () => {
 							}}
 						/>
 						<TextField
-							name="2.00"
 							autoComplete="off"
 							label={'Quantidade'}
 							sx={{ maxWidth: 120 }}
@@ -216,6 +277,27 @@ export const Stock: React.FC = () => {
 							onFocus={() => setErrorQnt(false)}
 						/>
 					</Box>
+					<FormGroup sx={{ mb: 2 }}>
+						<FormControlLabel control={<Switch checked={switchActivated} onChange={handleSwitch} />} label="Adicionar Validade" sx={{ ml: 2 }} />
+					</FormGroup>
+					{switchActivated && (
+						<TextField
+							autoComplete="off"
+							inputProps={{ type: 'date' }}
+							// value={validityDate}
+							onChange={(e) => {
+								const dateString = e.target.value;
+								if (dateString) {
+									const date = new Date(dateString);
+									setValidityDate(date);
+								} else {
+									setValidityDate(undefined);
+								}
+								setErrorDate(false);
+							}}
+							onFocus={() => setErrorDate(false)}
+						/>
+					)}
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleClose} variant='outlined'>Cancelar</Button>
