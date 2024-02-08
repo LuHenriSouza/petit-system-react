@@ -28,7 +28,7 @@ import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
-import { IProductWithStock, ProductService, StockService, ValiditieService } from "../../shared/services/api";
+import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
 
 
 const STOCK_ROW_LIMIT = 7;
@@ -79,11 +79,12 @@ export const Stock: React.FC = () => {
 
 	const handleClose = () => {
 		setOpen(false);
-		setSelectedProd(0);
-		setSelectedProdName('');
 		setQntStock(0);
+		setSelectedProd(0);
 		setErrorQnt(false);
+		setErrorDate(false);
 		setErrorSelect(false);
+		setSelectedProdName('');
 		setSwitchActivated(false);
 	};
 
@@ -151,13 +152,22 @@ export const Stock: React.FC = () => {
 						showConfirmButton: false,
 						timer: 1000
 					});
+
+					// ESSA PARTE NAO FUNCIONOU:
+					// setQntStock(0);
+					// setSelectedProd(0);
+					// setErrorQnt(false);
+					// setErrorDate(false);
+					// setErrorSelect(false);
+					// setSelectedProdName('');
+					// setSwitchActivated(false);
 				}
 				listStocks();
 				if (switchActivated) {
 					if (!validityDate) {
 						setErrorDate(true);
 					} else {
-						const result = await ValiditieService.create(selectedProd, validityDate, qntStock);
+						const result = await ValidityService.create(selectedProd, validityDate, qntStock);
 						if (result instanceof Error) {
 							setOpenSnackError(true);
 						} else {

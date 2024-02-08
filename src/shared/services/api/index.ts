@@ -5,5 +5,5 @@ export * from './ProductService';
 export * from './FincashService';
 export * from './OutflowService';
 export * from './SupplierService';
-export * from './ValiditieService';
+export * from './ValidityService';
 export * from './Auth/AuthService';

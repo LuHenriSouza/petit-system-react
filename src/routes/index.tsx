@@ -4,6 +4,7 @@ import {
     Groups,
     OutFlow,
     Products,
+    Validity,
     Suppliers,
     Dashboard,
     ShowSales,
@@ -51,6 +52,10 @@ export const AppRoutes = () => {
 
             {/* Estoque */}
             <Route path="/estoque" element={<Stock />} />
+
+            {/* Validades */}
+            <Route path="/validades" element={<Validity />} />
+
         </Routes>
     );
 }
