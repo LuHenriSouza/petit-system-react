@@ -11,21 +11,24 @@ import {
 	TableBody,
 	TableCell,
 	TableHead,
+	Typography,
 	Pagination,
 	DialogTitle,
 	DialogActions,
 	DialogContent,
 	DialogContentText,
+	Fab,
+	Icon,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from "sweetalert2";
-import { format } from 'date-fns';
 import AddIcon from '@mui/icons-material/Add';
 import UndoIcon from "@mui/icons-material/Undo";
 import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useState } from "react";
+import { format, addDays, isDate, differenceInDays, startOfDay } from 'date-fns';
 import { IProduct, IProductWithValidity, ProductService, ValidityService } from "../../shared/services/api";
 
 const VALIDITY_ROW_LIMIT = 7;
@@ -156,6 +159,46 @@ export const Validity: React.FC = () => {
 		}
 	}
 
+	const dateColorFinder = (validity: Date): string => {
+		if (!isDate(validity)) {
+			console.error('Invalid date:', validity);
+			return 'textSecondary';
+		}
+
+		const currentDate = startOfDay(new Date());
+		const oneWeekAhead = addDays(currentDate, 7);
+		const twoWeekAhead = addDays(currentDate, 14);
+
+		oneWeekAhead.setDate(currentDate.getDate() + 7);
+		twoWeekAhead.setDate(currentDate.getDate() + 14);
+		const daysUntilValidity = differenceInDays(validity, currentDate);
+
+		if (daysUntilValidity <= 7) {
+			return '#f00'; // Menos de duas semanas
+		} else if (daysUntilValidity <= 14) {
+			return '#ec0'; // Menos de uma semana
+		} else {
+			return '';
+		}
+	}
+	const HandleText = (validity: Date): string => {
+		if (!isDate(validity)) {
+			console.error('Invalid date:', validity);
+			return 'textSecondary';
+		}
+
+		const currentDate = startOfDay(new Date());
+		const daysUntilValidity = differenceInDays(validity, currentDate);
+
+
+		if (daysUntilValidity == 0) {
+			return '(HOJE)';
+		} else if (validity < currentDate) {
+			return '(VENCIDO)';
+		} else {
+			return '';
+		}
+	}
 	return (
 		<LayoutMain title="Validades" subTitle="Adicione ou gerencie validades">
 			<Grid container>
@@ -269,9 +312,28 @@ export const Validity: React.FC = () => {
 										>
 											<TableCell>{val.code}</TableCell>
 											<TableCell>{val.name}</TableCell>
-											<TableCell>{val.quantity}</TableCell>
-											<TableCell>{format(val.validity, 'dd/MM/yyyy')}</TableCell>
-											<TableCell>Button</TableCell>
+											<TableCell>
+												<TextField
+													autoComplete="off"
+													sx={{ maxWidth: 80 }}
+													inputProps={{ type: 'number' }}
+													// onChange={(e) => { setQnt(Number(e.target.value)); setErrorQnt(false); }}
+													// onFocus={() => setErrorQnt(false)}
+													value={val.quantity}
+												/>
+											</TableCell>
+											<TableCell>
+												<Typography variant="body1" color={() => dateColorFinder(new Date(val.validity))}>
+													{format(val.validity, 'dd/MM/yyyy ')}{HandleText(new Date(val.validity))}
+												</Typography>
+											</TableCell>
+											<TableCell>
+												<Fab size="small" color="success" aria-label="add" sx={{ mr: 2 }} onClick={() => setIsEdit(0)}>
+													<Icon>check</Icon>
+												</Fab>
+												<Fab size="small" color="error" aria-label="add" onClick={() => formRef.current?.submitForm()}>
+													<Icon>delete</Icon>
+												</Fab></TableCell>
 										</TableRow>
 									))}
 								</TableBody>
