@@ -2,6 +2,7 @@ import {
     Sale,
     Stock,
     Groups,
+    Page404,
     OutFlow,
     Products,
     Validity,
@@ -55,6 +56,9 @@ export const AppRoutes = () => {
 
             {/* Validades */}
             <Route path="/validades" element={<Validity />} />
+
+            {/* Página 404 */}
+            <Route path='/*' element={<Page404 />} />
 
         </Routes>
     );

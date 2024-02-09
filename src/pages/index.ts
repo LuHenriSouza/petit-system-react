@@ -1,3 +1,7 @@
+// 404
+export * from './404/Page404';
+
+// Dashboard
 export * from './dashboard/Dashboard';
 
 // Products
