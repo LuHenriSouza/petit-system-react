@@ -182,13 +182,15 @@ export const Sale: React.FC = () => {
 													<Box display={'flex'} gap={1}>
 														<ArrowLeftRoundedIcon
 															sx={{ cursor: 'pointer' }}
+															fontSize="large"
 															onClick={() => handleQuantityChange(row.code, -1)}
 														/>
-														<Box marginTop={'3px'}>
+														<Box marginTop={1}>
 															{row.quantity}
 														</Box>
 														<ArrowRightRoundedIcon
 															sx={{ cursor: 'pointer' }}
+															fontSize="large"
 															onClick={() => handleQuantityChange(row.code, 1)}
 														/>
 													</Box>

@@ -1,10 +1,11 @@
-import { Button } from '@mui/material';
-import { Routes, Route } from 'react-router-dom';
-import { useDrawerContext } from '../shared/contexts';
 import {
     Sale,
+    Stock,
+    Groups,
+    Page404,
     OutFlow,
     Products,
+    Validity,
     Suppliers,
     Dashboard,
     ShowSales,
@@ -14,8 +15,10 @@ import {
     CloseFincash,
     UpdateProduct,
     OutflowDetail,
-    Groups,
 } from '../pages';
+import { Button } from '@mui/material';
+import { Routes, Route } from 'react-router-dom';
+import { useDrawerContext } from '../shared/contexts';
 
 export const AppRoutes = () => {
     const { toggleDrawerOpen } = useDrawerContext();
@@ -47,6 +50,16 @@ export const AppRoutes = () => {
 
             {/* Grupos */}
             <Route path='/grupos' element={<Groups />} />
+
+            {/* Estoque */}
+            <Route path="/estoque" element={<Stock />} />
+
+            {/* Validades */}
+            <Route path="/validades" element={<Validity />} />
+
+            {/* Página 404 */}
+            <Route path='/*' element={<Page404 />} />
+
         </Routes>
     );
 }

@@ -1,3 +1,7 @@
+// 404
+export * from './404/Page404';
+
+// Dashboard
 export * from './dashboard/Dashboard';
 
 // Products
@@ -23,3 +27,9 @@ export * from './fincash/CloseFincash';
 
 // Groups
 export * from './groups/Groups';
+
+// Stock
+export * from './stock/Stock';
+
+// Validity
+export * from './validity/Validity';

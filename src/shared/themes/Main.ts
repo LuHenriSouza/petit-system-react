@@ -27,5 +27,17 @@ export const MainTheme = createTheme({
             dark: '#411d98',
             contrastText: '#242105',
         }
+    },
+    components: {
+        MuiAutocomplete: {
+            styleOverrides: {
+                paper: {
+                    backgroundColor: '#ffffff'
+                },
+                listbox: {
+                    maxHeight: 200
+                }
+            }
+        }
     }
 });

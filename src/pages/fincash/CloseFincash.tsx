@@ -65,7 +65,7 @@ export const CloseFincash: React.FC = () => {
 	};
 
 	const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, denomination: string) => {
-		const inputValue = parseInt(e.target.value, 10) || 0;
+		const inputValue = Math.abs(parseInt(e.target.value, 10)) || 0;
 		setDenominationValues(prevValues => {
 			const updatedValues = {
 				...prevValues,
