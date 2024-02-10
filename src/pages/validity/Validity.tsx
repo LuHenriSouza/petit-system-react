@@ -328,10 +328,9 @@ export const Validity: React.FC = () => {
 												</Typography>
 											</TableCell>
 											<TableCell>
-												<Fab size="small" color="success" aria-label="add" sx={{ mr: 2 }} onClick={() => setIsEdit(0)}>
-													<Icon>check</Icon>
-												</Fab>
-												<Fab size="small" color="error" aria-label="add" onClick={() => formRef.current?.submitForm()}>
+												<Fab size="small" color="error" aria-label="add"
+												// onClick={() => formRef.current?.submitForm()}
+												>
 													<Icon>delete</Icon>
 												</Fab></TableCell>
 										</TableRow>
