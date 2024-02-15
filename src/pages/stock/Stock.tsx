@@ -167,7 +167,7 @@ export const Stock: React.FC = () => {
 					if (!validityDate) {
 						setErrorDate(true);
 					} else {
-						const result = await ValidityService.create(selectedProd, validityDate, qntStock);
+						const result = await ValidityService.create(selectedProd, validityDate);
 						if (result instanceof Error) {
 							setOpenSnackError(true);
 						} else {
