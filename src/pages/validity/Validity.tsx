@@ -135,6 +135,7 @@ export const Validity: React.FC = () => {
 				});
 			}
 			listValidities();
+			setValidity(undefined);
 			if (inputDate.current) {
 				inputDate.current.value = '';
 			}
@@ -197,6 +198,10 @@ export const Validity: React.FC = () => {
 			});
 		}
 		listValidities();
+	}
+
+	const handleKeyDownDate = (e: React.KeyboardEvent<HTMLDivElement>) => {
+		if (e.code === 'Enter' || e.key === 'Enter') handleSubmit();
 	}
 
 	return (
@@ -287,6 +292,7 @@ export const Validity: React.FC = () => {
 									inputProps={{ type: 'date' }}
 									sx={{ maxWidth: 200, ml: 2 }}
 									inputRef={inputDate}
+									onKeyDown={handleKeyDownDate}
 									onChange={(e) => {
 										const dateString = e.target.value;
 										if (dateString) {

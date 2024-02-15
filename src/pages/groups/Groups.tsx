@@ -221,6 +221,10 @@ export const Groups: React.FC = () => {
     setGroupSelectedRow(0);
   };
 
+  const handleKeyDownNewGroup = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.code === 'Enter' || e.key === 'Enter') handleNewGroup();
+  }
+
   // Prod Handles
   const handleProdRowClick = (id: number) => {
     setProdSelected(id);
@@ -278,6 +282,7 @@ export const Groups: React.FC = () => {
                 value={groupNameInput}
                 onChange={(event) => setGroupNameInput(event.target.value)}
                 autoComplete="off"
+                onKeyDown={handleKeyDownNewGroup}
               />
               <Button variant="contained" onClick={handleNewGroup}>
                 <AddIcon />

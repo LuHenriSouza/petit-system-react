@@ -239,6 +239,7 @@ export const Suppliers: React.FC = () => {
 						onChange={e => setName(e.target.value)}
 						value={name}
 						autoComplete="off"
+						onKeyDown={(e) => { if (e.code === 'Enter' || e.key === 'Enter') isEdit ? handleSubmitEdit() : handleSubmit(); }}
 					/>
 				</DialogContent>
 				<DialogActions>
