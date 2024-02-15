@@ -23,7 +23,7 @@ import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Remove";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format, addDays, isDate, differenceInDays, startOfDay } from 'date-fns';
 import { IProduct, IProductWithValidity, ProductService, ValidityService } from "../../shared/services/api";
 
@@ -37,6 +37,8 @@ const validitySchema = yup.object().shape({
 export const Validity: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { debounce } = useDebounce();
+
+	const inputDate = useRef<HTMLInputElement>();
 
 	const [prodTotalCount, setProdTotalCount] = useState(0);
 	const [prodRows, setProdRows] = useState<IProduct[]>([]);
@@ -133,6 +135,9 @@ export const Validity: React.FC = () => {
 				});
 			}
 			listValidities();
+			if (inputDate.current) {
+				inputDate.current.value = '';
+			}
 		}
 	}
 
@@ -281,6 +286,7 @@ export const Validity: React.FC = () => {
 									autoComplete="off"
 									inputProps={{ type: 'date' }}
 									sx={{ maxWidth: 200, ml: 2 }}
+									inputRef={inputDate}
 									onChange={(e) => {
 										const dateString = e.target.value;
 										if (dateString) {
