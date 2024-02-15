@@ -210,7 +210,7 @@ export const Sale: React.FC = () => {
 							>
 								<AddShoppingCartRoundedIcon sx={{ mr: 1 }} /> Finalizar
 							</Button>
-							<Typography variant="h6">Total: R$ {totalPrice}</Typography>
+							<Typography variant="h6">Total: R$ {totalPrice.toFixed(2)}</Typography>
 						</Box>
 					</Paper>
 				</Grid>
