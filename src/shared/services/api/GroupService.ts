@@ -13,6 +13,7 @@ const Autorization = () => {
 export interface IGroup {
     id: number,
     name: string,
+    show: boolean,
 }
 
 export interface IProduct_group {
@@ -28,6 +29,7 @@ type TGroupTotalCount = {
 
 type TProdGroupTotalCount = {
     data: IProduct[];
+    show: boolean;
     totalCount: number;
 }
 
@@ -55,7 +57,8 @@ const getProdsByGroup = async (id: number, page = 1, filter = '', limit = Enviro
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
-                data,
+                data: data.data,
+                show: data.show,
                 totalCount: Number(headers['x-total-count'] || Environment.LIMITE_DE_LINHAS),
             };
         }
@@ -67,7 +70,7 @@ const getProdsByGroup = async (id: number, page = 1, filter = '', limit = Enviro
     }
 };
 
-const create = async (dados: Omit<IGroup, 'id'>): Promise<number | Error> => {
+const create = async (dados: Omit<IGroup, 'id' | 'show'>): Promise<number | Error> => {
     try {
         const { data } = await Api.post<IGroup>('/group', dados, Autorization());
 
@@ -104,14 +107,6 @@ const removeProdFromGroup = async (group_id: number, prod_id: number) => {
     }
 }
 
-// const updateById = async (id: number, dados: Omit<IGroup, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
-//     try {
-//         await Api.put(`/product/${id}`, dados, Autorization());
-//     } catch (error) {
-//         console.error(error);
-//         return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
-//     }
-// };
 
 const deleteById = async (id: number): Promise<void | Error> => {
     try {
@@ -121,6 +116,29 @@ const deleteById = async (id: number): Promise<void | Error> => {
         return new Error((error as { message: string }).message || 'Erro ao apagar o registro.');
     }
 };
+
+const updateShow = async (group_id: number, show: boolean): Promise<void | Error> => {
+    try {
+        await Api.put(`/group/show/${group_id}`, { show }, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
+    }
+};
+
+const getShowGroups = async (): Promise<IGroup[] | Error> => {
+    try {
+        const { data } = await Api.get('/group/show', Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao listar os registros.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
+    }
+}
 
 // const getById = async (id: number): Promise<IProduct | Error> => {
 //     try {
@@ -140,9 +158,9 @@ const deleteById = async (id: number): Promise<void | Error> => {
 export const GroupService = {
     getAll,
     create,
-    // getById,
     deleteById,
-    // updateById,
+    updateShow,
+    getShowGroups,
     putProdInGroup,
     getProdsByGroup,
     removeProdFromGroup,

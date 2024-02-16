@@ -18,6 +18,8 @@ import {
   DialogTitle,
   DialogActions,
   DialogContent,
+  FormControlLabel,
+  Checkbox,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import AddIcon from "@mui/icons-material/Add";
@@ -59,6 +61,7 @@ export const Groups: React.FC = () => {
   const [groupRows, setGroupRows] = useState<IGroup[]>([]);
   const [groupTotalCount, setGroupTotalCount] = useState(0);
   const [groupSelectedRow, setGroupSelectedRow] = useState(0);
+  const [checkBoxStatus, setCheckBoxStatus] = useState(false);
 
   const groupSearch = useMemo(() => {
     return searchParams.get("groupSearch") || "";
@@ -120,6 +123,7 @@ export const Groups: React.FC = () => {
     if (response instanceof Error) return alert(response.message);
     setProdGroupRows(response.data);
     setProdGroupTotalCount(response.totalCount);
+    setCheckBoxStatus(response.show);
   };
 
   // Products
@@ -267,6 +271,27 @@ export const Groups: React.FC = () => {
     }
   };
 
+
+  // CHECKBOX
+  const [loading, setLoading] = useState(false);
+
+  const handleCheckBox = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      setLoading(true);
+      if (e.target.checked) {
+        await GroupService.updateShow(groupSelectedRow, true);
+      } else {
+        await GroupService.updateShow(groupSelectedRow, false);
+      }
+      listProdsInGroup();
+      listGroups();
+    } catch (e) {
+      alert(e)
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
     <LayoutMain title="Grupos" subTitle="Crie e gerencie grupos de produtos">
       <Grid container>
@@ -326,7 +351,7 @@ export const Groups: React.FC = () => {
                       key={group.id}
                       selected={groupSelectedRow == group.id}
                       hover
-                      sx={{ cursor: "pointer" }}
+                      sx={{ cursor: "pointer", ...(group.show && { borderLeft: "4px solid #1C26" }) }}
                       onClick={() => handleGroupRowClick(group.id)}
                     >
                       <TableCell>{group.name}</TableCell>
@@ -403,19 +428,28 @@ export const Groups: React.FC = () => {
             variant="elevation"
           >
             {!NAProd && (
-              <TextField
-                size="small"
-                placeholder={"Pesquisar Produto"}
-                value={prodInGroupSearch}
-                onChange={(event) =>
-                  setSearchParams((old) => {
-                    old.set("prodInGroupSearch", event.target.value);
-                    return old;
-                  })
-                }
-                autoComplete="off"
-                fullWidth
-              />
+              <Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} px={2}>
+                <TextField
+                  size="small"
+                  placeholder={"Pesquisar Produto"}
+                  value={prodInGroupSearch}
+                  onChange={(event) =>
+                    setSearchParams((old) => {
+                      old.set("prodInGroupSearch", event.target.value);
+                      return old;
+                    })
+                  }
+                  autoComplete="off"
+                  sx={{ minWidth: 600 }}
+                />
+                <FormControlLabel
+                  value="start"
+                  control={<Checkbox onChange={handleCheckBox} checked={checkBoxStatus} disabled={loading} />}
+                  label="Mostrar grupo no caixa"
+                  labelPlacement="start"
+                  sx={{ mr: 2 }}
+                />
+              </Box>
             )}
             {NAProd && (
               <Alert icon={false} color="warning" sx={{ mt: 2 }}>
@@ -577,6 +611,6 @@ export const Groups: React.FC = () => {
           <Button onClick={handleClose}>Cancelar</Button>
         </DialogActions>
       </Dialog>
-    </LayoutMain>
+    </LayoutMain >
   );
 };

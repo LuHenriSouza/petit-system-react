@@ -8,6 +8,7 @@ import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
 import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import AddShoppingCartRoundedIcon from '@mui/icons-material/AddShoppingCartRounded';
 import Swal from 'sweetalert2'
+import SettingsIcon from '@mui/icons-material/Settings';
 
 export const Sale: React.FC = () => {
 
@@ -46,12 +47,12 @@ export const Sale: React.FC = () => {
 	useEffect(() => {
 		const totalCalc = products.map((prod) => {
 			const calc = (prod.quantity || 0) * prod.price;
-			const calc100 = calc*100;
+			const calc100 = calc * 100;
 			return calc100;
 		})
 
 
-		setTotalPrice(totalCalc.reduce((total, currentItem) => total + currentItem, 0)/100);
+		setTotalPrice(totalCalc.reduce((total, currentItem) => total + currentItem, 0) / 100);
 
 	}, [products]);
 
@@ -81,7 +82,7 @@ export const Sale: React.FC = () => {
 			if (!code.trim() && !lastResult.trim()) return;
 
 			const result = await ProductService.getByCode(code.trim() ? code : lastResult);
-			
+
 			if (result instanceof Error) {
 				setNotFound(true);
 			} else {
@@ -136,13 +137,12 @@ export const Sale: React.FC = () => {
 		}
 	}
 
-
 	return (
 
 		<LayoutMain title="Vender" subTitle="">
 			<Grid container spacing={2}>
 				<Grid item xs={6}>
-					<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Box display={'flex'}>
 							<TextField
 								fullWidth
@@ -155,7 +155,7 @@ export const Sale: React.FC = () => {
 							/>
 						</Box>
 					</Paper>
-					<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						{(notFound && <Alert severity="error">Nenhum produto encontrado com este código !</Alert>)}
 						<Box display={'flex'} minHeight={550}>
 							<TableContainer>
@@ -215,8 +215,16 @@ export const Sale: React.FC = () => {
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
-					<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-						TABLE
+					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+						<Box display={'flex'} justifyContent={'space-between'} p={'3px'}>
+							<Typography variant="h6" ml={1}>Grupos</Typography>
+							<Button onClick={() => navigate('/grupos')}><SettingsIcon /></Button>
+						</Box>
+					</Paper>
+					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+						<Box minHeight={625}>
+							
+						</Box>
 					</Paper>
 				</Grid>
 			</Grid>
