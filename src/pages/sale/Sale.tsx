@@ -1,7 +1,7 @@
 import { Paper, Grid, Box, TextField, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Alert, useMediaQuery, useTheme, Typography, Button } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useRef, useState } from "react";
-import { FincashService, IFincash, SaleService, ISale } from "../../shared/services/api";
+import { FincashService, IFincash, SaleService, ISale, GroupService, IGroup } from "../../shared/services/api";
 import { useNavigate } from "react-router-dom";
 import { IProduct, ProductService } from './../../shared/services/api/';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
@@ -9,6 +9,7 @@ import ArrowRightRoundedIcon from '@mui/icons-material/ArrowRightRounded';
 import AddShoppingCartRoundedIcon from '@mui/icons-material/AddShoppingCartRounded';
 import Swal from 'sweetalert2'
 import SettingsIcon from '@mui/icons-material/Settings';
+import FastRewindIcon from '@mui/icons-material/FastRewind';
 
 export const Sale: React.FC = () => {
 
@@ -23,6 +24,8 @@ export const Sale: React.FC = () => {
 	const [lastResult, setLastResult] = useState('');
 	const [openFincash, setOpenFincash] = useState<Error | IFincash>(Error('default'));
 
+	const [groups, setGroups] = useState<IGroup[]>();
+
 	const codeInputRef = useRef<HTMLInputElement>();
 
 	useEffect(() => {
@@ -30,6 +33,7 @@ export const Sale: React.FC = () => {
 		const fetchData = async () => {
 			const result = await FincashService.getOpenFincash();
 			setOpenFincash(result);
+			listGroups();
 		}
 		if (!smDown) {
 			fetchData();
@@ -38,6 +42,17 @@ export const Sale: React.FC = () => {
 			navigate('/');
 		}
 	}, []);
+
+
+	const listGroups = async () => {
+		try {
+			const response = await GroupService.getShowGroups();
+			if (response instanceof Error) return;
+			setGroups(response);
+		} catch (e) {
+			alert(e)
+		}
+	}
 
 
 	if (openFincash instanceof Error) {
@@ -80,33 +95,36 @@ export const Sale: React.FC = () => {
 		setNotFound(false);
 		if (e.code === 'Enter' || e.key === 'Enter') {
 			if (!code.trim() && !lastResult.trim()) return;
-
-			const result = await ProductService.getByCode(code.trim() ? code : lastResult);
-
-			if (result instanceof Error) {
-				setNotFound(true);
-			} else {
-				setLastResult(code.trim() ? code : lastResult);
-				// Check if the product is already in the products array
-				const existingProductIndex = products.findIndex((p) => p.code === result.code);
-
-				if (existingProductIndex !== -1) {
-					// If the product exists, update its quantity
-					const updatedProducts = [...products];
-					updatedProducts[existingProductIndex] = {
-						...result,
-						quantity: (updatedProducts[existingProductIndex].quantity || 0) + 1,
-					};
-					setProducts(updatedProducts);
-				} else {
-					// If the product doesn't exist, add it to the products array
-					setProducts((prevProducts) => [...prevProducts, { ...result, quantity: 1 }]);
-				}
-			}
-
-			setCode('');
+			handleProducts(code.trim() ? code : lastResult)
 		}
 	};
+
+	const handleProducts = async (prodCode: string) => {
+		const result = await ProductService.getByCode(prodCode);
+
+		if (result instanceof Error) {
+			setNotFound(true);
+		} else {
+			setLastResult(prodCode);
+			// Check if the product is already in the products array
+			const existingProductIndex = products.findIndex((p) => p.code === result.code);
+
+			if (existingProductIndex !== -1) {
+				// If the product exists, update its quantity
+				const updatedProducts = [...products];
+				updatedProducts[existingProductIndex] = {
+					...result,
+					quantity: (updatedProducts[existingProductIndex].quantity || 0) + 1,
+				};
+				setProducts(updatedProducts);
+			} else {
+				// If the product doesn't exist, add it to the products array
+				setProducts((prevProducts) => [...prevProducts, { ...result, quantity: 1 }]);
+			}
+		}
+
+		setCode('');
+	}
 
 	const handleSubmit = async () => {
 		try {
@@ -137,8 +155,34 @@ export const Sale: React.FC = () => {
 		}
 	}
 
-	return (
+	// GROUP HANDLES
+	const [selectedGroup, setSelectedGroup] = useState(0);
+	const [prodGroup, setProdGroup] = useState<IProduct[]>();
+	const [prodTotalCount, setProdTotalCount] = useState(0);
+	const [loading, setLoading] = useState(false);
+	const handleClickGroup = (group_id: number) => {
+		setSelectedGroup(group_id);
+		listProductsInGroup(group_id);
+	}
 
+	const listProductsInGroup = async (group_id: number) => {
+		try {
+			setLoading(true);
+			const response = await GroupService.getProdsByGroup(group_id, 1, '', 999999999);
+			if (response instanceof Error) return;
+			setProdGroup(response.data);
+			setProdTotalCount(response.totalCount);
+			setLoading(false);
+		} catch (e) {
+			alert(e);
+		}
+	}
+
+	const handleBack = () => {
+		setSelectedGroup(0);
+		setProdGroup(undefined);
+	}
+	return (
 		<LayoutMain title="Vender" subTitle="">
 			<Grid container spacing={2}>
 				<Grid item xs={6}>
@@ -217,17 +261,83 @@ export const Sale: React.FC = () => {
 				<Grid item xs={6}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Box display={'flex'} justifyContent={'space-between'} p={'3px'}>
-							<Typography variant="h6" ml={1}>Grupos</Typography>
+							{selectedGroup ?
+								<Button onClick={handleBack} variant="outlined"><FastRewindIcon sx={{ mr: 1 }} />Voltar</Button>
+								:
+								<Typography variant="h6" ml={1}>Grupos</Typography>
+							}
 							<Button onClick={() => navigate('/grupos')}><SettingsIcon /></Button>
 						</Box>
 					</Paper>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-						<Box minHeight={625}>
-							
+						<Box border={1} minHeight={593} my={2}>
+							<Grid item container p={2} gap={1}>
+								{selectedGroup ?
+									<Box width={'100%'} display={'flex'} flexDirection={'column'} gap={1}>
+										{!prodTotalCount && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
+										{prodGroup?.map((prod) =>
+											<Box
+												gap={15}
+												border={1}
+												height={40}
+												width={'100%'}
+												display={'flex'}
+												alignItems={'center'}
+												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+												onClick={() => {
+													if (!products.find((pd) => pd.code === prod.code)) {
+														handleProducts(prod.code);
+													}
+												}}
+											>
+												<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>{prod.code}</Typography>
+												<Typography variant="body1" ml={1} width={300} noWrap overflow={'hidden'}>{prod.name}</Typography>
+												{!products.find((pd) => pd.code == prod.code) ?
+													<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>R$ {prod.price}</Typography>
+													:
+													<Box display={'flex'} ml={1} width={150}>
+														<ArrowLeftRoundedIcon
+															sx={{ cursor: 'pointer', zIndex: 999999999 }}
+															fontSize="large"
+															onClick={() => handleQuantityChange(prod.code, -1)}
+														/>
+														<Box marginTop={1}>
+															<Typography>
+																{products.find((pd) => pd.code == prod.code)?.quantity}
+															</Typography>
+														</Box>
+														<ArrowRightRoundedIcon
+															sx={{ cursor: 'pointer' }}
+															fontSize="large"
+															onClick={() => handleQuantityChange(prod.code, 1)}
+														/>
+													</Box>
+												}
+											</Box>
+										)}
+									</Box>
+									:
+									groups?.map((gp) =>
+										<Grid
+											item
+											xs={2.8}
+											border={1}
+											minHeight={50}
+											display={'flex'}
+											alignItems={'center'}
+											justifyContent={'center'}
+											sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+											onClick={() => handleClickGroup(gp.id)}
+										>
+											<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
+										</Grid>
+									)
+								}
+							</Grid>
 						</Box>
 					</Paper>
-				</Grid>
-			</Grid>
+				</Grid >
+			</Grid >
 		</LayoutMain >
 	);
 };
