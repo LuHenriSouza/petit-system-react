@@ -27,7 +27,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
 
 
@@ -41,6 +41,11 @@ const validitySchema = yup.object().shape({
 export const Stock: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { debounce } = useDebounce();
+
+	const inputDate = useRef<HTMLInputElement>();
+	const inputQnt = useRef<HTMLInputElement>();
+
+
 
 	const [rows, setRows] = useState<IProductWithStock[]>();
 	const [totalCount, setTotalCount] = useState(0);
@@ -154,20 +159,25 @@ export const Stock: React.FC = () => {
 					});
 
 					// ESSA PARTE NAO FUNCIONOU:
-					// setQntStock(0);
-					// setSelectedProd(0);
-					// setErrorQnt(false);
-					// setErrorDate(false);
-					// setErrorSelect(false);
-					// setSelectedProdName('');
-					// setSwitchActivated(false);
+					setQntStock(0);
+					setSelectedProd(0);
+					setErrorQnt(false);
+					setErrorDate(false);
+					setErrorSelect(false);
+					setSelectedProdName('');
+					if (inputDate.current) {
+						inputDate.current.value = '';
+					}
+					if (inputQnt.current) {
+						inputQnt.current.value = '';
+					}
 				}
 				listStocks();
 				if (switchActivated) {
 					if (!validityDate) {
 						setErrorDate(true);
 					} else {
-						const result = await ValidityService.create(selectedProd, validityDate, qntStock);
+						const result = await ValidityService.create(selectedProd, validityDate);
 						if (result instanceof Error) {
 							setOpenSnackError(true);
 						} else {
@@ -264,6 +274,7 @@ export const Stock: React.FC = () => {
 					<Box minHeight={80} display={'flex'} gap={6}>
 						<Autocomplete
 							id="combo-box"
+							value={{ label: selectedProdName, id: selectedProd }}
 							options={allProducts ?? []}
 							sx={{ width: 300 }}
 							renderOption={(props, option) => {
@@ -290,6 +301,7 @@ export const Stock: React.FC = () => {
 							inputProps={{ type: 'number' }}
 							onChange={(e) => { setQntStock(Number(e.target.value)); setErrorQnt(false); }}
 							onFocus={() => setErrorQnt(false)}
+							inputRef={inputQnt}
 						/>
 					</Box>
 					<FormGroup sx={{ mb: 2 }}>
@@ -311,6 +323,7 @@ export const Stock: React.FC = () => {
 								setErrorDate(false);
 							}}
 							onFocus={() => setErrorDate(false)}
+							inputRef={inputDate}
 						/>
 					)}
 				</DialogContent>

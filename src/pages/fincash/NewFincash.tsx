@@ -34,8 +34,10 @@ export const NewFincash: React.FC = () => {
     const theme = useTheme()
     const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
+
     const navigate = useNavigate();
 
+    const inputRefValue = useRef<HTMLInputElement>();
     const formRef = useRef<FormHandles>(null);
 
     useEffect(() => {
@@ -94,6 +96,13 @@ export const NewFincash: React.FC = () => {
             }
         }
     };
+    const handleKeyDownName = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.code === 'Enter' || e.key === 'Enter') inputRefValue.current?.focus();
+    }
+
+    const handleKeyDownValue = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.code === 'Enter' || e.key === 'Enter') formRef.current?.submitForm();
+    }
 
     return (
 
@@ -103,10 +112,10 @@ export const NewFincash: React.FC = () => {
                 <VForm onSubmit={handleSubmit} placeholder={''} ref={formRef}>
                     <Box display={'flex'} gap={7} marginBottom={4}>
                         <Box width={300}>
-                            <VTextField label={'Nome'} name="opener" autoComplete="off" />
+                            <VTextField label={'Nome'} name="opener" onKeyDown={handleKeyDownName} />
                         </Box>
                         <Box width={300}>
-                            <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash autoComplete="off" />
+                            <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash inputRef={inputRefValue} onKeyDown={handleKeyDownValue} />
                         </Box>
                         <Button variant="contained" size="large" sx={{ width: 120 }} onClick={() => formRef.current?.submitForm()}><OpenInBrowserIcon sx={{ mr: 1 }} />Abrir</Button>
                     </Box>
