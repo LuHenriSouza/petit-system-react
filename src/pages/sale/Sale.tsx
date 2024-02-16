@@ -277,6 +277,7 @@ export const Sale: React.FC = () => {
 										{!prodTotalCount && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
 										{prodGroup?.map((prod) =>
 											<Box
+												key={prod.code}
 												gap={15}
 												border={1}
 												height={40}
@@ -319,6 +320,7 @@ export const Sale: React.FC = () => {
 									:
 									groups?.map((gp) =>
 										<Grid
+											key={gp.id}
 											item
 											xs={2.8}
 											border={1}

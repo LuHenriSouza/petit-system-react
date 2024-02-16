@@ -346,7 +346,7 @@ export const Groups: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {groupRows.map((group) => (
+                  {groupRows?.map((group) => (
                     <TableRow
                       key={group.id}
                       selected={groupSelectedRow == group.id}
@@ -376,20 +376,16 @@ export const Groups: React.FC = () => {
               </Table>
             </Box>
             {groupTotalCount > 0 && groupTotalCount > GROUP_ROW_LIMIT && (
-              <TableRow>
-                <TableCell colSpan={3}>
-                  <Pagination
-                    page={Number(groupPage)}
-                    count={Math.ceil(groupTotalCount / GROUP_ROW_LIMIT)}
-                    onChange={(_, newPage) =>
-                      setSearchParams((old) => {
-                        old.set("groupPage", newPage.toString());
-                        return old;
-                      })
-                    }
-                  />
-                </TableCell>
-              </TableRow>
+              <Pagination
+                page={Number(groupPage)}
+                count={Math.ceil(groupTotalCount / GROUP_ROW_LIMIT)}
+                onChange={(_, newPage) =>
+                  setSearchParams((old) => {
+                    old.set("groupPage", newPage.toString());
+                    return old;
+                  })
+                }
+              />
             )}
           </Paper>
         </Grid>
@@ -469,7 +465,7 @@ export const Groups: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {prodGroupRows.map((prod) => (
+                    {prodGroupRows?.map((prod) => (
                       <TableRow key={prod.id} hover>
                         <TableCell>{prod.code}</TableCell>
                         <TableCell>{prod.name}</TableCell>
@@ -506,22 +502,18 @@ export const Groups: React.FC = () => {
             </Box>
             {prodGroupTotalCount > 0 &&
               prodGroupTotalCount > PRODGROUP_ROW_LIMIT && (
-                <TableRow>
-                  <TableCell colSpan={3}>
-                    <Pagination
-                      page={Number(prodInGroupPage)}
-                      count={Math.ceil(
-                        prodGroupTotalCount / PRODGROUP_ROW_LIMIT
-                      )}
-                      onChange={(_, newPage) =>
-                        setSearchParams((old) => {
-                          old.set("prodInGroupPage", newPage.toString());
-                          return old;
-                        })
-                      }
-                    />
-                  </TableCell>
-                </TableRow>
+                <Pagination
+                  page={Number(prodInGroupPage)}
+                  count={Math.ceil(
+                    prodGroupTotalCount / PRODGROUP_ROW_LIMIT
+                  )}
+                  onChange={(_, newPage) =>
+                    setSearchParams((old) => {
+                      old.set("prodInGroupPage", newPage.toString());
+                      return old;
+                    })
+                  }
+                />
               )}
           </Paper>
         </Grid>
@@ -560,7 +552,7 @@ export const Groups: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {prodRows.map((prod) => (
+                {prodRows?.map((prod) => (
                   <TableRow
                     key={prod.id}
                     hover
@@ -582,20 +574,16 @@ export const Groups: React.FC = () => {
           )}
           {prodTotalCount > 0 && prodTotalCount > PROD_ROW_LIMIT && (
             <Box display={"flex"} justifyContent={"center"}>
-              <TableRow>
-                <TableCell colSpan={3}>
-                  <Pagination
-                    page={Number(prodPage)}
-                    count={Math.ceil(prodTotalCount / PROD_ROW_LIMIT)}
-                    onChange={(_, newPage) =>
-                      setSearchParams((old) => {
-                        old.set("prodPage", newPage.toString());
-                        return old;
-                      })
-                    }
-                  />
-                </TableCell>
-              </TableRow>
+              <Pagination
+                page={Number(prodPage)}
+                count={Math.ceil(prodTotalCount / PROD_ROW_LIMIT)}
+                onChange={(_, newPage) =>
+                  setSearchParams((old) => {
+                    old.set("prodPage", newPage.toString());
+                    return old;
+                  })
+                }
+              />
             </Box>
           )}
           <Button
