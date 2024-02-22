@@ -99,9 +99,14 @@ export const Sale: React.FC = () => {
 		}
 	};
 
-	const handleProducts = async (prodCode: string) => {
-		const result = await ProductService.getByCode(prodCode);
-
+	const handleProducts = async (prodCode: string, product?: IProduct) => {
+		let response: IProduct | Error;
+		if (product) {
+			response = product;
+		} else {
+			response = await ProductService.getByCode(prodCode);
+		}
+		const result = response;
 		if (result instanceof Error) {
 			setNotFound(true);
 		} else {
@@ -287,7 +292,7 @@ export const Sale: React.FC = () => {
 												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
 												onClick={() => {
 													if (!products.find((pd) => pd.code === prod.code)) {
-														handleProducts(prod.code);
+														handleProducts(prod.code, prod);
 													}
 												}}
 											>
