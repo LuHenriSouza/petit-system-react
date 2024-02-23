@@ -1,7 +1,7 @@
 import { Paper, Grid, Box, TextField, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Alert, useMediaQuery, useTheme, Typography, Button } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useRef, useState } from "react";
-import { FincashService, IFincash, SaleService, ISale, GroupService, IGroup } from "../../shared/services/api";
+import { FincashService, IFincash, SaleService, GroupService, IGroup, ISaleObs } from "../../shared/services/api";
 import { useNavigate } from "react-router-dom";
 import { IProduct, ProductService } from './../../shared/services/api/';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
@@ -18,6 +18,7 @@ export const Sale: React.FC = () => {
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const [code, setCode] = useState('');
+	const [obs, setObs] = useState('');
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [notFound, setNotFound] = useState(false);
 	const [products, setProducts] = useState<IProduct[]>([]);
@@ -100,6 +101,7 @@ export const Sale: React.FC = () => {
 	};
 
 	const handleProducts = async (prodCode: string, product?: IProduct) => {
+		setNotFound(false);
 		let response: IProduct | Error;
 		if (product) {
 			response = product;
@@ -133,11 +135,6 @@ export const Sale: React.FC = () => {
 
 	const handleSubmit = async () => {
 		try {
-			// const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
-			//     prod_id: yup.number().moreThan(0).required().integer(),
-			//     quantity: yup.number().moreThan(0).required().integer(),
-			//     price: yup.number().required(),
-			// });
 			const data = products.map((prod) => {
 				return {
 					prod_id: prod.id,
@@ -146,9 +143,15 @@ export const Sale: React.FC = () => {
 				}
 			});
 
-			const result = await SaleService.create(data as Omit<ISale, "id">[]);
+			const dataObs = {
+				data: data,
+				obs: obs,
+			}
+
+			const result = await SaleService.create(dataObs as ISaleObs);
 			if (result instanceof Error) return alert('Venda não efetuada.');
-			setProducts([])
+			setProducts([]);
+			setObs('');
 			Swal.fire({
 				icon: "success",
 				title: "Venda efetuada com sucesso!",
@@ -206,7 +209,7 @@ export const Sale: React.FC = () => {
 					</Paper>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						{(notFound && <Alert severity="error">Nenhum produto encontrado com este código !</Alert>)}
-						<Box display={'flex'} minHeight={550}>
+						<Box display={'flex'} minHeight={410}>
 							<TableContainer>
 								<Table sx={{ minWidth: 650 }} aria-label="simple table">
 									<TableHead>
@@ -250,6 +253,16 @@ export const Sale: React.FC = () => {
 								</Table>
 							</TableContainer>
 						</Box>
+						<TextField
+							rows={3}
+							fullWidth
+							multiline
+							sx={{ mt: 2 }}
+							value={obs}
+							onChange={(e) => setObs(e.target.value)}
+							label="Observações"
+							autoComplete="off"
+						/>
 						<Box display={'flex'} gap={38} marginTop={3}>
 							<Button
 								variant="contained"

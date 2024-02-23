@@ -3,6 +3,7 @@ import {
 	Table,
 	Paper,
 	Button,
+	Skeleton,
 	useTheme,
 	TableRow,
 	TextField,
@@ -11,9 +12,9 @@ import {
 	TableBody,
 	Typography,
 	Pagination,
-	TableContainer,
 	useMediaQuery,
-	Skeleton
+	TableContainer,
+	CircularProgress
 } from "@mui/material";
 import Swal from 'sweetalert2'
 import { format } from 'date-fns';
@@ -30,12 +31,15 @@ export const SaleDetail: React.FC = () => {
 	const { id } = useParams();
 	const [obs, setObs] = useState('');
 	const [sale, setSale] = useState<ISaleRaw>();
+	const [loading, setLoading] = useState(false);
 	const [fincash, setFincash] = useState<IFincash>();
+	const [pageLoading, setPageLoading] = useState(false);
 	const [totalCountPage, setTotalCountPage] = useState(0);
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [totalProductsPrice, setTotalProductsPrice] = useState(0);
 	const [saleDetail, setSaleDetail] = useState<ISaleDetail[]>([]);
 	const [productDetails, setProductDetails] = useState<Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[]>([]);
+	const [NAObs, setNAObs] = useState(false);
 
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
@@ -53,32 +57,11 @@ export const SaleDetail: React.FC = () => {
 				if (saleFetch instanceof Error) return 'sale not found';
 				setSale(saleFetch);
 
-				saleFetch.obs && setObs(saleFetch.obs);
+				if (saleFetch.obs) { setObs(saleFetch.obs); setNAObs(true); }
 
 				const fincashFetch = await FincashService.getById(Number(saleFetch.fincash_id));
 				if (fincashFetch instanceof Error) return 'fincash not found';
 				setFincash(fincashFetch);
-
-
-				const SaleDetailFetch = await SaleService.getAllById(Number(id), Number(page));
-				if (SaleDetailFetch instanceof Error) return 'Products not found';
-				setSaleDetail(SaleDetailFetch.data);
-				setTotalCountPage(SaleDetailFetch.totalCount);
-				setTotalProductsPrice(SaleDetailFetch.totalValue);
-
-				const productIds = SaleDetailFetch.data.map((saleDetail) => saleDetail.prod_id);
-				const productDetailsArray: Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[] = [];
-
-				for (const productId of productIds) {
-					const product = await ProductService.getById(productId);
-					if (product instanceof Error) {
-						console.error(`Product not found for product id: ${productId}`);
-					} else {
-						productDetailsArray.push({ id: productId, name: product.name, price: product.price, deleted_at: product.deleted_at });
-					}
-				}
-				setProductDetails(productDetailsArray);
-
 			} catch (e) {
 
 				console.log(e);
@@ -86,26 +69,69 @@ export const SaleDetail: React.FC = () => {
 		}
 
 		fetchData();
-	}, [page]);
+	}, []);
+
+	const listProducts = async () => {
+		setPageLoading(true);
+		try {
+			const SaleDetailFetch = await SaleService.getAllById(Number(id), Number(page));
+			if (SaleDetailFetch instanceof Error) return 'Products not found';
+			setSaleDetail(SaleDetailFetch.data);
+			setTotalCountPage(SaleDetailFetch.totalCount);
+			setTotalProductsPrice(SaleDetailFetch.totalValue);
+
+			const productIds = SaleDetailFetch.data.map((saleDetail) => saleDetail.prod_id);
+			const productDetailsArray: Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[] = [];
+
+			for (const productId of productIds) {
+				const product = await ProductService.getById(productId);
+				if (product instanceof Error) {
+					console.error(`Product not found for product id: ${productId}`);
+				} else {
+					productDetailsArray.push({ id: productId, name: product.name, price: product.price, deleted_at: product.deleted_at });
+				}
+			}
+			setProductDetails(productDetailsArray);
+		}
+		catch (e) {
+			console.error(e);
+		} finally {
+			setPageLoading(false);
+		}
+	}
+
+	useEffect(() => {
+		setProductDetails([]);
+		listProducts();
+	}, [page])
 
 	const handleClickAdd = async () => {
-		const result = await SaleService.createObs(Number(id), { obs: obs.trim() });
+		setLoading(true);
+		try {
 
-		if (result instanceof Error) {
-			return Swal.fire({
-				icon: "error",
-				title: "Atenção",
-				text: "Observação não pode ser vazia",
+			const result = await SaleService.createObs(Number(id), { obs: obs.trim() });
+
+			if (result instanceof Error) {
+				return Swal.fire({
+					icon: "error",
+					title: "Atenção",
+					text: "Observação não pode ser vazia",
+					showConfirmButton: true,
+				});
+			}
+
+			Swal.fire({
+				icon: "success",
+				title: "Sucesso!",
+				text: "Observação adicionada com sucesso!",
 				showConfirmButton: true,
 			});
+			setNAObs(true);
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setLoading(false);
 		}
-
-		Swal.fire({
-			icon: "success",
-			title: "Sucesso!",
-			text: "Observação adicionada com sucesso!",
-			showConfirmButton: true,
-		});
 	};
 
 	return (
@@ -120,7 +146,7 @@ export const SaleDetail: React.FC = () => {
 			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 				<Box minHeight={550} margin={5}>
 					<Typography variant="h4" margin={1}>{sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : <Skeleton sx={{ maxWidth: 400 }} />}</Typography>
-					<Typography variant="h5" margin={1}>{fincash?.opener ? 'Caixa:' + fincash.opener : <Skeleton sx={{ maxWidth: 100 }} />}</Typography>
+					<Typography variant="h5" margin={1}>{fincash?.opener ? 'Caixa: ' + fincash.opener : <Skeleton sx={{ maxWidth: 100 }} />}</Typography>
 					<Typography variant="h6" margin={1}>Produtos:</Typography>
 					<TableContainer sx={{ minHeight: 428 }}>
 						<Table>
@@ -137,8 +163,8 @@ export const SaleDetail: React.FC = () => {
 								{saleDetail.length > 0 ? saleDetail.map((saleDetail, index) =>
 								(
 									<TableRow key={saleDetail.prod_id}>
-										<TableCell>{productDetails[index]?.name}{productDetails[index]?.deleted_at && ' (APAGADO: ' + format(productDetails[index].deleted_at as Date, 'dd/MM/yy') + ")"}</TableCell>
-										<TableCell>{productDetails[index]?.price}</TableCell>
+										<TableCell>{productDetails[index]?.name || <Skeleton />}{productDetails[index]?.deleted_at && ' (APAGADO: ' + format(productDetails[index].deleted_at as Date, 'dd/MM/yy') + ")"}</TableCell>
+										<TableCell>{productDetails[index]?.price || <Skeleton sx={{ maxWidth: 50 }} />}</TableCell>
 										<TableCell>{saleDetail.price}</TableCell>
 										<TableCell>{saleDetail.quantity}</TableCell>
 										<TableCell>{saleDetail.pricetotal}</TableCell>
@@ -146,28 +172,44 @@ export const SaleDetail: React.FC = () => {
 								)
 								)
 									:
-
-									<TableRow>
-										<TableCell colSpan={5}> <Skeleton /></TableCell>
-									</TableRow>
+									<>
+										<TableRow>
+											<TableCell colSpan={5}> <Skeleton /></TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell colSpan={5}> <Skeleton /></TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell colSpan={5}> <Skeleton /></TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell colSpan={5}> <Skeleton /></TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell colSpan={5}> <Skeleton /></TableCell>
+										</TableRow>
+										<TableRow>
+											<TableCell colSpan={5}> <Skeleton /></TableCell>
+										</TableRow>
+									</>
 								}
 							</TableBody>
 						</Table>
 					</TableContainer>
-					<Box display={'flex'} justifyContent={'space-between'}>
-						{/* PAGINATION */}
-						{(totalCountPage > 0 && totalCountPage > Environment.LIMITE_DE_LINHAS) && (
-							<TableRow>
-								<TableCell colSpan={5}>
-									<Pagination
-										page={Number(page)}
-										count={Math.ceil(totalCountPage / Environment.LIMITE_DE_LINHAS)}
-										onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
-										siblingCount={smDown ? 0 : 1}
-									/>
-								</TableCell>
-							</TableRow>
-						)}
+					<Box display={'flex'} justifyContent={'space-between'} mt={2}>
+						<Box display={'flex'}>
+							{/* PAGINATION */}
+							{(totalCountPage > 0 && totalCountPage > Environment.LIMITE_DE_LINHAS) && (
+								<Pagination
+									disabled={pageLoading}
+									page={Number(page)}
+									count={Math.ceil(totalCountPage / Environment.LIMITE_DE_LINHAS)}
+									onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+									siblingCount={smDown ? 0 : 1}
+								/>
+							)}
+							{pageLoading && <CircularProgress />}
+						</Box>
 
 						{(totalCountPage <= 0 || totalCountPage <= Environment.LIMITE_DE_LINHAS) && (
 							<Box></Box>
@@ -187,10 +229,12 @@ export const SaleDetail: React.FC = () => {
 							label="Observações"
 							id="elevation-multiline-static"
 							autoComplete="off"
+							disabled={loading}
 						/>
-						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd}>
-							Adicionar Observação
+						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd} disabled={loading || !obs}>
+							{NAObs ? 'Editar Observação' : 'Adicionar Observação'}
 						</Button>
+						{loading && <CircularProgress />}
 					</Box>
 
 				</Box >
