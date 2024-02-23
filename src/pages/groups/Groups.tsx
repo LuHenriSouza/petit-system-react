@@ -40,6 +40,13 @@ export const Groups: React.FC = () => {
   const theme = useTheme();
   const [searchParams, setSearchParams] = useSearchParams();
 
+  // Paginations
+  const [prodLoadingPage, setProdLoadingPage] = useState(false);
+  const [groupLoadingPage, setGroupLoadingPage] = useState(false);
+  const [prodGroupLoadingPage, setProdGroupLoadingPage] = useState(false);
+
+
+
   //ADD MODAL
   const [open, setOpen] = useState(false);
   const handleClickOpen = () => {
@@ -79,14 +86,21 @@ export const Groups: React.FC = () => {
   }, [groupSearch, groupPage, debounce]);
 
   const listGroups = async () => {
-    const response = await GroupService.getAll(
-      Number(groupPage),
-      groupSearch,
-      GROUP_ROW_LIMIT
-    );
-    if (response instanceof Error) return alert(response.message);
-    setGroupRows(response.data);
-    setGroupTotalCount(response.totalCount);
+    setGroupLoadingPage(true)
+    try {
+      const response = await GroupService.getAll(
+        Number(groupPage),
+        groupSearch,
+        GROUP_ROW_LIMIT
+      );
+      if (response instanceof Error) return alert(response.message);
+      setGroupRows(response.data);
+      setGroupTotalCount(response.totalCount);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setGroupLoadingPage(false);
+    }
   };
 
   // Prod In Group
@@ -114,16 +128,23 @@ export const Groups: React.FC = () => {
   }, [prodInGroupSearch, prodInGroupPage, debounce, groupSelectedRow]);
 
   const listProdsInGroup = async () => {
-    const response = await GroupService.getProdsByGroup(
-      groupSelectedRow,
-      Number(prodInGroupPage),
-      prodInGroupSearch,
-      PRODGROUP_ROW_LIMIT
-    );
-    if (response instanceof Error) return alert(response.message);
-    setProdGroupRows(response.data);
-    setProdGroupTotalCount(response.totalCount);
-    setCheckBoxStatus(response.show);
+    setProdGroupLoadingPage(true)
+    try {
+      const response = await GroupService.getProdsByGroup(
+        groupSelectedRow,
+        Number(prodInGroupPage),
+        prodInGroupSearch,
+        PRODGROUP_ROW_LIMIT
+      );
+      if (response instanceof Error) return alert(response.message);
+      setProdGroupRows(response.data);
+      setProdGroupTotalCount(response.totalCount);
+      setCheckBoxStatus(response.show);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setProdGroupLoadingPage(false);
+    }
   };
 
   // Products
@@ -146,18 +167,25 @@ export const Groups: React.FC = () => {
   }, [open, prodPage, prodSearch]);
 
   const listProducts = async () => {
-    await ProductService.getAll(
-      Number(prodPage),
-      prodSearch,
-      PROD_ROW_LIMIT
-    ).then((result) => {
-      if (result instanceof Error) {
-        alert(result.message);
-      } else {
-        setProdRows(result.data);
-        setProdTotalCount(result.totalCount);
-      }
-    });
+    setProdLoadingPage(true)
+    try {
+      await ProductService.getAll(
+        Number(prodPage),
+        prodSearch,
+        PROD_ROW_LIMIT
+      ).then((result) => {
+        if (result instanceof Error) {
+          alert(result.message);
+        } else {
+          setProdRows(result.data);
+          setProdTotalCount(result.totalCount);
+        }
+      });
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setProdLoadingPage(false);
+    }
   };
 
   // Group Handles
@@ -217,6 +245,7 @@ export const Groups: React.FC = () => {
     setGroupSelectedRow(id);
     setSearchParams((old) => {
       old.delete("prodInGroupSearch");
+      old.delete("prodInGroupPage");
       return old;
     });
   };
@@ -331,6 +360,7 @@ export const Groups: React.FC = () => {
               onChange={(event) =>
                 setSearchParams((old) => {
                   old.set("groupSearch", event.target.value);
+                  old.delete('groupPage');
                   return old;
                 })
               }
@@ -377,6 +407,8 @@ export const Groups: React.FC = () => {
             </Box>
             {groupTotalCount > 0 && groupTotalCount > GROUP_ROW_LIMIT && (
               <Pagination
+                disabled={groupLoadingPage}
+                sx={{ m: 2 }}
                 page={Number(groupPage)}
                 count={Math.ceil(groupTotalCount / GROUP_ROW_LIMIT)}
                 onChange={(_, newPage) =>
@@ -432,6 +464,7 @@ export const Groups: React.FC = () => {
                   onChange={(event) =>
                     setSearchParams((old) => {
                       old.set("prodInGroupSearch", event.target.value);
+                      old.delete("prodInGroupPage");
                       return old;
                     })
                   }
@@ -503,6 +536,8 @@ export const Groups: React.FC = () => {
             {prodGroupTotalCount > 0 &&
               prodGroupTotalCount > PRODGROUP_ROW_LIMIT && (
                 <Pagination
+                  disabled={prodGroupLoadingPage}
+                  sx={{ m: 2 }}
                   page={Number(prodInGroupPage)}
                   count={Math.ceil(
                     prodGroupTotalCount / PRODGROUP_ROW_LIMIT
@@ -575,6 +610,8 @@ export const Groups: React.FC = () => {
           {prodTotalCount > 0 && prodTotalCount > PROD_ROW_LIMIT && (
             <Box display={"flex"} justifyContent={"center"}>
               <Pagination
+                disabled={prodLoadingPage}
+                sx={{ m: 2 }}
                 page={Number(prodPage)}
                 count={Math.ceil(prodTotalCount / PROD_ROW_LIMIT)}
                 onChange={(_, newPage) =>
