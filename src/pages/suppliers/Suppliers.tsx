@@ -244,7 +244,7 @@ export const Suppliers: React.FC = () => {
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleClose}>Cancelar</Button>
-					<Button onClick={isEdit ? handleSubmitEdit : handleSubmit}>Cadastrar</Button>
+					<Button onClick={isEdit ? handleSubmitEdit : handleSubmit}>{isEdit ? 'Editar' : 'Cadastrar'}</Button>
 				</DialogActions>
 			</Dialog>
 		</LayoutMain>

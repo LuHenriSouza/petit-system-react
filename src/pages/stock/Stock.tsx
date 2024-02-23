@@ -201,7 +201,7 @@ export const Stock: React.FC = () => {
 						size="small"
 						placeholder={'Pesquisar'}
 						value={stockSearch}
-						onChange={(event) => { setSearchParams((old) => { old.set('stockSearch', event.target.value); return old; }) }}
+						onChange={(event) => { setSearchParams((old) => { old.set('stockSearch', event.target.value); old.delete('stockPage'); return old; }) }}
 						autoComplete="off"
 					/>
 					<Button variant="contained" onClick={handleClickOpen}><AddIcon sx={{ mr: 1 }} />Adicionar</Button>
