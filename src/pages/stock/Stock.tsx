@@ -20,6 +20,7 @@ import {
 	FormControlLabel,
 	DialogContentText,
 	Snackbar,
+	Skeleton,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -32,6 +33,7 @@ import { IProductWithStock, ProductService, StockService, ValidityService } from
 
 
 const STOCK_ROW_LIMIT = 7;
+const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
 const validitySchema = yup.object().shape({
 	validity: yup.date().required()
@@ -61,6 +63,7 @@ export const Stock: React.FC = () => {
 	const [errorDate, setErrorDate] = useState(false);
 	const [openSnack, setOpenSnack] = useState(false);
 	const [openSnackError, setOpenSnackError] = useState(false);
+	const [loading, setLoading] = useState(false);
 
 	const stockPage = useMemo(() => {
 		return searchParams.get('stockPage') || 1;
@@ -105,12 +108,19 @@ export const Stock: React.FC = () => {
 	}
 
 	const listStocks = async () => {
-		const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
-		if (response instanceof Error) {
-			alert("Ocorreu algum erro");
-		} else {
-			setRows(response.data);
-			setTotalCount(response.totalCount);
+		setLoading(true);
+		try {
+			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
+			if (response instanceof Error) {
+				alert("Ocorreu algum erro");
+			} else {
+				setRows(response.data);
+				setTotalCount(response.totalCount);
+			}
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setLoading(false);
 		}
 	}
 
@@ -221,19 +231,40 @@ export const Stock: React.FC = () => {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{rows?.map((row) => (
-								<TableRow
-									key={row.code}
-									hover
-								// selected={productSelectedRow == row.id}
-								// sx={{ cursor: "pointer" }}
-								// onClick={() => handleProductRowClick(row.id)}
-								>
-									<TableCell>{row.code}</TableCell>
-									<TableCell>{row.name}</TableCell>
-									<TableCell>{row.stock}</TableCell>
-								</TableRow>
-							))}
+							{
+								loading ?
+									NUMBER_OF_SKELETONS.map(
+										(_, index) => (
+											<TableRow key={index}>
+												<TableCell >
+													<Skeleton sx={{ maxWidth: 100 }} />
+												</TableCell>
+												<TableCell >
+													<Skeleton sx={{ maxWidth: 150 }} />
+												</TableCell>
+												<TableCell >
+													<Skeleton sx={{ maxWidth: 50 }} />
+												</TableCell>
+											</TableRow>
+										)
+									)
+									:
+									rows?.map(
+										(row) => (
+											<TableRow
+												key={row.code}
+												hover
+											// selected={productSelectedRow == row.id}
+											// sx={{ cursor: "pointer" }}
+											// onClick={() => handleProductRowClick(row.id)}
+											>
+												<TableCell>{row.code}</TableCell>
+												<TableCell>{row.name}</TableCell>
+												<TableCell>{row.stock}</TableCell>
+											</TableRow>
+										)
+									)
+							}
 						</TableBody>
 						{totalCount === 0 && (
 							<caption>Nenhum grupo encontrado</caption>
