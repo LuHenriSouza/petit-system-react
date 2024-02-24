@@ -1,4 +1,4 @@
-import { Paper, Grid, Box, TextField, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Alert, useMediaQuery, useTheme, Typography, Button } from "@mui/material";
+import { Paper, Grid, Box, TextField, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Alert, useMediaQuery, useTheme, Typography, Button, Skeleton } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useRef, useState } from "react";
 import { FincashService, IFincash, SaleService, GroupService, IGroup, ISaleObs } from "../../shared/services/api";
@@ -10,6 +10,10 @@ import AddShoppingCartRoundedIcon from '@mui/icons-material/AddShoppingCartRound
 import Swal from 'sweetalert2'
 import SettingsIcon from '@mui/icons-material/Settings';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
+
+const NUMBER_OF_SKELETONS_GROUP = Array(18).fill(null);
+const NUMBER_OF_SKELETONS_PROD = Array(7).fill(null);
+
 
 export const Sale: React.FC = () => {
 
@@ -47,11 +51,14 @@ export const Sale: React.FC = () => {
 
 	const listGroups = async () => {
 		try {
+			setLoading(true);
 			const response = await GroupService.getShowGroups();
 			if (response instanceof Error) return;
 			setGroups(response);
 		} catch (e) {
 			alert(e)
+		} finally {
+			setLoading(false);
 		}
 	}
 
@@ -167,7 +174,7 @@ export const Sale: React.FC = () => {
 	const [selectedGroup, setSelectedGroup] = useState(0);
 	const [prodGroup, setProdGroup] = useState<IProduct[]>();
 	const [prodTotalCount, setProdTotalCount] = useState(0);
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const handleClickGroup = (group_id: number) => {
 		setSelectedGroup(group_id);
 		listProductsInGroup(group_id);
@@ -288,9 +295,9 @@ export const Sale: React.FC = () => {
 						</Box>
 					</Paper>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-						<Box border={1} minHeight={593} my={2}>
+						<Box border={1} minHeight={570} my={2}>
 							<Grid item container p={2} gap={1}>
-								{selectedGroup ?
+								{selectedGroup ? !loading ?
 									<Box width={'100%'} display={'flex'} flexDirection={'column'} gap={1}>
 										{!prodTotalCount && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
 										{prodGroup?.map((prod) =>
@@ -336,22 +343,51 @@ export const Sale: React.FC = () => {
 										)}
 									</Box>
 									:
-									groups?.map((gp) =>
-										<Grid
-											key={gp.id}
-											item
-											xs={2.8}
-											border={1}
-											minHeight={50}
+									NUMBER_OF_SKELETONS_PROD.map((_, i) =>
+										<Box
+											key={i}
+											gap={15}
+											height={40}
+											width={'100%'}
 											display={'flex'}
 											alignItems={'center'}
-											justifyContent={'center'}
-											sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
-											onClick={() => handleClickGroup(gp.id)}
 										>
-											<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
-										</Grid>
+											<Skeleton width={'100%'} height={65} sx={{ p: 0, m: 0 }}></Skeleton>
+										</Box>
 									)
+									: !loading ?
+										groups?.map((gp) =>
+											<Grid
+												key={gp.id}
+												item
+												xs={2.8}
+												border={1}
+												minHeight={50}
+												display={'flex'}
+												alignItems={'center'}
+												justifyContent={'center'}
+												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+												onClick={() => handleClickGroup(gp.id)}
+											>
+												<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
+											</Grid>
+										)
+										:
+										NUMBER_OF_SKELETONS_GROUP.map((_, i) =>
+											<Grid
+												key={i}
+												item
+												xs={2.8}
+												maxHeight={70}
+												display={'flex'}
+												alignItems={'center'}
+												justifyContent={'center'}
+											// border={1}
+											// sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+											>
+												<Skeleton width={'100%'} height={85}></Skeleton>
+											</Grid>
+										)
 								}
 							</Grid>
 						</Box>

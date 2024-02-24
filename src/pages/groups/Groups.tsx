@@ -66,6 +66,7 @@ export const Groups: React.FC = () => {
   // Groups
   const [groupNameInput, setGroupNameInput] = useState("");
   const [groupRows, setGroupRows] = useState<IGroup[]>([]);
+  const [createLoading, setCreateLoading] = useState(false);
   const [groupTotalCount, setGroupTotalCount] = useState(0);
   const [groupSelectedRow, setGroupSelectedRow] = useState(0);
   const [checkBoxStatus, setCheckBoxStatus] = useState(false);
@@ -152,8 +153,8 @@ export const Groups: React.FC = () => {
   // Products
   const [prodRows, setProdRows] = useState<IProduct[]>([]);
   const [prodTotalCount, setProdTotalCount] = useState(0);
-  const [prodSelected, setProdSelected] = useState(0);
   const [errorExists, setErrorExists] = useState(false);
+  const [prodSelected, setProdSelected] = useState(0);
   const prodSearch = useMemo(() => {
     return searchParams.get("prodSearch") || "";
   }, [searchParams]);
@@ -192,6 +193,7 @@ export const Groups: React.FC = () => {
 
   // Group Handles
   const handleNewGroup = async () => {
+    setCreateLoading(true);
     const response = await GroupService.create({ name: groupNameInput.trim() });
     if (response instanceof Error) {
       Swal.fire({
@@ -211,6 +213,7 @@ export const Groups: React.FC = () => {
       listGroups();
       setGroupNameInput("");
     }
+    setCreateLoading(false);
   };
 
   const handleDeleteGroup = async (id: number, name: string) => {
@@ -338,7 +341,7 @@ export const Groups: React.FC = () => {
                 autoComplete="off"
                 onKeyDown={handleKeyDownNewGroup}
               />
-              <Button variant="contained" onClick={handleNewGroup}>
+              <Button variant="contained" onClick={handleNewGroup} disabled={createLoading}>
                 <AddIcon />
               </Button>
             </Box>
