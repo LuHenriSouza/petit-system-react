@@ -6,7 +6,9 @@ import {
 	Button,
 	Dialog,
 	Switch,
+	Skeleton,
 	TableRow,
+	Snackbar,
 	TableBody,
 	TableCell,
 	TextField,
@@ -19,8 +21,6 @@ import {
 	DialogActions,
 	FormControlLabel,
 	DialogContentText,
-	Snackbar,
-	Skeleton,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -49,21 +49,22 @@ export const Stock: React.FC = () => {
 
 
 
-	const [rows, setRows] = useState<IProductWithStock[]>();
-	const [totalCount, setTotalCount] = useState(0);
 	const [open, setOpen] = useState(false);
-	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
-	const [selectedProd, setSelectedProd] = useState(0);
-	const [selectedProdName, setSelectedProdName] = useState('');
 	const [qntStock, setQntStock] = useState(0);
-	const [errorSelect, setErrorSelect] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [errorQnt, setErrorQnt] = useState(false);
-	const [switchActivated, setSwitchActivated] = useState(false);
-	const [validityDate, setValidityDate] = useState<Date>();
+	const [totalCount, setTotalCount] = useState(0);
 	const [errorDate, setErrorDate] = useState(false);
 	const [openSnack, setOpenSnack] = useState(false);
+	const [selectedProd, setSelectedProd] = useState(0);
+	const [loadingPage, setLoadingPage] = useState(true);
+	const [errorSelect, setErrorSelect] = useState(false);
+	const [validityDate, setValidityDate] = useState<Date>();
+	const [rows, setRows] = useState<IProductWithStock[]>([]);
 	const [openSnackError, setOpenSnackError] = useState(false);
-	const [loading, setLoading] = useState(false);
+	const [selectedProdName, setSelectedProdName] = useState('');
+	const [switchActivated, setSwitchActivated] = useState(false);
+	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
 
 	const stockPage = useMemo(() => {
 		return searchParams.get('stockPage') || 1;
@@ -108,8 +109,9 @@ export const Stock: React.FC = () => {
 	}
 
 	const listStocks = async () => {
-		setLoading(true);
 		try {
+			setLoadingPage(true);
+			setLoading(true);
 			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
 			if (response instanceof Error) {
 				alert("Ocorreu algum erro");
@@ -120,7 +122,10 @@ export const Stock: React.FC = () => {
 		} catch (e) {
 			console.error(e);
 		} finally {
-			setLoading(false);
+			debounce(() => {
+				setLoading(false);
+			});
+			setLoadingPage(false);
 		}
 	}
 
@@ -232,47 +237,48 @@ export const Stock: React.FC = () => {
 						</TableHead>
 						<TableBody>
 							{
-								loading ?
-									NUMBER_OF_SKELETONS.map(
-										(_, index) => (
-											<TableRow key={index}>
-												<TableCell >
-													<Skeleton sx={{ maxWidth: 100 }} />
-												</TableCell>
-												<TableCell >
-													<Skeleton sx={{ maxWidth: 150 }} />
-												</TableCell>
-												<TableCell >
-													<Skeleton sx={{ maxWidth: 50 }} />
-												</TableCell>
-											</TableRow>
-										)
+								rows.length > 0 &&
+								rows.map(
+									(row) => (
+										<TableRow
+											key={row.code}
+											hover
+										>
+											<TableCell>{row.code}</TableCell>
+											<TableCell>{row.name}</TableCell>
+											<TableCell>{row.stock}</TableCell>
+										</TableRow>
 									)
-									:
-									rows?.map(
-										(row) => (
-											<TableRow
-												key={row.code}
-												hover
-											// selected={productSelectedRow == row.id}
-											// sx={{ cursor: "pointer" }}
-											// onClick={() => handleProductRowClick(row.id)}
-											>
-												<TableCell>{row.code}</TableCell>
-												<TableCell>{row.name}</TableCell>
-												<TableCell>{row.stock}</TableCell>
-											</TableRow>
-										)
-									)
+								)
 							}
+							{
+								loading &&
+								NUMBER_OF_SKELETONS.map(
+									(_, index) => (
+										<TableRow key={index}>
+											<TableCell >
+												<Skeleton sx={{ maxWidth: 100 }} />
+											</TableCell>
+											<TableCell >
+												<Skeleton sx={{ maxWidth: 150 }} />
+											</TableCell>
+											<TableCell >
+												<Skeleton sx={{ maxWidth: 50 }} />
+											</TableCell>
+										</TableRow>
+									)
+								)
+							}
+
 						</TableBody>
-						{totalCount === 0 && (
+						{totalCount === 0 && !loading && (
 							<caption>Nenhum grupo encontrado</caption>
 						)}
 					</Table>
 				</Box>
 				{totalCount > 0 && totalCount > STOCK_ROW_LIMIT && (
 					<Pagination
+						disabled={loadingPage}
 						page={Number(stockPage)}
 						count={Math.ceil(totalCount / STOCK_ROW_LIMIT)}
 						onChange={(_, newPage) =>

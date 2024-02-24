@@ -78,9 +78,9 @@ export const Products: React.FC = () => {
     const [querryError, setQuerryError] = useState(false);
 
     // Loading
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
     const [editLoading, setEditLoading] = useState(false);
-    const [loadingPage, setLoadingPage] = useState(false);
+    const [loadingPage, setLoadingPage] = useState(true);
 
     const formRef = useRef<FormHandles>(null);
 
@@ -94,9 +94,9 @@ export const Products: React.FC = () => {
     }, [searchParams]);
 
     useEffect(() => {
+        setLoadingPage(true);
+        setLoading(true);
         debounce(() => {
-            setLoadingPage(true);
-            setLoading(true);
             listProducts();
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -118,7 +118,9 @@ export const Products: React.FC = () => {
         } catch (e) {
             console.error(e);
         } finally {
-            setLoading(false);
+            debounce(() => {
+                setLoading(false);
+            });
             setLoadingPage(false);
         }
     }
@@ -343,7 +345,7 @@ export const Products: React.FC = () => {
                                             disabled={loadingPage}
                                             page={Number(page)}
                                             count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-                                            onChange={(_, newPage) => setSearchParams({ search, page: newPage.toString() }, { replace: true })}
+                                            onChange={(_, newPage) => { setSearchParams({ search, page: newPage.toString() }, { replace: true }); }}
                                             siblingCount={smDown ? 0 : 1}
                                         />
                                     </TableCell>

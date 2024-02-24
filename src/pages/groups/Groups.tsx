@@ -144,6 +144,8 @@ export const Groups: React.FC = () => {
       console.error(e);
     } finally {
       setProdGroupLoadingPage(false);
+      setLoading(false);
+
     }
   };
 
@@ -316,8 +318,6 @@ export const Groups: React.FC = () => {
       listGroups();
     } catch (e) {
       alert(e)
-    } finally {
-      setLoading(false);
     }
   }
 
