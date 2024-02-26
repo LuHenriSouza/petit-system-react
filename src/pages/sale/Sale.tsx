@@ -299,7 +299,7 @@ export const Sale: React.FC = () => {
 							<Grid item container p={2} gap={1}>
 								{selectedGroup ? !loading ?
 									<Box width={'100%'} display={'flex'} flexDirection={'column'} gap={1}>
-										{!prodTotalCount && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
+										{prodTotalCount === 0 && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
 										{prodGroup?.map((prod) =>
 											<Box
 												key={prod.code}
@@ -323,7 +323,7 @@ export const Sale: React.FC = () => {
 													:
 													<Box display={'flex'} ml={1} width={150}>
 														<ArrowLeftRoundedIcon
-															sx={{ cursor: 'pointer', zIndex: 999999999 }}
+															sx={{ cursor: 'pointer' }}
 															fontSize="large"
 															onClick={() => handleQuantityChange(prod.code, -1)}
 														/>

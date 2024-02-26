@@ -30,6 +30,8 @@ import { FincashService, IFincash, IProduct, ISaleDetail, ISaleRaw, ProductServi
 export const SaleDetail: React.FC = () => {
 	const { id } = useParams();
 	const [obs, setObs] = useState('');
+	const [NAObs, setNAObs] = useState(false);
+	const [lastOBS, setLastOBS] = useState('');
 	const [sale, setSale] = useState<ISaleRaw>();
 	const [loading, setLoading] = useState(false);
 	const [fincash, setFincash] = useState<IFincash>();
@@ -39,7 +41,6 @@ export const SaleDetail: React.FC = () => {
 	const [totalProductsPrice, setTotalProductsPrice] = useState(0);
 	const [saleDetail, setSaleDetail] = useState<ISaleDetail[]>([]);
 	const [productDetails, setProductDetails] = useState<Omit<IProduct, 'code' | 'sector' | 'created_at' | 'updated_at'>[]>([]);
-	const [NAObs, setNAObs] = useState(false);
 
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
@@ -57,7 +58,7 @@ export const SaleDetail: React.FC = () => {
 				if (saleFetch instanceof Error) return 'sale not found';
 				setSale(saleFetch);
 
-				if (saleFetch.obs) { setObs(saleFetch.obs); setNAObs(true); }
+				if (saleFetch.obs) { setObs(saleFetch.obs); setNAObs(true); setLastOBS(saleFetch.obs) }
 
 				const fincashFetch = await FincashService.getById(Number(saleFetch.fincash_id));
 				if (fincashFetch instanceof Error) return 'fincash not found';
@@ -127,6 +128,7 @@ export const SaleDetail: React.FC = () => {
 				showConfirmButton: true,
 			});
 			setNAObs(true);
+			setLastOBS(obs.trim());
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -231,7 +233,7 @@ export const SaleDetail: React.FC = () => {
 							autoComplete="off"
 							disabled={loading}
 						/>
-						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd} disabled={loading || !obs}>
+						<Button variant="contained" color="primary" style={{ marginTop: '16px' }} size="large" onClick={handleClickAdd} disabled={loading || !obs || obs == lastOBS}>
 							{NAObs ? 'Editar Observação' : 'Adicionar Observação'}
 						</Button>
 						{loading && <CircularProgress />}

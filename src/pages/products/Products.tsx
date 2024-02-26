@@ -6,6 +6,7 @@ import {
     Alert,
     Paper,
     Button,
+    Skeleton,
     TableRow,
     useTheme,
     TextField,
@@ -13,9 +14,7 @@ import {
     TableHead,
     TableCell,
     Pagination,
-    TableFooter,
     useMediaQuery,
-    Skeleton,
 } from '@mui/material';
 import * as yup from 'yup';
 import Swal from 'sweetalert2'
@@ -214,7 +213,6 @@ export const Products: React.FC = () => {
                     </Link>
                 </Box>
             </Paper>
-
             <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto', minHeight: 600 }}>
                 {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
                 <VForm
@@ -222,137 +220,134 @@ export const Products: React.FC = () => {
                     placeholder={''}
                     ref={formRef}
                 >
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                {(!smDown && <TableCell width={160}>Código</TableCell>)}
-                                <TableCell width={406}>Nome</TableCell>
-                                {(!smDown && <TableCell width={305}>Setor</TableCell>)}
-                                <TableCell width={340}>Preço</TableCell>
-                                <TableCell width={232}>Ações</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
+                    <Box minHeight={640}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    {(!smDown && <TableCell width={160}>Código</TableCell>)}
+                                    <TableCell width={406}>Nome</TableCell>
+                                    {(!smDown && <TableCell width={305}>Setor</TableCell>)}
+                                    <TableCell width={340}>Preço</TableCell>
+                                    <TableCell width={232}>Ações</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
 
-                            {!loading ? rows.map(
-                                row => (
-                                    isEdit !== row.id ?
-                                        <TableRow key={row.id} hover>
+                                {!loading ? rows.map(
+                                    row => (
+                                        isEdit !== row.id ?
+                                            <TableRow key={row.id} hover>
 
-                                            {(!smDown && <TableCell>{row.code}</TableCell>)}
-                                            <TableCell>{row.name}</TableCell>
-                                            {(!smDown && (
-                                                <TableCell>{
-                                                    row.sector === 1 ? '1 - Bebidas' :
-                                                        row.sector === 2 ? '2 - Chocolates' :
-                                                            row.sector === 3 ? '3 - Salgadinhos' :
-                                                                row.sector === 4 ? '4 - Sorvetes' :
-                                                                    `${row.sector} - Desconhecido`
-                                                }
-                                                </TableCell>
-                                            ))}
-                                            <TableCell>R$ {row.price}</TableCell>
-                                            <TableCell>
-                                                {(!isEdit &&
-                                                    <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
-                                                        <Icon>delete</Icon>
-                                                    </Fab>
-                                                )}
-                                                {(smDown &&
-                                                    <Link to={'/produtos/edit/' + row.id}>
-                                                        <Fab size="medium" color="warning" aria-label="add">
+                                                {(!smDown && <TableCell>{row.code}</TableCell>)}
+                                                <TableCell>{row.name}</TableCell>
+                                                {(!smDown && (
+                                                    <TableCell>{
+                                                        row.sector === 1 ? '1 - Bebidas' :
+                                                            row.sector === 2 ? '2 - Chocolates' :
+                                                                row.sector === 3 ? '3 - Salgadinhos' :
+                                                                    row.sector === 4 ? '4 - Sorvetes' :
+                                                                        `${row.sector} - Desconhecido`
+                                                    }
+                                                    </TableCell>
+                                                ))}
+                                                <TableCell>R$ {row.price}</TableCell>
+                                                <TableCell>
+                                                    {(!isEdit &&
+                                                        <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
+                                                            <Icon>delete</Icon>
+                                                        </Fab>
+                                                    )}
+                                                    {(smDown &&
+                                                        <Link to={'/produtos/edit/' + row.id}>
+                                                            <Fab size="medium" color="warning" aria-label="add">
+                                                                <Icon>edit</Icon>
+                                                            </Fab>
+                                                        </Link>
+                                                    )}
+                                                    {(!smDown &&
+                                                        <Fab size="medium" color="warning" aria-label="add" onClick={() => handleEditMode(row.id)}>
                                                             <Icon>edit</Icon>
                                                         </Fab>
-                                                    </Link>
-                                                )}
-                                                {(!smDown &&
-                                                    <Fab size="medium" color="warning" aria-label="add" onClick={() => handleEditMode(row.id)}>
-                                                        <Icon>edit</Icon>
+                                                    )}
+
+                                                </TableCell>
+                                            </TableRow >
+                                            :
+                                            <TableRow key={row.id} hover>
+                                                <TableCell>{row.code}</TableCell>
+                                                <TableCell>
+                                                    <Box maxWidth={330}>
+                                                        <VTextField name='id' valueDefault={`${row.id}`} sx={{ display: 'none' }} />
+                                                        <VTextField name='name' label={'Nome'} autoComplete="off" valueDefault={row.name} />
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio' />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Box width={180}>
+                                                        <VTextField
+                                                            name='price'
+                                                            label={'Preço'}
+                                                            autoComplete="off"
+                                                            valueDefault={`R$ ${row.price}`}
+                                                            cash
+                                                        />
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2 }} onClick={() => setIsEdit(0)}>
+                                                        <Icon>close</Icon>
                                                     </Fab>
-                                                )}
-
-                                            </TableCell>
-                                        </TableRow >
-                                        :
-                                        <TableRow key={row.id} hover>
-                                            <TableCell>{row.code}</TableCell>
-                                            <TableCell>
-                                                <Box maxWidth={330}>
-                                                    <VTextField name='id' valueDefault={`${row.id}`} sx={{ display: 'none' }} />
-                                                    <VTextField name='name' label={'Nome'} autoComplete="off" valueDefault={row.name} />
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>
-                                                <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio' />
-                                            </TableCell>
-                                            <TableCell>
-                                                <Box width={180}>
-                                                    <VTextField
-                                                        name='price'
-                                                        label={'Preço'}
-                                                        autoComplete="off"
-                                                        valueDefault={`R$ ${row.price}`}
-                                                        cash
-                                                    />
-                                                </Box>
-                                            </TableCell>
-                                            <TableCell>
-                                                <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2 }} onClick={() => setIsEdit(0)}>
-                                                    <Icon>close</Icon>
-                                                </Fab>
-                                                <Fab size="medium" color="success" aria-label="add" onClick={() => formRef.current?.submitForm()} disabled={editLoading}>
-                                                    <Icon>check</Icon>
-                                                </Fab>
-                                            </TableCell>
-                                        </TableRow >
+                                                    <Fab size="medium" color="success" aria-label="add" onClick={() => formRef.current?.submitForm()} disabled={editLoading}>
+                                                        <Icon>check</Icon>
+                                                    </Fab>
+                                                </TableCell>
+                                            </TableRow >
+                                    )
                                 )
-                            )
-                                :
+                                    :
 
-                                NUMBER_OF_SKELETONS.map((_, index) => (
-                                    <TableRow key={index}>
-                                        <TableCell >
-                                            <Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
-                                        </TableCell>
-                                        <TableCell >
-                                            <Skeleton sx={{ minHeight: 40, maxWidth: 200 }} />
-                                        </TableCell>
-                                        <TableCell >
-                                            <Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
-                                        </TableCell>
-                                        <TableCell >
-                                            <Skeleton sx={{ minHeight: 40, maxWidth: 60 }} />
-                                        </TableCell>
-                                        <TableCell >
-                                            <Fab disabled size='medium' sx={{ mr: 2 }}></Fab>
-                                            <Fab disabled size='medium'></Fab>
-                                        </TableCell>
-                                    </TableRow>
-                                ))
+                                    NUMBER_OF_SKELETONS.map((_, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 200 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 60 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Fab disabled size='medium' sx={{ mr: 2 }}></Fab>
+                                                <Fab disabled size='medium'></Fab>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
 
-                            }
-                        </TableBody>
+                                }
+                            </TableBody>
 
-                        {totalCount === 0 && !loading && (
-                            <caption>{Environment.LISTAGEM_VAZIA}</caption>
-                        )}
-
-                        <TableFooter>
-                            {(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
-                                <TableRow>
-                                    <TableCell colSpan={3}>
-                                        <Pagination
-                                            disabled={loadingPage}
-                                            page={Number(page)}
-                                            count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-                                            onChange={(_, newPage) => { setSearchParams({ search, page: newPage.toString() }, { replace: true }); }}
-                                            siblingCount={smDown ? 0 : 1}
-                                        />
-                                    </TableCell>
-                                </TableRow>
+                            {totalCount === 0 && !loading && (
+                                <caption>{Environment.LISTAGEM_VAZIA}</caption>
                             )}
-                        </TableFooter>
-                    </Table>
+
+                        </Table>
+                    </Box>
+                    {(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
+                        <Pagination
+                            sx={{ m: 1 }}
+                            disabled={loadingPage}
+                            page={Number(page)}
+                            count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
+                            onChange={(_, newPage) => { setSearchParams({ search, page: newPage.toString() }, { replace: true }); }}
+                            siblingCount={smDown ? 0 : 1}
+                        />
+                    )}
                 </VForm>
             </Paper>
         </LayoutMain >

@@ -11,6 +11,7 @@ import { FincashService, ICashOutflow, IFincash, ISupplier, OutflowService, Supp
 export const OutflowDetail: React.FC = () => {
 	const { id } = useParams();
 	const [desc, setDesc] = useState('');
+	const [loading, setLoading] = useState(false);
 	const [fincash, setFincash] = useState<IFincash>();
 	const [supplier, setSupplier] = useState<ISupplier>();
 	const [outflow, setOutflow] = useState<ICashOutflow>();
@@ -44,6 +45,7 @@ export const OutflowDetail: React.FC = () => {
 
 
 	const handleSubmit = async () => {
+		setLoading(true);
 		const result = await OutflowService.updateDescById(Number(id), { desc: desc.trim() });
 
 		if (result instanceof Error) {
@@ -61,7 +63,8 @@ export const OutflowDetail: React.FC = () => {
 			text: "Descrição alterada com sucesso!",
 			showConfirmButton: true,
 		});
-
+		setLoading(false);
+		if (outflow) outflow.desc = desc;
 	}
 
 	return (
@@ -92,8 +95,10 @@ export const OutflowDetail: React.FC = () => {
 						label="Descrição"
 						id="elevation-multiline-static"
 						autoComplete="off"
+						disabled={loading}
+
 					/>
-					<Button variant="contained" color="primary" size="large" onClick={handleSubmit} sx={{ maxWidth: 250 }}>
+					<Button variant="contained" color="primary" size="large" onClick={handleSubmit} sx={{ maxWidth: 250 }} disabled={loading || outflow?.desc == desc}>
 						Alterar Descrição
 					</Button>
 				</Box>

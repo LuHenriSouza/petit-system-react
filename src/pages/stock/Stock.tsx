@@ -237,7 +237,7 @@ export const Stock: React.FC = () => {
 						</TableHead>
 						<TableBody>
 							{
-								rows.length > 0 &&
+								!loading &&
 								rows.map(
 									(row) => (
 										<TableRow
