@@ -12,6 +12,7 @@ import {
 	Pagination,
 	Typography,
 	TableContainer,
+	Skeleton,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -20,7 +21,6 @@ import { FormHandles } from '@unform/core';
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import { EOutflowType } from "./enum/EOutflowType";
-import { Environment } from "../../shared/environment";
 import { VTextField } from "../../shared/forms/VTextField";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
@@ -28,7 +28,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, ICashOutflow, IFincash, OutflowService, SupplierService } from "../../shared/services/api";
 
-
+const OUTFLOW_ROW_LIMIT = 6;
+const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
 
 const selectManuItens: IMenuItens[] = [
 	{ text: 'Alimentação', value: EOutflowType.Alimentacao },
@@ -83,9 +84,12 @@ export const OutFlow: React.FC = () => {
 	const navigate = useNavigate();
 	const formRef = useRef<FormHandles>(null);
 	const [totalCount, setTotalCount] = useState(0);
-	const [rows, setRows] = useState<ICashOutflow[]>([]);
 	const [fincash, setFincash] = useState<IFincash>();
 	const [isSupplier, setIsSupplier] = useState(false);
+	const [loading, setLoading] = useState(true);
+	const [loadingPage, setLoadingPage] = useState(false);
+	const [loadingPageSubmit, setLoadingSubmit] = useState(false);
+	const [rows, setRows] = useState<ICashOutflow[]>([]);
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [suppliers, setSuppliers] = useState<IMenuItens[]>([]);
 	const page = useMemo(() => {
@@ -113,17 +117,19 @@ export const OutFlow: React.FC = () => {
 	}, [page]);
 
 	const listOutflows = async (fincashData: IFincash) => {
+		setLoading(true);
+		setLoadingPage(true);
 		if (fincashData) {
-			await OutflowService.getAllById(Number(page), fincashData.id)
-				.then((result) => {
-					if (result instanceof Error) {
-						alert(result.message);
-					} else {
-						setTotalCount(result.totalCount);
-						setRows(result.data);
-					}
-				});
+			const result = await OutflowService.getAllById(Number(page), fincashData.id, OUTFLOW_ROW_LIMIT);
+			if (result instanceof Error) {
+				alert(result.message);
+			} else {
+				setTotalCount(result.totalCount);
+				setRows(result.data);
+			}
 		}
+		setLoading(false);
+		setLoadingPage(false);
 	};
 
 	const handleValueChange = async (selectedValue: string) => {
@@ -154,6 +160,7 @@ export const OutFlow: React.FC = () => {
 	const handleSubmit = async (data: IFormData) => {
 		if (fincash) {
 			try {
+				setLoadingSubmit(true);
 				const getNumbers = data.value.split(' ');
 				data.value = getNumbers[1];
 				data.fincash_id = fincash.id;
@@ -191,6 +198,8 @@ export const OutFlow: React.FC = () => {
 					formRef.current?.setErrors(validatenErrors)
 					return;
 				}
+			} finally {
+				setLoadingSubmit(false);
 			}
 		} else {
 			Swal.fire({
@@ -221,52 +230,71 @@ export const OutFlow: React.FC = () => {
 									</TableHead>
 
 									<TableBody>
-										{rows.map((row, index) => {
-											return (
-												<TableRow key={index}>
-													<TableCell >
-														<Typography noWrap overflow="hidden" textOverflow="ellipsis" maxWidth={100}>
-															{row.desc}
-														</Typography>
-													</TableCell>
-													<TableCell>R$ {row.value}</TableCell>
-													<TableCell>{row.type}</TableCell>
-													<TableCell>
-														<Link to={'/saidas/' + row.id}>
-															<Fab
-																size="medium"
-																color="info"
-																onClick={() => console.log('Clique no ícone')}
-																sx={{
-																	backgroundColor: '#5bc0de',
-																	'&:hover': { backgroundColor: '#6fd8ef' },
-																}}
-															>
-																<VisibilityRoundedIcon color="info" />
-															</Fab>
-														</Link>
-													</TableCell>
-												</TableRow>
-											);
-										})}
+										{
+											!loading ? rows.map(
+												(row, index) => {
+													return (
+														<TableRow key={index}>
+															<TableCell >
+																<Typography noWrap overflow="hidden" textOverflow="ellipsis" maxWidth={100}>
+																	{row.desc}
+																</Typography>
+															</TableCell>
+															<TableCell>R$ {row.value}</TableCell>
+															<TableCell>{row.type}</TableCell>
+															<TableCell>
+																<Link to={'/saidas/' + row.id}>
+																	<Fab
+																		size="medium"
+																		color="info"
+																		onClick={() => console.log('Clique no ícone')}
+																		sx={{
+																			backgroundColor: '#5bc0de',
+																			'&:hover': { backgroundColor: '#6fd8ef' },
+																		}}
+																	>
+																		<VisibilityRoundedIcon color="info" />
+																	</Fab>
+																</Link>
+															</TableCell>
+														</TableRow>
+													);
+												}
+											)
+												:
+												NUMBER_OF_SKELETONS.map((_, index) => (
+													<TableRow key={index}>
+														<TableCell >
+															<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+														</TableCell>
+														<TableCell >
+															<Skeleton sx={{ minHeight: 40, maxWidth: 50 }} />
+														</TableCell>
+														<TableCell >
+															<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+														</TableCell>
+														<TableCell >
+															<Fab disabled size='medium'></Fab>
+														</TableCell>
+													</TableRow>
+												))
+										}
 									</TableBody>
-									{totalCount === 0 && (
+									{totalCount === 0 && !loading && (
 										<caption>Nenhuma saída registrada</caption>
 									)}
 								</Table>
 							</TableContainer>
 						</Box>
-						{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
-							<TableRow>
-								<TableCell colSpan={3}>
-									<Pagination
-										page={Number(page)}
-										count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-										onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
-										siblingCount={0}
-									/>
-								</TableCell>
-							</TableRow>
+						{totalCount > 0 && (
+							<Pagination
+								sx={{ m: 1 }}
+								disabled={loadingPage}
+								page={Number(page)}
+								count={Math.ceil(totalCount / OUTFLOW_ROW_LIMIT)}
+								onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+								siblingCount={0}
+							/>
 						)}
 					</Paper>
 				</Grid>
@@ -306,7 +334,7 @@ export const OutFlow: React.FC = () => {
 									id="elevation-multiline-static"
 									autoComplete="off"
 								/>
-								<Button variant="contained" onClick={() => formRef.current?.submitForm()}>Confirmar</Button>
+								<Button variant="contained" onClick={() => formRef.current?.submitForm()} disabled={loadingPageSubmit}>Confirmar</Button>
 							</Box>
 						</VForm>
 					</Paper>

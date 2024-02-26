@@ -10,6 +10,8 @@ import {
   Dialog,
   useTheme,
   TableRow,
+  Skeleton,
+  Checkbox,
   TextField,
   TableCell,
   TableHead,
@@ -19,7 +21,6 @@ import {
   DialogActions,
   DialogContent,
   FormControlLabel,
-  Checkbox,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import AddIcon from "@mui/icons-material/Add";
@@ -35,6 +36,11 @@ const PROD_ROW_LIMIT = 7;
 const GROUP_ROW_LIMIT = 5;
 const PRODGROUP_ROW_LIMIT = 5;
 
+const NUMBER_OF_PROD_SKELETONS = Array(PROD_ROW_LIMIT).fill(null);
+const NUMBER_OF_GROUP_SKELETONS = Array(GROUP_ROW_LIMIT).fill(null);
+const NUMBER_OF_PRODGROUP_SKELETONS = Array(PRODGROUP_ROW_LIMIT).fill(null);
+
+
 export const Groups: React.FC = () => {
   const { debounce } = useDebounce();
   const theme = useTheme();
@@ -46,6 +52,11 @@ export const Groups: React.FC = () => {
   const [prodGroupLoadingPage, setProdGroupLoadingPage] = useState(false);
 
 
+  // LOADING
+  const [loadingGroup, setLoadingGroup] = useState(true);
+  const [loadingProdGroup, setLoadingProdGroup] = useState(false);
+  const [loadingProd, setLoadingProd] = useState(true);
+  const [loadingSubmit, setLoadingSubmit] = useState(false);
 
   //ADD MODAL
   const [open, setOpen] = useState(false);
@@ -87,7 +98,8 @@ export const Groups: React.FC = () => {
   }, [groupSearch, groupPage, debounce]);
 
   const listGroups = async () => {
-    setGroupLoadingPage(true)
+    setGroupLoadingPage(true);
+    setLoadingGroup(true);
     try {
       const response = await GroupService.getAll(
         Number(groupPage),
@@ -101,6 +113,7 @@ export const Groups: React.FC = () => {
       console.error(e);
     } finally {
       setGroupLoadingPage(false);
+      setLoadingGroup(false);
     }
   };
 
@@ -130,6 +143,7 @@ export const Groups: React.FC = () => {
 
   const listProdsInGroup = async () => {
     setProdGroupLoadingPage(true)
+    setLoadingProdGroup(true);
     try {
       const response = await GroupService.getProdsByGroup(
         groupSelectedRow,
@@ -146,7 +160,7 @@ export const Groups: React.FC = () => {
     } finally {
       setProdGroupLoadingPage(false);
       setLoading(false);
-
+      setLoadingProdGroup(false);
     }
   };
 
@@ -170,8 +184,9 @@ export const Groups: React.FC = () => {
   }, [open, prodPage, prodSearch]);
 
   const listProducts = async () => {
-    setProdLoadingPage(true)
     try {
+      setProdLoadingPage(true);
+      setLoadingProd(true);
       await ProductService.getAll(
         Number(prodPage),
         prodSearch,
@@ -188,6 +203,7 @@ export const Groups: React.FC = () => {
       console.error(e);
     } finally {
       setProdLoadingPage(false);
+      setLoadingProd(false);
     }
   };
 
@@ -270,6 +286,7 @@ export const Groups: React.FC = () => {
   };
 
   const handlePutProdInGroup = async () => {
+    setLoadingSubmit(true);
     const response = await GroupService.putProdInGroup(
       groupSelectedRow,
       prodSelected
@@ -285,6 +302,7 @@ export const Groups: React.FC = () => {
       });
       listProdsInGroup();
     }
+    setLoadingSubmit(false);
   };
 
   const handleRemoveProdFromGroup = async (prod_id: number) => {
@@ -379,29 +397,43 @@ export const Groups: React.FC = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {groupRows?.map((group) => (
-                    <TableRow
-                      key={group.id}
-                      selected={groupSelectedRow == group.id}
-                      hover
-                      sx={{ cursor: "pointer", ...(group.show && { borderLeft: "4px solid #1C26" }) }}
-                      onClick={() => handleGroupRowClick(group.id)}
-                    >
-                      <TableCell>{group.name}</TableCell>
-                      <TableCell align="right">
-                        <Fab
-                          size="medium"
-                          color="error"
-                          aria-label="add"
-                          onClick={() =>
-                            handleDeleteGroup(group.id, group.name)
-                          }
+                  {
+                    !loadingGroup ?
+                      groupRows?.map((group) => (
+                        <TableRow
+                          key={group.id}
+                          selected={groupSelectedRow == group.id}
+                          hover
+                          sx={{ cursor: "pointer", ...(group.show && { borderLeft: "4px solid #1C26" }) }}
+                          onClick={() => !loadingProdGroup && handleGroupRowClick(group.id)}
                         >
-                          <Icon>delete</Icon>
-                        </Fab>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                          <TableCell>{group.name}</TableCell>
+                          <TableCell align="right">
+                            <Fab
+                              size="medium"
+                              color="error"
+                              aria-label="add"
+                              onClick={() =>
+                                handleDeleteGroup(group.id, group.name)
+                              }
+                            >
+                              <Icon>delete</Icon>
+                            </Fab>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                      :
+                      NUMBER_OF_GROUP_SKELETONS.map((_, index) => (
+                        <TableRow key={index}>
+                          <TableCell >
+                            <Skeleton sx={{ minHeight: 40, maxWidth: 250 }} />
+                          </TableCell>
+                          <TableCell align="right">
+                            <Fab disabled size='medium'></Fab>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                  }
                 </TableBody>
                 {groupTotalCount === 0 && (
                   <caption>Nenhum grupo encontrado</caption>
@@ -501,36 +533,59 @@ export const Groups: React.FC = () => {
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {prodGroupRows?.map((prod) => (
-                      <TableRow key={prod.id} hover>
-                        <TableCell>{prod.code}</TableCell>
-                        <TableCell>{prod.name}</TableCell>
-                        <TableCell>
-                          {prod.sector === 1
-                            ? "1 - Bebidas"
-                            : prod.sector === 2
-                              ? "2 - Chocolates"
-                              : prod.sector === 3
-                                ? "3 - Salgadinhos"
-                                : prod.sector === 4
-                                  ? "4 - Sorvetes"
-                                  : `${prod.sector} - Desconhecido`}
-                        </TableCell>
-                        <TableCell>R$ {prod.price}</TableCell>
-                        <TableCell>
-                          <Fab
-                            size="medium"
-                            color="error"
-                            aria-label="add"
-                            onClick={() => handleRemoveProdFromGroup(prod.id)}
-                          >
-                            <RemoveIcon />
-                          </Fab>
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {
+                      !loadingProdGroup ?
+                        prodGroupRows?.map((prod) => (
+                          <TableRow key={prod.id} hover>
+                            <TableCell>{prod.code}</TableCell>
+                            <TableCell>{prod.name}</TableCell>
+                            <TableCell>
+                              {prod.sector === 1
+                                ? "1 - Bebidas"
+                                : prod.sector === 2
+                                  ? "2 - Chocolates"
+                                  : prod.sector === 3
+                                    ? "3 - Salgadinhos"
+                                    : prod.sector === 4
+                                      ? "4 - Sorvetes"
+                                      : `${prod.sector} - Desconhecido`}
+                            </TableCell>
+                            <TableCell>R$ {prod.price}</TableCell>
+                            <TableCell>
+                              <Fab
+                                size="medium"
+                                color="error"
+                                aria-label="add"
+                                onClick={() => handleRemoveProdFromGroup(prod.id)}
+                              >
+                                <RemoveIcon />
+                              </Fab>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                        :
+                        NUMBER_OF_PRODGROUP_SKELETONS.map((_, index) => (
+                          <TableRow key={index}>
+                            <TableCell >
+                              <Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+                            </TableCell>
+                            <TableCell >
+                              <Skeleton sx={{ minHeight: 40, maxWidth: 200 }} />
+                            </TableCell>
+                            <TableCell >
+                              <Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+                            </TableCell>
+                            <TableCell >
+                              <Skeleton sx={{ minHeight: 40, maxWidth: 60 }} />
+                            </TableCell>
+                            <TableCell >
+                              <Fab disabled size='medium'></Fab>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                    }
                   </TableBody>
-                  {prodGroupTotalCount === 0 && (
+                  {prodGroupTotalCount === 0 && !loadingProdGroup && (
                     <caption>Nenhum produto encontrado</caption>
                   )}
                 </Table>
@@ -590,17 +645,29 @@ export const Groups: React.FC = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {prodRows?.map((prod) => (
-                  <TableRow
-                    key={prod.id}
-                    hover
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => handleProdRowClick(prod.id)}
-                    selected={prodSelected == prod.id}
-                  >
-                    <TableCell>{prod.name}</TableCell>
-                  </TableRow>
-                ))}
+                {
+                  !loadingProd ?
+                    prodRows?.map(
+                      (prod) => (
+                        <TableRow
+                          key={prod.id}
+                          hover
+                          sx={{ cursor: "pointer" }}
+                          onClick={() => handleProdRowClick(prod.id)}
+                          selected={prodSelected == prod.id}
+                        >
+                          <TableCell>{prod.name}</TableCell>
+                        </TableRow>
+                      )
+                    )
+                    :
+                    NUMBER_OF_PROD_SKELETONS.map((_, index) =>
+                      <TableRow key={index}>
+                        <TableCell >
+                          <Skeleton sx={{ maxWidth: 200 }} />
+                        </TableCell>
+                      </TableRow>
+                    )}
               </TableBody>
               {prodTotalCount === 0 && (
                 <caption>Nenhum produto encontrado</caption>
@@ -629,7 +696,7 @@ export const Groups: React.FC = () => {
           <Button
             fullWidth
             variant="contained"
-            disabled={!prodSelected}
+            disabled={!prodSelected || loadingSubmit}
             onClick={handlePutProdInGroup}
           >
             Adicionar
