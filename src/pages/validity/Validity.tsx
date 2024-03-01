@@ -219,7 +219,7 @@ export const Validity: React.FC = () => {
 								autoComplete="off"
 								value={prodSearch}
 								placeholder={'Pesquisar'}
-								onChange={(event) => { setSearchParams((old) => { old.set('prodSearch', event.target.value); return old; }) }}
+								onChange={(event) => { setSearchParams((old) => { old.set('prodSearch', event.target.value);old.delete('prodPage'); return old; }) }}
 							/>
 						</Box>
 					</Paper>

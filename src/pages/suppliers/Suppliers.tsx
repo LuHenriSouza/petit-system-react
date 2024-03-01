@@ -1,13 +1,17 @@
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fab, Icon, Pagination, Paper, Table, TableBody, TableCell, TableContainer, TableFooter, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material";
-import { LayoutMain } from "../../shared/layouts";
-import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { useDebounce } from "../../shared/hooks";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogContentText, DialogTitle, Fab, Icon, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, useMediaQuery, useTheme } from "@mui/material";
 import { SupplierService, ISupplier } from "../../shared/services/api";
 import { Environment } from "../../shared/environment";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+import { LayoutMain } from "../../shared/layouts";
+import { useDebounce } from "../../shared/hooks";
 import AddIcon from '@mui/icons-material/Add';
-import Swal from 'sweetalert2'
-import './../../shared/css/sweetAlert.css'
+import './../../shared/css/sweetAlert.css';
+import Swal from 'sweetalert2';
+
+
+const NUMBER_OF_SKELETONS = Array(7).fill(null);
+
 
 export const Suppliers: React.FC = () => {
 	const theme = useTheme();
@@ -25,6 +29,10 @@ export const Suppliers: React.FC = () => {
 
 	const [isEdit, setIsEdit] = useState(false);
 	const [idForEdit, setIdForEdit] = useState(0);
+
+	const [loading, setLoading] = useState(true);
+	const [loadingPage, setLoadingPage] = useState(false);
+
 
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -49,23 +57,27 @@ export const Suppliers: React.FC = () => {
 	}, [searchParams]);
 
 	useEffect(() => {
+		setLoading(true);
+		setLoadingPage(true);
 		debounce(() => {
 			listSuppliers();
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [search, page, debounce]);
 
-	const listSuppliers = () => {
-		SupplierService.getAll(Number(page), search)
-			.then((result) => {
-				// setIsLoading(false);
-				if (result instanceof Error) {
-					alert(result.message);
-				} else {
-					setTotalCount(result.totalCount);
-					setRows(result.data);
-				}
-			});
+	const listSuppliers = async () => {
+		const result = await SupplierService.getAll(Number(page), search)
+
+		if (result instanceof Error) {
+			alert(result.message);
+		} else {
+			setTotalCount(result.totalCount);
+			setRows(result.data);
+		}
+
+		setLoading(false);
+		setLoadingPage(false);
+
 	};
 
 	const handleDelete = (id: number, name: string) => {
@@ -167,52 +179,67 @@ export const Suppliers: React.FC = () => {
 				</Box>
 			</Paper>
 			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto', minHeight: 600 }}>
-				<TableContainer>
-					<Table>
-						<TableHead>
-							<TableRow>
-								<TableCell>Fornecedor</TableCell>
-								<TableCell align="center">Ações</TableCell>
-							</TableRow>
-						</TableHead>
-						<TableBody>
-							{rows.map((row) =>
-							(
-								<TableRow key={row.id}>
-									<TableCell>{row.name}</TableCell>
-									<TableCell align="center">
-										<Fab size="medium" color="error" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
-											<Icon>delete</Icon>
-
-										</Fab>
-										<Fab size="medium" color="warning" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleEdit(row.id, row.name)}>
-											<Icon>edit</Icon>
-
-										</Fab>
-									</TableCell>
-								</TableRow >
-							)
-							)}
-						</TableBody>
-						{totalCount === 0 && (
-							<caption>Nenhum fornecedor encontrado</caption>
-						)}
-						<TableFooter>
-							{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
+				<Box minHeight={640}>
+					<TableContainer>
+						<Table>
+							<TableHead>
 								<TableRow>
-									<TableCell colSpan={3}>
-										<Pagination
-											page={Number(page)}
-											count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-											onChange={(_, newPage) => setSearchParams({ search, page: newPage.toString() }, { replace: true })}
-											siblingCount={smDown ? 0 : 1}
-										/>
-									</TableCell>
+									<TableCell>Fornecedor</TableCell>
+									<TableCell align="center">Ações</TableCell>
 								</TableRow>
+							</TableHead>
+							<TableBody>
+
+								{
+									!loading ?
+										rows.map((row) =>
+										(
+											<TableRow key={row.id}>
+												<TableCell>{row.name}</TableCell>
+												<TableCell align="center">
+													<Fab size="medium" color="error" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
+														<Icon>delete</Icon>
+
+													</Fab>
+													<Fab size="medium" color="warning" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleEdit(row.id, row.name)}>
+														<Icon>edit</Icon>
+
+													</Fab>
+												</TableCell>
+											</TableRow >
+										)
+										)
+										:
+										NUMBER_OF_SKELETONS.map((_, index) => (
+											<TableRow key={index}>
+												<TableCell >
+													<Skeleton sx={{ minHeight: 40, maxWidth: 250 }} />
+												</TableCell>
+												<TableCell align="center">
+													<Fab disabled size='medium' sx={{ mr: 2 }}></Fab>
+													<Fab disabled size='medium'></Fab>
+												</TableCell>
+											</TableRow>
+										))
+								}
+							</TableBody>
+
+							{totalCount === 0 && !loading && (
+								<caption>Nenhum fornecedor encontrado</caption>
 							)}
-						</TableFooter>
-					</Table>
-				</TableContainer>
+						</Table>
+					</TableContainer>
+				</Box>
+				{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
+					<Pagination
+						sx={{ m:1 }}
+						disabled={loadingPage}
+						page={Number(page)}
+						count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
+						onChange={(_, newPage) => setSearchParams({ search, page: newPage.toString() }, { replace: true })}
+						siblingCount={smDown ? 0 : 1}
+					/>
+				)}
 			</Paper>
 			{/* ADD MODAL */}
 			<Dialog
@@ -244,9 +271,9 @@ export const Suppliers: React.FC = () => {
 				</DialogContent>
 				<DialogActions>
 					<Button onClick={handleClose}>Cancelar</Button>
-					<Button onClick={isEdit ? handleSubmitEdit : handleSubmit}>Cadastrar</Button>
+					<Button onClick={isEdit ? handleSubmitEdit : handleSubmit}>{isEdit ? 'Editar' : 'Cadastrar'}</Button>
 				</DialogActions>
 			</Dialog>
-		</LayoutMain>
+		</LayoutMain >
 	);
 };

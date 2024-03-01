@@ -12,6 +12,7 @@ import {
 	Typography,
 	useMediaQuery,
 	TableContainer,
+	Skeleton,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { format } from 'date-fns';
@@ -22,6 +23,8 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
 
+const NUMBER_OF_SKELETONS = Array(7).fill(null);
+
 export const ShowSales: React.FC = () => {
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
@@ -31,6 +34,7 @@ export const ShowSales: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const [rows, setRows] = useState<IGetSales[]>([]);
 	const [totalCount, setTotalCount] = useState(0);
+	const [loading, setLoading] = useState(true);
 	const [fincash, setFincash] = useState<IFincash>();
 
 	const page = useMemo(() => {
@@ -38,47 +42,53 @@ export const ShowSales: React.FC = () => {
 	}, [searchParams]);
 
 
-	const listSales = (fincashData: IFincash) => {
+	const listSales = async (fincashData: IFincash) => {
+		try {
+			const result = await SaleService.getSalesByFincash(fincashData.id, Number(page));
+			if (result instanceof Error) {
+				alert(result.message);
+			} else {
+				console.log(result);
 
-		SaleService.getSalesByFincash(fincashData.id, Number(page))
-			.then((result) => {
-				if (result instanceof Error) {
-					alert(result.message);
-				} else {
-					console.log(result);
-
-					setTotalCount(result.totalCount);
-					setRows(result.data);
-				}
-			});
+				setTotalCount(result.totalCount);
+				setRows(result.data);
+			}
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setLoading(false);
+		}
 	}
 
 	useEffect(() => {
-		const fetchData = async () => {
-			if (!fincash) {
-				const fincashData = await FincashService.getOpenFincash();
-				if (fincashData instanceof Error) {
-					Swal.fire({
-						icon: "error",
-						title: "Erro",
-						text: "Nenhum caixa aberto encontrado!",
-						showConfirmButton: true,
-					});
-					navigate('/caixa/novo');
-				} else {
-					setFincash(fincashData);
-					listSales(fincashData);
-				}
-			} else {
-				listSales(fincash);
-			}
-		}
 		fetchData();
 	}, [page]);
 
+	const fetchData = async () => {
+		setLoading(true);
+		if (!fincash) {
+			const fincashData = await FincashService.getOpenFincash();
+			if (fincashData instanceof Error) {
+				Swal.fire({
+					icon: "error",
+					title: "Erro",
+					text: "Nenhum caixa aberto encontrado!",
+					showConfirmButton: true,
+				});
+				navigate('/caixa/novo');
+			} else {
+				setFincash(fincashData);
+				listSales(fincashData);
+			}
+		} else {
+			listSales(fincash);
+		}
+
+	}
+
 	return (
 		<>
-			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do dia"}>
+			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do caixa"}>
 				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Box minHeight={625}>
 						<TableContainer>
@@ -90,41 +100,64 @@ export const ShowSales: React.FC = () => {
 										<TableCell>Valor</TableCell>
 										<TableCell>Ações</TableCell>
 										<TableCell>Observações</TableCell>
-
 									</TableRow>
 								</TableHead>
 
 								<TableBody>
-									{rows?.map((row) => (
-										<TableRow key={row.sale_id}>
-											<TableCell>{row.sale_id}</TableCell>
-											<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
-											<TableCell>R$ {row.totalValue}</TableCell>
-											<TableCell>
-												<Link to={'/vendas/' + row.sale_id}>
-													<Fab
-														size="medium"
-														color="info"
-														onClick={() => console.log('Clique no ícone')}
-														sx={{
-															backgroundColor: '#5bc0de',
-															'&:hover': { backgroundColor: '#6fd8ef' },
-														}}
-													>
-														<VisibilityRoundedIcon color="info" />
-													</Fab>
-												</Link>
-											</TableCell>
-											<TableCell sx={{ maxWidth: 120 }}>
-												<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={6}>
-													{row.obs}
-												</Typography>
-											</TableCell>
-										</TableRow>
-									))}
+									{!loading ?
+										rows?.map(
+											(row) => (
+												<TableRow key={row.sale_id}>
+													<TableCell>{row.sale_id}</TableCell>
+													<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
+													<TableCell>R$ {row.totalValue}</TableCell>
+													<TableCell>
+														<Link to={'/vendas/' + row.sale_id}>
+															<Fab
+																size="medium"
+																color="info"
+																onClick={() => console.log('Clique no ícone')}
+																sx={{
+																	backgroundColor: '#5bc0de',
+																	'&:hover': { backgroundColor: '#6fd8ef' },
+																}}
+															>
+																<VisibilityRoundedIcon color="info" />
+															</Fab>
+														</Link>
+													</TableCell>
+													<TableCell sx={{ maxWidth: 120 }}>
+														<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={6}>
+															{row.obs}
+														</Typography>
+													</TableCell>
+												</TableRow>
+											)
+										)
+										:
+										NUMBER_OF_SKELETONS.map((_, index) => (
+											<TableRow key={index}>
+												<TableCell >
+													<Skeleton sx={{ minHeight: 40, maxWidth: 50 }} />
+												</TableCell>
+												<TableCell >
+													<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+												</TableCell>
+												<TableCell >
+													<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+												</TableCell>
+												<TableCell >
+													<Fab disabled size='medium'></Fab>
+												</TableCell>
+												<TableCell >
+													<Skeleton sx={{ minHeight: 40, maxWidth: 230 }} />
+												</TableCell>
+											</TableRow>
+										))
+									}
 								</TableBody>
 
-								{totalCount === 0 && (
+								{totalCount === 0 && !loading && (
 									<caption>Nenhuma venda efetuada</caption>
 								)}
 							</Table>

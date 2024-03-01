@@ -1,7 +1,7 @@
-import { Avatar, Box, Button, Card, CardActions, CardContent, TextField, Typography } from "@mui/material";
+import { Alert, Avatar, Box, Button, Card, CardActions, CardContent, CircularProgress, TextField, Typography } from "@mui/material";
 import { useAuthContext } from "../../contexts/AuthContext";
-import logo from './../sidebar/img/Petit-logo.png'
 import { useEffect, useRef, useState } from "react";
+import logo from './../sidebar/img/Petit-logo.png';
 import * as yup from 'yup';
 
 const loginSchema = yup.object().shape({
@@ -16,28 +16,25 @@ interface ILoginProps {
 
 export const Login: React.FC<ILoginProps> = ({ children }) => {
 
-	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const passwordInputRef = useRef<HTMLInputElement>(null)
-	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [email, setEmail] = useState('');
-	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [isLoaded, setIsLoaded] = useState(false);
-	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [password, setPassword] = useState('');
-	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [emailError, setEmailError] = useState('');
-	// eslint-disable-next-line react-hooks/rules-of-hooks
 	const [passwordError, setPasswordError] = useState('');
+	const [loading, setLoading] = useState(false);
+	const [networkError, setNetworkError] = useState(false);
 	const { isAuthenticated, login } = useAuthContext();
-
 	useEffect(() => {
 		setIsLoaded(true);
 	}, [isAuthenticated]);
 
 
 	const handleSubmit = async () => {
+		setLoading(true);
 		setEmailError('');
 		setPasswordError('');
+		setNetworkError(false);
 
 		try {
 			const data = await loginSchema.validate({ email, password }, { abortEarly: false });
@@ -45,6 +42,9 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 			if (result == 'Não Autorizado.') {
 				setEmailError('Email ou Senha Inválidos');
 				setPasswordError('Email ou Senha Inválidos');
+			}
+			if (result == 'Sem conexão.') {
+				setNetworkError(true);
 			}
 		} catch (errors) {
 			if (errors instanceof yup.ValidationError) {
@@ -56,6 +56,8 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 					}
 				});
 			}
+		} finally {
+			setLoading(false);
 		}
 	};
 
@@ -71,7 +73,7 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 
 	const handleKeyDownPassword = (e: React.KeyboardEvent<HTMLDivElement>) => {
 		setPasswordError('');
-		if (e.code === 'Enter' || e.key === 'Enter') handleSubmit();
+		if ((e.code === 'Enter' || e.key === 'Enter') && !loading) handleSubmit();
 	}
 
 	return (!isLoaded ? <>CARREGANDO</> : !isAuthenticated ?
@@ -85,7 +87,6 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 			sx={{ backgroundColor: 'rgb(28, 37, 54)' }}
 		>
 			<Avatar src={logo} sx={{ height: 160, width: 160 }}></Avatar>
-
 			<Card sx={{ backgroundColor: '#fff' }}>
 				<CardContent>
 					<Box display={'flex'} flexDirection={'column'} gap={3} width={300}>
@@ -115,11 +116,13 @@ export const Login: React.FC<ILoginProps> = ({ children }) => {
 				</CardContent>
 				<CardActions>
 					<Box width={'100%'} display={'flex'} justifyContent={'center'} sx={{ mb: 1 }}>
-						<Button variant="contained" onClick={handleSubmit} size="large">
-							Entrar
+						<Button variant="contained" onClick={handleSubmit} size="large" disabled={loading} sx={{ minWidth: 100, maxHeight: 45 }}>
+							{loading ? <CircularProgress size={35} /> : 'Entrar'}
 						</Button>
 					</Box>
 				</CardActions>
+				{networkError && (<Alert severity="error" sx={{ minWidth: 300 }}>Sem Conexão</Alert>)}
+
 			</Card>
 		</Box>
 		:

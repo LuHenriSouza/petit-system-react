@@ -1,7 +1,7 @@
-import { Paper, Grid, Box, TextField, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Alert, useMediaQuery, useTheme, Typography, Button } from "@mui/material";
+import { Paper, Grid, Box, TextField, Table, TableHead, TableRow, TableCell, TableBody, TableContainer, Alert, useMediaQuery, useTheme, Typography, Button, Skeleton } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useRef, useState } from "react";
-import { FincashService, IFincash, SaleService, ISale, GroupService, IGroup } from "../../shared/services/api";
+import { FincashService, IFincash, SaleService, GroupService, IGroup, ISaleObs } from "../../shared/services/api";
 import { useNavigate } from "react-router-dom";
 import { IProduct, ProductService } from './../../shared/services/api/';
 import ArrowLeftRoundedIcon from '@mui/icons-material/ArrowLeftRounded';
@@ -11,6 +11,10 @@ import Swal from 'sweetalert2'
 import SettingsIcon from '@mui/icons-material/Settings';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
 
+const NUMBER_OF_SKELETONS_GROUP = Array(18).fill(null);
+const NUMBER_OF_SKELETONS_PROD = Array(7).fill(null);
+
+
 export const Sale: React.FC = () => {
 
 	const theme = useTheme()
@@ -18,6 +22,7 @@ export const Sale: React.FC = () => {
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
 	const [code, setCode] = useState('');
+	const [obs, setObs] = useState('');
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [notFound, setNotFound] = useState(false);
 	const [products, setProducts] = useState<IProduct[]>([]);
@@ -46,11 +51,14 @@ export const Sale: React.FC = () => {
 
 	const listGroups = async () => {
 		try {
+			setLoading(true);
 			const response = await GroupService.getShowGroups();
 			if (response instanceof Error) return;
 			setGroups(response);
 		} catch (e) {
 			alert(e)
+		} finally {
+			setLoading(false);
 		}
 	}
 
@@ -99,9 +107,15 @@ export const Sale: React.FC = () => {
 		}
 	};
 
-	const handleProducts = async (prodCode: string) => {
-		const result = await ProductService.getByCode(prodCode);
-
+	const handleProducts = async (prodCode: string, product?: IProduct) => {
+		setNotFound(false);
+		let response: IProduct | Error;
+		if (product) {
+			response = product;
+		} else {
+			response = await ProductService.getByCode(prodCode);
+		}
+		const result = response;
 		if (result instanceof Error) {
 			setNotFound(true);
 		} else {
@@ -128,11 +142,6 @@ export const Sale: React.FC = () => {
 
 	const handleSubmit = async () => {
 		try {
-			// const bodyValidation: yup.Schema<IBodyProps> = yup.object().shape({
-			//     prod_id: yup.number().moreThan(0).required().integer(),
-			//     quantity: yup.number().moreThan(0).required().integer(),
-			//     price: yup.number().required(),
-			// });
 			const data = products.map((prod) => {
 				return {
 					prod_id: prod.id,
@@ -141,9 +150,15 @@ export const Sale: React.FC = () => {
 				}
 			});
 
-			const result = await SaleService.create(data as Omit<ISale, "id">[]);
+			const dataObs = {
+				data: data,
+				obs: obs,
+			}
+
+			const result = await SaleService.create(dataObs as ISaleObs);
 			if (result instanceof Error) return alert('Venda não efetuada.');
-			setProducts([])
+			setProducts([]);
+			setObs('');
 			Swal.fire({
 				icon: "success",
 				title: "Venda efetuada com sucesso!",
@@ -159,7 +174,7 @@ export const Sale: React.FC = () => {
 	const [selectedGroup, setSelectedGroup] = useState(0);
 	const [prodGroup, setProdGroup] = useState<IProduct[]>();
 	const [prodTotalCount, setProdTotalCount] = useState(0);
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const handleClickGroup = (group_id: number) => {
 		setSelectedGroup(group_id);
 		listProductsInGroup(group_id);
@@ -201,7 +216,7 @@ export const Sale: React.FC = () => {
 					</Paper>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						{(notFound && <Alert severity="error">Nenhum produto encontrado com este código !</Alert>)}
-						<Box display={'flex'} minHeight={550}>
+						<Box display={'flex'} minHeight={410}>
 							<TableContainer>
 								<Table sx={{ minWidth: 650 }} aria-label="simple table">
 									<TableHead>
@@ -245,6 +260,16 @@ export const Sale: React.FC = () => {
 								</Table>
 							</TableContainer>
 						</Box>
+						<TextField
+							rows={3}
+							fullWidth
+							multiline
+							sx={{ mt: 2 }}
+							value={obs}
+							onChange={(e) => setObs(e.target.value)}
+							label="Observações"
+							autoComplete="off"
+						/>
 						<Box display={'flex'} gap={38} marginTop={3}>
 							<Button
 								variant="contained"
@@ -270,13 +295,14 @@ export const Sale: React.FC = () => {
 						</Box>
 					</Paper>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-						<Box border={1} minHeight={593} my={2}>
+						<Box border={1} minHeight={570} my={2}>
 							<Grid item container p={2} gap={1}>
-								{selectedGroup ?
+								{selectedGroup ? !loading ?
 									<Box width={'100%'} display={'flex'} flexDirection={'column'} gap={1}>
-										{!prodTotalCount && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
+										{prodTotalCount === 0 && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
 										{prodGroup?.map((prod) =>
 											<Box
+												key={prod.code}
 												gap={15}
 												border={1}
 												height={40}
@@ -286,7 +312,7 @@ export const Sale: React.FC = () => {
 												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
 												onClick={() => {
 													if (!products.find((pd) => pd.code === prod.code)) {
-														handleProducts(prod.code);
+														handleProducts(prod.code, prod);
 													}
 												}}
 											>
@@ -297,7 +323,7 @@ export const Sale: React.FC = () => {
 													:
 													<Box display={'flex'} ml={1} width={150}>
 														<ArrowLeftRoundedIcon
-															sx={{ cursor: 'pointer', zIndex: 999999999 }}
+															sx={{ cursor: 'pointer' }}
 															fontSize="large"
 															onClick={() => handleQuantityChange(prod.code, -1)}
 														/>
@@ -317,21 +343,51 @@ export const Sale: React.FC = () => {
 										)}
 									</Box>
 									:
-									groups?.map((gp) =>
-										<Grid
-											item
-											xs={2.8}
-											border={1}
-											minHeight={50}
+									NUMBER_OF_SKELETONS_PROD.map((_, i) =>
+										<Box
+											key={i}
+											gap={15}
+											height={40}
+											width={'100%'}
 											display={'flex'}
 											alignItems={'center'}
-											justifyContent={'center'}
-											sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
-											onClick={() => handleClickGroup(gp.id)}
 										>
-											<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
-										</Grid>
+											<Skeleton width={'100%'} height={65} sx={{ p: 0, m: 0 }}></Skeleton>
+										</Box>
 									)
+									: !loading ?
+										groups?.map((gp) =>
+											<Grid
+												key={gp.id}
+												item
+												xs={2.8}
+												border={1}
+												minHeight={50}
+												display={'flex'}
+												alignItems={'center'}
+												justifyContent={'center'}
+												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+												onClick={() => handleClickGroup(gp.id)}
+											>
+												<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
+											</Grid>
+										)
+										:
+										NUMBER_OF_SKELETONS_GROUP.map((_, i) =>
+											<Grid
+												key={i}
+												item
+												xs={2.8}
+												maxHeight={70}
+												display={'flex'}
+												alignItems={'center'}
+												justifyContent={'center'}
+											// border={1}
+											// sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+											>
+												<Skeleton width={'100%'} height={85}></Skeleton>
+											</Grid>
+										)
 								}
 							</Grid>
 						</Box>

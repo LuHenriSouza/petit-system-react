@@ -43,9 +43,9 @@ const create = async (dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_a
     }
 };
 
-const getAllById = async (page = 1, id: number): Promise<TProductTotalCount | Error> => {
+const getAllById = async (page = 1, id: number, limit = 7): Promise<TProductTotalCount | Error> => {
     try {
-        const urlRelativa = `/cashoutflow/all/${id}?page=${page}&limit=6`;
+        const urlRelativa = `/cashoutflow/all/${id}?page=${page}&limit=${limit}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
