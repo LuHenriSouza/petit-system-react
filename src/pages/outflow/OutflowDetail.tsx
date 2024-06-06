@@ -26,11 +26,16 @@ export const OutflowDetail: React.FC = () => {
 
 				outflowFetch.desc && setDesc(outflowFetch.desc);
 
-				const fincashFetch = await FincashService.getById(Number(outflowFetch.fincash_id));
+				const [fincashFetch, supplierFetch] = await Promise.all(
+					[
+						FincashService.getById(Number(outflowFetch.fincash_id)),
+						SupplierService.getById(Number(outflowFetch.supplier_id))
+					]
+				);
+
 				if (fincashFetch instanceof Error) return 'fincash not found';
 				setFincash(fincashFetch);
 
-				const supplierFetch = await SupplierService.getById(Number(outflowFetch.supplier_id))
 				if (supplierFetch instanceof Error) return 'supplier not found';
 				setSupplier(supplierFetch);
 

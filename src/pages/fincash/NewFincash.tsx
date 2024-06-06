@@ -44,10 +44,10 @@ export const NewFincash: React.FC = () => {
     useEffect(() => {
 
         const fetchData = async () => {
-            const result = await FincashService.getOpenFincash();
+            const [result, lastFincash] = await Promise.all([FincashService.getOpenFincash(), FincashService.getLastFincash()]);
+
             setOpenFincash(result);
 
-            const lastFincash = await FincashService.getLastFincash();
             if (!(lastFincash instanceof Error))
                 formRef.current?.setFieldValue('value', `R$ ${lastFincash.finalValue}`);
         }
