@@ -33,3 +33,6 @@ export * from './stock/Stock';
 
 // Validity
 export * from './validity/Validity';
+
+// Promotions
+export * from './promotions/Promotions';

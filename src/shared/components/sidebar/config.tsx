@@ -1,3 +1,4 @@
+import SavingsIcon from '@mui/icons-material/Savings';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
@@ -68,5 +69,10 @@ export const items = [
         title: 'Fornecedores',
         path: '/fornecedores',
         icon: (<LocalShippingIcon fontSize='small' />)
+    },
+    {
+        title: 'Promoções',
+        path: '/promo',
+        icon: (<SavingsIcon fontSize='small' />)
     }
 ];

@@ -12,6 +12,7 @@ import {
     NewProduct,
     NewFincash,
     SaleDetail,
+    Promotions,
     CloseFincash,
     UpdateProduct,
     OutflowDetail,
@@ -56,6 +57,10 @@ export const AppRoutes = () => {
 
             {/* Validades */}
             <Route path="/validades" element={<Validity />} />
+
+            {/* Promções */}
+            <Route path="/promo" element={<Promotions />} />
+
 
             {/* Página 404 */}
             <Route path='/*' element={<Page404 />} />
