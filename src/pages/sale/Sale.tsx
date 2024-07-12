@@ -16,22 +16,25 @@ const NUMBER_OF_SKELETONS_PROD = Array(7).fill(null);
 
 
 export const Sale: React.FC = () => {
-
 	const theme = useTheme()
 	const navigate = useNavigate();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
-	const [code, setCode] = useState('');
 	const [obs, setObs] = useState('');
+	const [code, setCode] = useState('');
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [notFound, setNotFound] = useState(false);
-	const [products, setProducts] = useState<IProduct[]>([]);
 	const [lastResult, setLastResult] = useState('');
+	const [products, setProducts] = useState<IProduct[]>([]);
+	const [submitLoading, setSubmitLoading] = useState(false);
 	const [openFincash, setOpenFincash] = useState<Error | IFincash>(Error('default'));
 
+
+	const [obsFocus, setObsFocus] = useState(false);
 	const [groups, setGroups] = useState<IGroup[]>();
 
 	const codeInputRef = useRef<HTMLInputElement>();
+	const obsInputRef = useRef<HTMLInputElement>();
 
 	useEffect(() => {
 
@@ -46,8 +49,15 @@ export const Sale: React.FC = () => {
 			alert('Essa tela não funciona em smartphones')
 			navigate('/');
 		}
+		// codeInputRef.current?.addEventListener('blur', () => {
+		// 	if (!obsFocus) inputFocus();
+		// })
 	}, []);
 
+
+	const inputFocus = () => {
+		codeInputRef.current?.focus();
+	}
 
 	const listGroups = async () => {
 		try {
@@ -76,7 +86,7 @@ export const Sale: React.FC = () => {
 
 
 		setTotalPrice(totalCalc.reduce((total, currentItem) => total + currentItem, 0) / 100);
-
+		inputFocus()
 	}, [products]);
 
 
@@ -108,40 +118,48 @@ export const Sale: React.FC = () => {
 	};
 
 	const handleProducts = async (prodCode: string, product?: IProduct) => {
-		setNotFound(false);
-		let response: IProduct | Error;
-		if (product) {
-			response = product;
-		} else {
-			response = await ProductService.getByCode(prodCode);
-		}
-		const result = response;
-		if (result instanceof Error) {
-			setNotFound(true);
-		} else {
-			setLastResult(prodCode);
-			// Check if the product is already in the products array
-			const existingProductIndex = products.findIndex((p) => p.code === result.code);
-
-			if (existingProductIndex !== -1) {
-				// If the product exists, update its quantity
-				const updatedProducts = [...products];
-				updatedProducts[existingProductIndex] = {
-					...result,
-					quantity: (updatedProducts[existingProductIndex].quantity || 0) + 1,
-				};
-				setProducts(updatedProducts);
+		try {
+			setSubmitLoading(true);
+			setNotFound(false);
+			let response: IProduct | Error;
+			if (product) {
+				response = product;
 			} else {
-				// If the product doesn't exist, add it to the products array
-				setProducts((prevProducts) => [...prevProducts, { ...result, quantity: 1 }]);
+				response = await ProductService.getByCode(prodCode);
 			}
-		}
+			const result = response;
+			if (result instanceof Error) {
+				setNotFound(true);
+			} else {
+				setLastResult(prodCode);
+				// Check if the product is already in the products array
+				const existingProductIndex = products.findIndex((p) => p.code === result.code);
 
-		setCode('');
+				if (existingProductIndex !== -1) {
+					// If the product exists, update its quantity
+					const updatedProducts = [...products];
+					updatedProducts[existingProductIndex] = {
+						...result,
+						quantity: (updatedProducts[existingProductIndex].quantity || 0) + 1,
+					};
+					setProducts(updatedProducts);
+				} else {
+					// If the product doesn't exist, add it to the products array
+					setProducts((prevProducts) => [...prevProducts, { ...result, quantity: 1 }]);
+				}
+			}
+
+			setCode('');
+		} catch (e) {
+			console.error(e)
+		} finally {
+			setSubmitLoading(false);
+		}
 	}
 
 	const handleSubmit = async () => {
 		try {
+			setSubmitLoading(true);
 			const data = products.map((prod) => {
 				return {
 					prod_id: prod.id,
@@ -159,6 +177,7 @@ export const Sale: React.FC = () => {
 			if (result instanceof Error) return alert('Venda não efetuada.');
 			setProducts([]);
 			setObs('');
+			setLastResult('');
 			Swal.fire({
 				icon: "success",
 				title: "Venda efetuada com sucesso!",
@@ -167,9 +186,18 @@ export const Sale: React.FC = () => {
 			});
 		} catch (error) {
 			return alert(error);
+		} finally {
+			setSubmitLoading(false);
 		}
 	}
-
+	useEffect(() => {
+		if (obsFocus) {
+			obsInputRef.current?.focus();
+		}
+	}, [obsFocus])
+	useEffect(()=>{
+		inputFocus();
+	},[notFound])
 	// GROUP HANDLES
 	const [selectedGroup, setSelectedGroup] = useState(0);
 	const [prodGroup, setProdGroup] = useState<IProduct[]>();
@@ -211,6 +239,12 @@ export const Sale: React.FC = () => {
 								onKeyDown={handleEnter}
 								value={code} onChange={(e) => setCode(e.target.value)}
 								autoComplete="off"
+								disabled={submitLoading}
+								onBlur={() => {
+									if (!obsFocus) {
+										inputFocus()
+									}
+								}}
 							/>
 						</Box>
 					</Paper>
@@ -268,13 +302,21 @@ export const Sale: React.FC = () => {
 							value={obs}
 							onChange={(e) => setObs(e.target.value)}
 							label="Observações"
+							inputRef={obsInputRef}
 							autoComplete="off"
+							onClick={() => {
+								setObsFocus(true);
+							}}
+							onBlur={() => {
+								setObsFocus(false);
+								inputFocus();
+							}}
 						/>
 						<Box display={'flex'} gap={38} marginTop={3}>
 							<Button
 								variant="contained"
 								sx={{ mb: 2, ml: 3 }}
-								disabled={products && products.length === 0}
+								disabled={(products && products.length === 0) || submitLoading}
 								onClick={handleSubmit}
 							>
 								<AddShoppingCartRoundedIcon sx={{ mr: 1 }} /> Finalizar
@@ -296,100 +338,105 @@ export const Sale: React.FC = () => {
 					</Paper>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Box border={1} minHeight={570} my={2}>
-							<Grid item container p={2} gap={1}>
-								{selectedGroup ? !loading ?
-									<Box width={'100%'} display={'flex'} flexDirection={'column'} gap={1}>
-										{prodTotalCount === 0 && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
-										{prodGroup?.map((prod) =>
+							{submitLoading ?
+								<Grid item container p={2} gap={1}>
+								</Grid>
+								:
+								<Grid item container p={2} gap={1}>
+									{selectedGroup ? !loading ?
+										<Box width={'100%'} display={'flex'} flexDirection={'column'} gap={1}>
+											{prodTotalCount === 0 && !loading && <caption>Nenhum produto encontrado nesse grupo</caption>}
+											{prodGroup?.map((prod) =>
+												<Box
+													key={prod.code}
+													gap={15}
+													border={1}
+													height={40}
+													width={'100%'}
+													display={'flex'}
+													alignItems={'center'}
+													sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+													onClick={() => {
+														if (!products.find((pd) => pd.code === prod.code)) {
+															handleProducts(prod.code, prod);
+														}
+													}}
+												>
+													<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>{prod.code}</Typography>
+													<Typography variant="body1" ml={1} width={300} noWrap overflow={'hidden'}>{prod.name}</Typography>
+													{!products.find((pd) => pd.code == prod.code) ?
+														<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>R$ {prod.price}</Typography>
+														:
+														<Box display={'flex'} ml={1} width={150}>
+															<ArrowLeftRoundedIcon
+																sx={{ cursor: 'pointer' }}
+																fontSize="large"
+																onClick={() => handleQuantityChange(prod.code, -1)}
+															/>
+															<Box marginTop={1}>
+																<Typography>
+																	{products.find((pd) => pd.code == prod.code)?.quantity}
+																</Typography>
+															</Box>
+															<ArrowRightRoundedIcon
+																sx={{ cursor: 'pointer' }}
+																fontSize="large"
+																onClick={() => handleQuantityChange(prod.code, 1)}
+															/>
+														</Box>
+													}
+												</Box>
+											)}
+										</Box>
+										:
+										NUMBER_OF_SKELETONS_PROD.map((_, i) =>
 											<Box
-												key={prod.code}
+												key={i}
 												gap={15}
-												border={1}
 												height={40}
 												width={'100%'}
 												display={'flex'}
 												alignItems={'center'}
-												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
-												onClick={() => {
-													if (!products.find((pd) => pd.code === prod.code)) {
-														handleProducts(prod.code, prod);
-													}
-												}}
 											>
-												<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>{prod.code}</Typography>
-												<Typography variant="body1" ml={1} width={300} noWrap overflow={'hidden'}>{prod.name}</Typography>
-												{!products.find((pd) => pd.code == prod.code) ?
-													<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>R$ {prod.price}</Typography>
-													:
-													<Box display={'flex'} ml={1} width={150}>
-														<ArrowLeftRoundedIcon
-															sx={{ cursor: 'pointer' }}
-															fontSize="large"
-															onClick={() => handleQuantityChange(prod.code, -1)}
-														/>
-														<Box marginTop={1}>
-															<Typography>
-																{products.find((pd) => pd.code == prod.code)?.quantity}
-															</Typography>
-														</Box>
-														<ArrowRightRoundedIcon
-															sx={{ cursor: 'pointer' }}
-															fontSize="large"
-															onClick={() => handleQuantityChange(prod.code, 1)}
-														/>
-													</Box>
-												}
+												<Skeleton width={'100%'} height={65} sx={{ p: 0, m: 0 }}></Skeleton>
 											</Box>
-										)}
-									</Box>
-									:
-									NUMBER_OF_SKELETONS_PROD.map((_, i) =>
-										<Box
-											key={i}
-											gap={15}
-											height={40}
-											width={'100%'}
-											display={'flex'}
-											alignItems={'center'}
-										>
-											<Skeleton width={'100%'} height={65} sx={{ p: 0, m: 0 }}></Skeleton>
-										</Box>
-									)
-									: !loading ?
-										groups?.map((gp) =>
-											<Grid
-												key={gp.id}
-												item
-												xs={2.8}
-												border={1}
-												minHeight={50}
-												display={'flex'}
-												alignItems={'center'}
-												justifyContent={'center'}
-												sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
-												onClick={() => handleClickGroup(gp.id)}
-											>
-												<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
-											</Grid>
 										)
-										:
-										NUMBER_OF_SKELETONS_GROUP.map((_, i) =>
-											<Grid
-												key={i}
-												item
-												xs={2.8}
-												maxHeight={70}
-												display={'flex'}
-												alignItems={'center'}
-												justifyContent={'center'}
-											// border={1}
-											// sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
-											>
-												<Skeleton width={'100%'} height={85}></Skeleton>
-											</Grid>
-										)
-								}
-							</Grid>
+										: !loading ?
+											groups?.map((gp) =>
+												<Grid
+													key={gp.id}
+													item
+													xs={2.8}
+													border={1}
+													minHeight={50}
+													display={'flex'}
+													alignItems={'center'}
+													justifyContent={'center'}
+													sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+													onClick={() => handleClickGroup(gp.id)}
+												>
+													<Typography noWrap overflow={'hidden'}>{gp.name}</Typography>
+												</Grid>
+											)
+											:
+											NUMBER_OF_SKELETONS_GROUP.map((_, i) =>
+												<Grid
+													key={i}
+													item
+													xs={2.8}
+													maxHeight={70}
+													display={'flex'}
+													alignItems={'center'}
+													justifyContent={'center'}
+												// border={1}
+												// sx={{ cursor: 'pointer', ":hover": { backgroundColor: "#eee" } }}
+												>
+													<Skeleton width={'100%'} height={85}></Skeleton>
+												</Grid>
+											)
+									}
+								</Grid>
+							}
 						</Box>
 					</Paper>
 				</Grid >
