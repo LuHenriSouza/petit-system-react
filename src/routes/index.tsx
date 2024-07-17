@@ -4,6 +4,7 @@ import {
     Groups,
     Page404,
     OutFlow,
+    AllSales,
     Products,
     Validity,
     Suppliers,
@@ -13,9 +14,11 @@ import {
     NewFincash,
     SaleDetail,
     Promotions,
+    AllFincashs,
     CloseFincash,
     UpdateProduct,
     OutflowDetail,
+    FincashDetail,
 } from '../pages';
 import { Button } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
@@ -35,9 +38,11 @@ export const AppRoutes = () => {
 
             {/* Caixa / Vendas */}
             <Route path="/caixa" element={<Sale />} />
+            <Route path="/caixa/:id" element={<FincashDetail />} />
             <Route path="/caixa/novo" element={<NewFincash />} />
             <Route path="/vendas" element={<ShowSales />} />
             <Route path="/vendas/:id" element={<SaleDetail />} />
+            <Route path="/vendas/admin" element={<AllSales />} />
 
             {/* Saidas */}
             <Route path="/saidas" element={<OutFlow />} />
@@ -47,7 +52,8 @@ export const AppRoutes = () => {
             <Route path="/fornecedores" element={<Suppliers />} />
 
             {/* Fechamentos */}
-            <Route path='/fechamentos' element={<CloseFincash />} />
+            <Route path='/fechar' element={<CloseFincash />} />
+            <Route path='/fechamentos' element={<AllFincashs />} />
 
             {/* Grupos */}
             <Route path='/grupos' element={<Groups />} />

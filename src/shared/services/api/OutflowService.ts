@@ -61,7 +61,6 @@ const getAllById = async (page = 1, id: number, limit = 7): Promise<TProductTota
     }
 };
 
-
 const getById = async (id: number): Promise<ICashOutflow | Error> => {
     try {
         const { data } = await Api.get(`/cashoutflow/${id}`, Autorization());
@@ -77,12 +76,27 @@ const getById = async (id: number): Promise<ICashOutflow | Error> => {
     }
 };
 
-const updateDescById = async (id: number, dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_at' | 'type' | 'fincash_id' | 'value'> ): Promise<void | Error> => {
+const updateDescById = async (id: number, dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_at' | 'type' | 'fincash_id' | 'value'>): Promise<void | Error> => {
     try {
         await Api.put(`/cashoutflow/${id}`, dados, Autorization());
     } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
+    }
+};
+
+const getTotalByFincash = async (fincash_id: number): Promise<TProductTotalCount | Error> => {
+    try {
+        const urlRelativa = `/cashoutflow/total/${fincash_id}`;
+        const { data } = await Api.get(urlRelativa, Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao listar os registros.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
     }
 };
 
@@ -101,5 +115,6 @@ export const OutflowService = {
     getById,
     getAllById,
     updateDescById,
+    getTotalByFincash,
     // deleteById,
 };

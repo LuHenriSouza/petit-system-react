@@ -1,4 +1,6 @@
 import SavingsIcon from '@mui/icons-material/Savings';
+import AllInboxIcon from '@mui/icons-material/AllInbox';
+import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
@@ -47,10 +49,10 @@ export const items = [
         )
     },
     {
-        title: 'Fechamentos',
-        path: '/fechamentos',
+        title: 'Fechar Caixa',
+        path: '/fechar',
         icon: (
-            <RequestQuoteRoundedIcon fontSize='small' />
+            <AllInboxIcon fontSize='small' />
         )
     },
     {
@@ -74,5 +76,15 @@ export const items = [
         title: 'Promoções',
         path: '/promo',
         icon: (<SavingsIcon fontSize='small' />)
+    },
+    {
+        title: 'Fechamentos',
+        path: '/fechamentos',
+        icon: (<RequestQuoteRoundedIcon fontSize='small' />)
+    },
+    {
+        title: 'Vendas (todas)',
+        path: '/vendas/admin',
+        icon: (<QueryStatsIcon fontSize='small' />)
     }
 ];
