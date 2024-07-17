@@ -85,15 +85,14 @@ const updateDescById = async (id: number, dados: Omit<ICashOutflow, 'id' | 'crea
     }
 };
 
-const getTotalByFincash = async (fincash_id: number): Promise<TProductTotalCount | Error> => {
+const getTotalByFincash = async (fincash_id: number): Promise<number | Error> => {
     try {
         const urlRelativa = `/cashoutflow/total/${fincash_id}`;
         const { data } = await Api.get(urlRelativa, Autorization());
-        if (data) {
+        if (data || data == 0) {
             return data;
         }
-
-        return new Error('Erro ao listar os registros.');
+        return new Error('Erro ao pegar o registros.');
     } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao listar os registros.');

@@ -168,7 +168,7 @@ export const AllFincashs: React.FC = () => {
 
 													<TableCell>
 														<Typography>
-															R$ {row.totalValue ? row.totalValue : openFincashValue == 0 ? '0,00' : openFincashValue ?? <Skeleton sx={{ minHeight: 30, maxWidth: 30 }} />}
+															R$ {row.totalValue ? row.totalValue : openFincashValue == 0 ? '0.00' : openFincashValue ?? (row.totalValue == 0 || row.totalValue == null) ? '0.00' : <Skeleton sx={{ minHeight: 30, maxWidth: 30 }} />}
 														</Typography>
 													</TableCell>
 

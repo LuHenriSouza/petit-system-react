@@ -24,7 +24,7 @@ interface IFormData {
 
 
 const formValidation: yup.Schema<IFormDataValidated> = yup.object().shape({
-    opener: yup.string().required().min(3).max(50),
+    opener: yup.string().required().min(3).max(30),
     value: yup.number().required().min(0),
 });
 

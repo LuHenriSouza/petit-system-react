@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormHandles } from '@unform/core';
 import './../../shared/css/sweetAlert.css';
 import { VForm } from '../../shared/forms/VForm';
@@ -50,6 +50,10 @@ export const NewProduct: React.FC = () => {
 
 	const [querryError, setQuerryError] = useState(false);
 	const [loading, setLoading] = useState(false);
+
+	useEffect(()=>{
+		inputCode.current?.focus();
+	},[inputCode]);
 
 	const handleKeyDownCode = (e: React.KeyboardEvent<HTMLDivElement>) => {
 		if (e.code === 'Enter' || e.key === 'Enter') inputName.current?.focus();

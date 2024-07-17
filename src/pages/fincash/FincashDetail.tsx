@@ -10,32 +10,51 @@ import {
 	TextField,
 	TableBody,
 	Typography,
+	Pagination,
 } from "@mui/material";
-// import Swal from 'sweetalert2';
+import * as yup from 'yup';
+import Swal from 'sweetalert2';
 import { format } from "date-fns";
-import './../../shared/css/sweetAlert.css'
+import './../../shared/css/sweetAlert.css';
+import { FormHandles } from "@unform/core";
+import AddIcon from "@mui/icons-material/Add";
+import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
-import { useEffect, useMemo, useState } from "react";
+import { VTextField } from "../../shared/forms/VTextField";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, ICashOutflow, IFincash, OutflowService } from "../../shared/services/api";
 
+const OUTFLOW_ROW_LIMIT = 5;
+
 export const FincashDetail: React.FC = () => {
 	const { id } = useParams();
 	const [desc, setDesc] = useState('');
-	const [loading, setLoading] = useState(true);
 
+	const [loading, setLoading] = useState(true);
+	const [cardLoading, setCardLoading] = useState(false);
+	const [reload, setReload] = useState(0);
 	const [fincash, setFincash] = useState<IFincash>();
-	const [realBreak, setRealBreak] = useState<number>();
 	const [outflows, setOutflows] = useState<{ outflows: ICashOutflow[], total: number }>();
+
+	const formRef = useRef<FormHandles>(null);
+
 	const [outflowTotalCount, setOutflowTotalCount] = useState(0);
+	const [loadingOutflows, setLoadingoutflows] = useState(false);
 
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const outflowPage = useMemo(() => {
-		return searchParams.get('page') || 1;
+		return searchParams.get('outflowPage') || 1;
 	}, [searchParams]);
+
+	useEffect(() => {
+		if (fincash) {
+			listOutflow(fincash.id);
+		}
+	}, [outflowPage, fincash]);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -45,55 +64,97 @@ export const FincashDetail: React.FC = () => {
 				if (CompleteFetch instanceof Error) return 'Fincash not found';
 				const fincash = CompleteFetch.data.data.fincash;
 				fincash.obs && setDesc(fincash.obs);
-
-				setFincash(CompleteFetch.data.data.fincash);
-				// OUTFLOW
-				const outflows = await OutflowService.getAllById(Number(outflowPage), CompleteFetch.data.data.fincash.id, 7);
-				if (outflows instanceof Error) return 'Outflows not found';
-				const total: number = outflows.data.reduce((accumulator: number, currentValue: ICashOutflow) => accumulator + Number(currentValue.value), 0);
-				setOutflows({ outflows: outflows.data, total });
-				setOutflowTotalCount(outflows.totalCount);
-				if (fincash.finalValue && fincash.totalValue) {
-					const TotalCash = (fincash.finalValue - fincash.value) + total;
-
-					const cartao = 0; // TROCAR CARTAO -----------------------------------------------------------------------------------------------------------------------------------------
-					const totalValue = TotalCash + cartao;
-					const realBreak = totalValue - fincash.totalValue;
-					setRealBreak(realBreak);
+				if (!fincash.isFinished) {
+					const result = await FincashService.getTotalByFincash(fincash.id);
+					if (!(result instanceof Error)) {
+						fincash.totalValue = result;
+					}
 				}
+				setFincash(fincash);
 
 			} catch (e) {
 
 				console.log(e);
+			} finally {
+				setLoading(false);
 			}
 		}
 
 		fetchData();
-	}, []);
+	}, [reload]);
 
+	const listOutflow = async (fincash_id: number) => {
+		// OUTFLOW
+		try {
+			setLoadingoutflows(true);
+			const outflows = await OutflowService.getAllById(Number(outflowPage), fincash_id, OUTFLOW_ROW_LIMIT);
+			if (outflows instanceof Error) return 'Outflows not found';
+			const getTotal = await OutflowService.getTotalByFincash(fincash_id);
+			if (!(getTotal instanceof Error)) {
+				const total = Number(getTotal);
+				setOutflows({ outflows: outflows.data, total });
+				setOutflowTotalCount(outflows.totalCount);
+			}
+		} catch (e) { console.error(e) } finally { setLoadingoutflows(false); }
+	}
 
-	// const handleSubmit = async () => {
-	// 	setLoading(true);
-	// 	const result = await OutflowService.updateDescById(Number(id), { desc: desc.trim() });
+	interface IFormDataValidated {
+		card: number;
+	}
 
-	// 	if (result instanceof Error) {
-	// 		return Swal.fire({
-	// 			icon: "error",
-	// 			title: "Atenção",
-	// 			text: "Descrição não pode ser vazia",
-	// 			showConfirmButton: true,
-	// 		});
-	// 	}
+	interface IFormData {
+		card: string;
+	}
 
-	// 	Swal.fire({
-	// 		icon: "success",
-	// 		title: "Sucesso!",
-	// 		text: "Descrição alterada com sucesso!",
-	// 		showConfirmButton: true,
-	// 	});
-	// 	setLoading(false);
-	// 	if (outflow) outflow.desc = desc;
-	// }
+	const formValidation: yup.Schema<IFormDataValidated> = yup.object().shape({
+		card: yup.number().required().min(0)
+	});
+
+	const cardSubmit = async (data: IFormData) => {
+		setCardLoading(true);
+		try {
+			if (fincash) {
+				const swal = await Swal.fire({
+					title: 'Tem Certeza?',
+					text: `Registrar Cartão no Valor de "R$ ${data.card}" ?`,
+					icon: 'question',
+					iconColor: '#512DA8',
+					showCancelButton: true,
+					confirmButtonColor: '#512DA8',
+					cancelButtonColor: '#aaa',
+					cancelButtonText: 'Voltar',
+					confirmButtonText: 'Confirmar'
+				});
+				if (swal.isConfirmed) {
+					data.card = data.card.split(' ')[1];
+					const dataValidated = await formValidation.validate(data, { abortEarly: false });
+
+					const result = await FincashService.registerCardValue(dataValidated.card, fincash.id);
+					if (result instanceof Error) {
+						return Swal.fire({
+							icon: "error",
+							title: "Atenção",
+							text: "Algum erro ocorreu ao tentar inserir o valor",
+							showConfirmButton: true,
+						});
+					}
+
+					Swal.fire({
+						icon: "success",
+						title: "Sucesso!",
+						text: "Cartão registrado com sucesso!",
+						showConfirmButton: true,
+					});
+					setReload(1);
+				}
+
+			}
+		} catch (e) {
+			console.log(e);
+		} finally {
+			setCardLoading(false);
+		}
+	}
 
 	return (
 		<LayoutMain title={"Saída " + id} subTitle={"Saída " + id}>
@@ -117,7 +178,7 @@ export const FincashDetail: React.FC = () => {
 							{fincash?.opener ? 'Caixa: ' + fincash.opener : <Skeleton sx={{ maxWidth: 300 }} />}
 						</Typography>
 						<Typography variant="h5" margin={1}>
-							VENDAS REGISTRADAS: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
+							Total de vendas: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
 					</Box>
 					<Box>
@@ -126,9 +187,14 @@ export const FincashDetail: React.FC = () => {
 								Dinheiro
 							</Typography>
 							<Box minWidth={400}>
-								<Typography variant="h5" margin={1}>
-									Início: R$ {fincash?.value}
-								</Typography>
+								<Box display={'flex'}>
+									<Typography variant="h5" margin={1}>
+										Início: R$ {fincash?.value}
+									</Typography>
+									<Typography variant='body2' fontSize={18} color={fincash?.diferenceLastFincash && fincash?.diferenceLastFincash < 0 ? '#ef0000' : '#00e000'}>
+										{fincash?.diferenceLastFincash && fincash?.diferenceLastFincash > 0 && '+'}{fincash?.diferenceLastFincash && fincash?.diferenceLastFincash}
+									</Typography>
+								</Box>
 								<Box display={'flex'}>
 									{
 										fincash?.isFinished &&
@@ -144,19 +210,119 @@ export const FincashDetail: React.FC = () => {
 								</Box>
 								{
 									fincash?.isFinished &&
-									<Typography variant="h5" margin={1}>
-										Fim: R$ {fincash?.finalValue}
-									</Typography>
+									<>
+										<Typography variant="h5" margin={1}>
+											Fim: R$ {fincash?.finalValue}
+										</Typography>
+										{
+
+											fincash?.finalValue &&
+												(outflows?.total || outflows?.total == 0) &&
+												((fincash.finalValue - fincash.value) + outflows.total) < 0 ?
+												<Box
+													m={2}
+													ml={1}
+													p={1}
+													border={1}
+													sx={{ backgroundColor: '#e00000' }}
+												>
+													<Typography variant="h5" color={'#fff'}>
+														Mínimo de saídas não registradas: R$ {((fincash.finalValue - fincash.value) + outflows.total).toFixed(2)}
+													</Typography>
+												</Box>
+												:
+												<></>
+										}
+										{
+
+											fincash?.finalValue &&
+												fincash?.totalValue &&
+												(outflows?.total || outflows?.total == 0) &&
+												((fincash.finalValue - fincash.value) + outflows.total) - fincash.totalValue > 0 ?
+												<Box
+													m={2}
+													ml={1}
+													p={1}
+													border={1}
+													sx={{ backgroundColor: '#e0a000' }}
+												>
+													<Typography variant="h5" color={'#fff'}>
+														Mínimo de vendas não registradas: R$ {(((fincash.finalValue - fincash.value) + outflows.total) - fincash.totalValue).toFixed(2)}
+													</Typography>
+												</Box>
+												:
+												<></>
+										}
+									</>
 								}
 							</Box>
 						</Box>
 						<Box border={1} minHeight={210} minWidth={300} my={2} sx={{ backgroundColor: '#eee' }} display={'flex'} alignItems={'center'} flexDirection={'column'}>
 							<Typography variant="h5" margin={1}>
-								Calculo
+								Cartão
 							</Typography>
-							<Box>
-								{realBreak}
-							</Box>
+							{
+								fincash?.isFinished ?
+									<>
+										{
+											!fincash?.cardValue ?
+												<>
+													<Box display={'flex'} gap={1} mt={1}>
+														<VForm placeholder={''} onSubmit={cardSubmit} ref={formRef}>
+															<VTextField
+																name={'card'}
+																label={'Valor'}
+																autoComplete="off"
+																valueDefault='R$ 0.00'
+																cash
+															/>
+														</VForm>
+														<Button variant="contained" onClick={() => formRef.current?.submitForm()} disabled={cardLoading}>
+															<AddIcon />
+														</Button>
+													</Box>
+													<Typography variant="h5" mt={4} color={'#e93000'}>
+														Insira o valor do cartão
+													</Typography>
+												</>
+												:
+												<Box>
+													<Typography variant="h5" m={1}>
+														Cartão: R$ {fincash.cardValue}
+													</Typography>
+													<Box display={'flex'}>
+														<Typography variant="h5" mx={1}>
+															Quebra:
+														</Typography>
+														<Typography variant="h5" color={fincash.break && fincash.break < 0 ? '#ef0000' : '#00e000'}>
+															R$ {fincash.break && fincash.break < 0 ? '' : '+'}{fincash.break}
+														</Typography>
+													</Box>
+													{
+
+														fincash?.cardValue &&
+														fincash?.totalValue &&
+														(fincash.totalValue - fincash.cardValue) < 0 &&
+														<Box
+															m={2}
+															ml={1}
+															p={1}
+															border={1}
+															sx={{ backgroundColor: '#e00000' }}
+														>
+															<Typography variant="h5" color={'#fff'}>
+																Mínimo de vendas não registradas: R$ {(fincash.totalValue - fincash.cardValue).toFixed(2)}
+															</Typography>
+														</Box>
+													}
+												</Box>
+										}
+									</>
+									:
+									<Typography variant="h5" mt={4} color={'#e90000'}>
+										Disponível após fechamento do caixa.
+									</Typography>
+							}
 						</Box>
 					</Box>
 					<Box border={1} minHeight={400} minWidth={500} my={2} sx={{ backgroundColor: '#eee' }} display={'flex'} alignItems={'center'} justifyContent={'space-between'} flexDirection={'column'} py={2}>
@@ -165,11 +331,11 @@ export const FincashDetail: React.FC = () => {
 								Saídas
 							</Typography>
 
-							<Box minWidth={400}>
+							<Box minWidth={400} minHeight={200}>
 								<Table>
 									<TableBody>
 										{outflows?.outflows.map((outflow) =>
-											<TableRow>
+											<TableRow key={outflow.id}>
 												<TableCell>
 													<Typography variant="h5">
 														{outflow.type}
@@ -200,13 +366,21 @@ export const FincashDetail: React.FC = () => {
 									</TableBody>
 								</Table>
 							</Box>
+							{outflowTotalCount > 0 && (
+								<Pagination
+									sx={{ m: 2 }}
+									disabled={loadingOutflows}
+									page={Number(outflowPage)}
+									count={Math.ceil(outflowTotalCount / OUTFLOW_ROW_LIMIT)}
+									onChange={(_, newPage) => setSearchParams({ outflowPage: newPage.toString() }, { replace: true })}
+									siblingCount={0}
+								/>
+							)}
 						</Box>
 
 						<Box mb={5}>
 							<Typography variant="h5">
 								Total: R$ {outflows?.total.toFixed(2)}
-								<br />
-								COLOCAR PAGINACAO
 							</Typography>
 						</Box>
 					</Box>

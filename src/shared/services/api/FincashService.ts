@@ -17,10 +17,10 @@ export interface IFincash {
     value: number,
     finalValue?: number | null,
     obs?: string | null,
-    totalValue?: number | null
-    
+    totalValue?: number | null,
+    cardValue?: number | null,
     diferenceLastFincash?: number | null,
-    
+
     break?: number | null,
 
     created_at: Date,
@@ -192,6 +192,14 @@ const getDetailedData = async (fincash_id: number): Promise<TFincashTotalCount |
     }
 };
 
+const registerCardValue = async (cardValue: number, fincash_id: number): Promise<number | Error> => {
+    try {
+        return await Api.post(`/fincash/addcard/${fincash_id}`, { cardValue }, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao criar o registro.');
+    }
+};
 
 // const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
@@ -221,6 +229,7 @@ export const FincashService = {
     getLastFincash,
     getDetailedData,
     getTotalByFincash,
+    registerCardValue,
     //     updateById,
     //     deleteById,
 };
