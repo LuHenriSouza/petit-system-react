@@ -11,7 +11,7 @@ import { FincashService, ICashOutflow, IFincash, ISupplier, OutflowService, Supp
 export const OutflowDetail: React.FC = () => {
 	const { id } = useParams();
 	const [desc, setDesc] = useState('');
-	const [loading, setLoading] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [fincash, setFincash] = useState<IFincash>();
 	const [supplier, setSupplier] = useState<ISupplier>();
 	const [outflow, setOutflow] = useState<ICashOutflow>();

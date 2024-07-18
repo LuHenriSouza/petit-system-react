@@ -40,7 +40,6 @@ export const AllFincashs: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [rows, setRows] = useState<IFincash[]>([]);
-	const [openFincashValue, setOpenFincashValue] = useState<number>();
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
 
@@ -55,49 +54,27 @@ export const AllFincashs: React.FC = () => {
 	useEffect(() => {
 		debounce(() => {
 			listFincashs();
-			displayOpenedFincashValue();
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [
-		// search,
-		page
-	]);
-
-	const displayOpenedFincashValue = async () => {
-		const fincash = await FincashService.getOpenFincash();
-		if (!(fincash instanceof Error)) {
-			const data = await FincashService.getTotalByFincash(fincash.id);
-			if (!(data instanceof Error)) {
-				setOpenFincashValue(data);
-			}
-		}
-	}
+	}, [page]);
 
 	const listFincashs = async () => {
 		setLoading(true);
 		try {
 			const result = await FincashService.getAll(Number(page), '', NUMBER_OF_SKELETONS.length);
-
 			if (result instanceof Error) {
 				alert(result.message);
 			} else {
 				const fincashs = result.data;
-
+				const fincashOpen = await FincashService.getOpenFincash();
+				if (!(fincashOpen instanceof Error)) {
+					const total = await FincashService.getTotalByFincash(fincashOpen.id);
+					if (!(total instanceof Error)) {
+						if (fincashs[0].id == fincashOpen.id) fincashs[0].totalValue = total;
+					}
+				}
 				setTotalCount(result.totalCount);
 				setRows(fincashs);
-				// const objarr = fincashs.map(item => ({ id: item.id, init: item.value, final: item.finalValue }));
-
-				// const record: Record<number, number> = {};
-				// for (let index = 0; index < objarr.length - 1; index++) {
-				// 	const item = objarr[index];
-				// 	const nextItem = objarr[index + 1];
-				// 	if (nextItem.final || nextItem.final === 0.00) {
-				// 		const result = item.init - nextItem.final;
-				// 		if (result !== 0) record[item.id] = result;
-				// 	}
-				// }
-
-				// console.log(record);
 			}
 		} catch (e) {
 			console.error(e);
@@ -168,7 +145,7 @@ export const AllFincashs: React.FC = () => {
 
 													<TableCell>
 														<Typography>
-															R$ {row.totalValue ? row.totalValue : openFincashValue == 0 ? '0.00' : openFincashValue ?? (row.totalValue == 0 || row.totalValue == null) ? '0.00' : <Skeleton sx={{ minHeight: 30, maxWidth: 30 }} />}
+															R$ {row.totalValue}
 														</Typography>
 													</TableCell>
 
