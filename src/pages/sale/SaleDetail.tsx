@@ -49,6 +49,10 @@ export const SaleDetail: React.FC = () => {
 		return searchParams.get('page') || 1;
 	}, [searchParams]);
 
+	const back = useMemo(() => {
+		return searchParams.get('back');
+	}, [searchParams]);
+
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -140,7 +144,7 @@ export const SaleDetail: React.FC = () => {
 		<LayoutMain title={"Venda " + id} subTitle={"Venda " + id}>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
 				<Box display={'flex'} justifyContent={'space-between'}>
-					<Link to={'/vendas'}>
+					<Link to={back ? `/vendas/caixa/${back}` : '/vendas'}>
 						<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
 					</Link>
 				</Box>

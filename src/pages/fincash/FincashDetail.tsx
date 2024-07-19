@@ -20,7 +20,9 @@ import { FormHandles } from "@unform/core";
 import AddIcon from "@mui/icons-material/Add";
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
+import HistoryIcon from '@mui/icons-material/History';
 import { VTextField } from "../../shared/forms/VTextField";
+import FindInPageIcon from '@mui/icons-material/FindInPage';
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
@@ -70,6 +72,9 @@ export const FincashDetail: React.FC = () => {
 						fincash.totalValue = result;
 					}
 				}
+				if (fincash.finalValue == null) fincash.finalValue = 0;
+				if (fincash.totalValue == null) fincash.totalValue = 0;
+				if (fincash.cardValue == null) fincash.cardValue = 0;
 				setFincash(fincash);
 
 			} catch (e) {
@@ -157,7 +162,10 @@ export const FincashDetail: React.FC = () => {
 	}
 
 	return (
-		<LayoutMain title={"Saída " + id} subTitle={"Saída " + id}>
+		<LayoutMain
+			title={fincash ? `Caixa: ${format(fincash.created_at, 'dd/MM/yyyy')}` : ''}
+			subTitle={'Caixa: ' + fincash?.opener}
+		>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
 				<Box display={'flex'} justifyContent={'space-between'}>
 					<Link to={'/fechamentos'}>
@@ -177,9 +185,63 @@ export const FincashDetail: React.FC = () => {
 						<Typography variant="h5" margin={1}>
 							{fincash?.opener ? 'Caixa: ' + fincash.opener : <Skeleton sx={{ maxWidth: 300 }} />}
 						</Typography>
-						<Typography variant="h5" margin={1}>
-							Total de vendas: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
+						{
+							fincash?.isFinished &&
+
+							<Box display={'flex'}>
+								<Typography variant="h5" mx={1}>
+									Vendas em Dinheiro:
+								</Typography>
+
+								<Typography variant="h5" color={
+									fincash?.finalValue &&
+										(outflows?.total || outflows?.total == 0) &&
+										((fincash.finalValue - fincash.value) + outflows.total) < 0 ? '#e00' : '#00e000'
+								}
+								>
+									{
+										fincash?.finalValue ?
+											(outflows?.total || outflows?.total == 0) &&
+												((fincash.finalValue - fincash.value) + outflows.total) < 0 ?
+												'Erro'
+												:
+												fincash?.finalValue &&
+												(outflows?.total || outflows?.total == 0) &&
+												'R$ +' + ((fincash.finalValue - fincash.value) + outflows.total).toFixed(2)
+											:
+											'0.00'
+									}
+								</Typography>
+							</Box>
+						}
+						<Typography variant="h5" fontWeight={'bold'} margin={1} mt={5}>
+							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
+						<Box display={'flex'} flexDirection={'column'}>
+							<Link to={`/vendas/caixa/${id}`}>
+								<Button
+									variant="contained"
+									size={'large'}
+									sx={{ mt: 5 }}
+
+								>
+									<HistoryIcon sx={{ mr: 1 }} />
+									Histórico de Vendas
+								</Button>
+							</Link>
+
+							<Link to={`/caixa/dados/${id}`}>
+								<Button
+									variant="contained"
+									size={'large'}
+									sx={{ mt: 2 }}
+
+								>
+									<FindInPageIcon sx={{ mr: 1 }} />
+									Análise de dados
+								</Button>
+							</Link>
+						</Box>
 					</Box>
 					<Box>
 						<Box border={1} minHeight={210} minWidth={300} my={2} sx={{ backgroundColor: '#eee' }} display={'flex'} alignItems={'center'} flexDirection={'column'} px={1}>
@@ -235,8 +297,8 @@ export const FincashDetail: React.FC = () => {
 										}
 										{
 
-											fincash?.finalValue &&
-												fincash?.totalValue &&
+											(fincash?.finalValue || fincash?.finalValue == 0) &&
+												(fincash?.totalValue || fincash?.totalValue == 0) &&
 												(outflows?.total || outflows?.total == 0) &&
 												((fincash.finalValue - fincash.value) + outflows.total) - fincash.totalValue > 0 ?
 												<Box
@@ -300,15 +362,15 @@ export const FincashDetail: React.FC = () => {
 													</Box>
 													{
 
-														fincash?.cardValue &&
-														fincash?.totalValue &&
+														(fincash?.cardValue || fincash?.cardValue == 0) &&
+														(fincash?.totalValue || fincash?.totalValue == 0) &&
 														(fincash.totalValue - fincash.cardValue) < 0 &&
 														<Box
 															m={2}
 															ml={1}
 															p={1}
 															border={1}
-															sx={{ backgroundColor: '#e00000' }}
+															sx={{ backgroundColor: '#e0a000' }}
 														>
 															<Typography variant="h5" color={'#fff'}>
 																Mínimo de vendas não registradas: R$ {(fincash.totalValue - fincash.cardValue).toFixed(2)}

@@ -3,6 +3,7 @@ import {
 	Fab,
 	Paper,
 	Table,
+	Skeleton,
 	useTheme,
 	TableRow,
 	TableCell,
@@ -12,20 +13,20 @@ import {
 	Typography,
 	useMediaQuery,
 	TableContainer,
-	Skeleton,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { format } from 'date-fns';
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
 import { Environment } from "../../shared/environment";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
 export const ShowSales: React.FC = () => {
+	const { id } = useParams();
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 	const navigate = useNavigate();
@@ -42,9 +43,9 @@ export const ShowSales: React.FC = () => {
 	}, [searchParams]);
 
 
-	const listSales = async (fincashData: IFincash) => {
+	const listSales = async (fincashId: number) => {
 		try {
-			const result = await SaleService.getSalesByFincash(fincashData.id, Number(page));
+			const result = await SaleService.getSalesByFincash(fincashId, Number(page));
 			if (result instanceof Error) {
 				alert(result.message);
 			} else {
@@ -61,8 +62,18 @@ export const ShowSales: React.FC = () => {
 	}
 
 	useEffect(() => {
-		fetchData();
+		if (id) {
+			fetchDataId(Number(id));
+		} else {
+			fetchData();
+		}
 	}, [page]);
+
+	const fetchDataId = async (id: number) => {
+		setLoading(true);
+		listSales(id);
+
+	}
 
 	const fetchData = async () => {
 		setLoading(true);
@@ -78,10 +89,10 @@ export const ShowSales: React.FC = () => {
 				navigate('/caixa/novo');
 			} else {
 				setFincash(fincashData);
-				listSales(fincashData);
+				listSales(fincashData.id);
 			}
 		} else {
-			listSales(fincash);
+			listSales(fincash.id);
 		}
 
 	}
@@ -112,7 +123,7 @@ export const ShowSales: React.FC = () => {
 													<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
 													<TableCell>R$ {row.totalValue}</TableCell>
 													<TableCell>
-														<Link to={'/vendas/' + row.sale_id}>
+														<Link to={id ? `/vendas/${row.sale_id}?back=${id}` : '/vendas/' + row.sale_id}>
 															<Fab
 																size="medium"
 																color="info"

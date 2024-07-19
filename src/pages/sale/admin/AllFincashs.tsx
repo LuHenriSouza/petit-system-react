@@ -3,6 +3,7 @@ import {
 	Fab,
 	Paper,
 	Table,
+	Skeleton,
 	useTheme,
 	TableRow,
 	TableCell,
@@ -12,20 +13,15 @@ import {
 	Typography,
 	useMediaQuery,
 	TableContainer,
-	Skeleton,
 } from "@mui/material";
 import { format } from 'date-fns';
+import { useDebounce } from '../../../shared/hooks';
 import { LayoutMain } from "../../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { Environment } from "../../../shared/environment";
-import {
-	Link,
-	// useNavigate,
-	useSearchParams
-} from "react-router-dom";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import { FincashService, IFincash } from "../../../shared/services/api";
-import { useDebounce } from '../../../shared/hooks';
+import { FincashService, IFincash, OutflowService } from "../../../shared/services/api";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
@@ -36,12 +32,28 @@ export const AllFincashs: React.FC = () => {
 
 	const { debounce } = useDebounce();
 
+	enum EFincashErrors {
+		CardSaleError,
+		CashSaleError,
+		CashOutError,
+		// CardSaleError = 'CardSaleError',
+		// CashSaleError = 'CashSaleError',
+		// CashOutError = 'CashOutError',
+	}
+
+	enum EErrorsColor {
+		MediumError = '#fff000',
+		HighError = '#fe4000',
+
+		CardlessError = '#4f00a0',
+	}
 
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [rows, setRows] = useState<IFincash[]>([]);
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
+	const [erros, setErros] = useState<Record<string, EFincashErrors[]>>();
 
 	const page = useMemo(() => {
 		return searchParams.get('page') || 1;
@@ -75,6 +87,8 @@ export const AllFincashs: React.FC = () => {
 				}
 				setTotalCount(result.totalCount);
 				setRows(fincashs);
+				const errors = await FincashErrorCalculator(fincashs, fincashOpen);
+				setErros(errors);
 			}
 		} catch (e) {
 			console.error(e);
@@ -83,6 +97,31 @@ export const AllFincashs: React.FC = () => {
 		}
 	};
 
+
+	const FincashErrorCalculator = async (fincashs: IFincash[], fincashOpen: IFincash | Error): Promise<Record<string, EFincashErrors[]>> => {
+		const erros: Record<string, EFincashErrors[]> = {}
+		for (const fincash of fincashs) {
+			const outflowTotal = await OutflowService.getTotalByFincash(fincash.id);
+			if ((outflowTotal instanceof Error)) { console.log(fincash.id); continue; }
+
+			if (!erros[fincash.id]) {
+				erros[fincash.id] = [];
+			}
+			if (!(fincashOpen instanceof Error)) if (Number(fincash.id) == Number(fincashOpen.id)) continue;
+
+			if (fincash.finalValue == null) fincash.finalValue = 0;
+			if (fincash.totalValue == null) fincash.totalValue = 0;
+
+			if ((fincash.finalValue || fincash.finalValue == 0) && (fincash.totalValue || fincash.totalValue == 0)) {
+				if (((fincash.finalValue - fincash.value) + Number(outflowTotal)) < 0) erros[fincash.id].push(EFincashErrors.CashOutError);
+				if (fincash.cardValue) {
+					if ((fincash.totalValue - fincash.cardValue) < 0) erros[fincash.id].push(EFincashErrors.CardSaleError);
+				}
+				if (((fincash.finalValue - fincash.value) + Number(outflowTotal)) > fincash.totalValue) erros[fincash.id].push(EFincashErrors.CashSaleError);
+			}
+		}
+		return erros;
+	}
 
 	return (
 		<>
@@ -144,25 +183,48 @@ export const AllFincashs: React.FC = () => {
 													</TableCell>
 
 													<TableCell>
-														<Typography>
-															R$ {row.totalValue}
-														</Typography>
+														<Box display={'flex'} gap={1}>
+															<Typography>
+																R$ {row.totalValue == 0 ? '0.00' : row.totalValue}
+															</Typography>
+															{
+																erros &&
+																erros[row.id].includes(EFincashErrors.CardSaleError) &&
+																<Box height={10} width={10} borderRadius={90} border={1} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+															}
+															{
+																erros &&
+																erros[row.id].includes(EFincashErrors.CashOutError) &&
+																<Box height={10} width={10} border={1} borderRadius={90} sx={{ backgroundColor: EErrorsColor.HighError }} />
+															}
+															{
+																erros &&
+																erros[row.id].includes(EFincashErrors.CashSaleError) &&
+																<Box height={10} width={10} border={1} borderRadius={90} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+															}
+														</Box>
 													</TableCell>
 
 													<TableCell>
-														<Link to={'/caixa/' + row.id}>
-															<Fab
-																size="medium"
-																color="info"
-																onClick={() => console.log('Clique no ícone')}
-																sx={{
-																	backgroundColor: '#5bc0de',
-																	'&:hover': { backgroundColor: '#6fd8ef' },
-																}}
-															>
-																<VisibilityRoundedIcon color="info" />
-															</Fab>
-														</Link>
+														<Box display={'flex'}>
+															<Link to={'/caixa/' + row.id}>
+																<Fab
+																	size="medium"
+																	color="info"
+																	onClick={() => console.log('Clique no ícone')}
+																	sx={{
+																		backgroundColor: '#5bc0de',
+																		'&:hover': { backgroundColor: '#6fd8ef' },
+																	}}
+																>
+																	<VisibilityRoundedIcon color="info" />
+																</Fab>
+															</Link>
+															{
+																!row.cardValue &&
+																<Box height={10} width={10} borderRadius={90} sx={{ backgroundColor: EErrorsColor.CardlessError }} />
+															}
+														</Box>
 													</TableCell>
 													<TableCell sx={{ maxWidth: 120 }}>
 														<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={6}>
@@ -213,18 +275,41 @@ export const AllFincashs: React.FC = () => {
 							</Table>
 						</TableContainer>
 					</Box>
-					{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
-						<TableRow>
-							<TableCell colSpan={3}>
-								<Pagination
-									page={Number(page)}
-									count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-									onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
-									siblingCount={smDown ? 0 : 1}
-								/>
-							</TableCell>
-						</TableRow>
-					)}
+					<Box display={'flex'} justifyContent={'space-between'}>
+						{(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) ? (
+							<Pagination
+								sx={{ m: 1 }}
+								page={Number(page)}
+								count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
+								onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+								siblingCount={smDown ? 0 : 1}
+							/>
+						) :
+							<Box />
+						}
+						<Box display={'flex'} alignItems={'center'} pr={10} gap={4}>
+
+							<Box display={'flex'} gap={1} alignItems={'center'}>
+								<Box height={10} width={10} border={1} sx={{ backgroundColor: EErrorsColor.HighError }} />
+								<Typography fontWeight={'bold'}>
+									Erro Grave
+								</Typography>
+							</Box>
+							<Box display={'flex'} gap={1} alignItems={'center'}>
+								<Box height={10} width={10} border={1} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+								<Typography fontWeight={'bold'}>
+									Erro
+								</Typography>
+							</Box>
+							<Box display={'flex'} gap={1} alignItems={'center'}>
+								<Box height={12} width={12} borderRadius={90} sx={{ backgroundColor: EErrorsColor.CardlessError }} />
+								<Typography fontWeight={'bold'}>
+									Caixa sem cartão
+								</Typography>
+							</Box>
+						</Box>
+					</Box>
+
 				</Paper>
 			</LayoutMain >
 		</>

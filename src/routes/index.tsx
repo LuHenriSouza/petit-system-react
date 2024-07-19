@@ -41,6 +41,7 @@ export const AppRoutes = () => {
             <Route path="/caixa/:id" element={<FincashDetail />} />
             <Route path="/caixa/novo" element={<NewFincash />} />
             <Route path="/vendas" element={<ShowSales />} />
+            <Route path="/vendas/caixa/:id" element={<ShowSales />} />
             <Route path="/vendas/:id" element={<SaleDetail />} />
             <Route path="/vendas/admin" element={<AllSales />} />
 
