@@ -161,6 +161,29 @@ export const FincashDetail: React.FC = () => {
 		}
 	}
 
+	const changeObs = async () => {
+		setLoading(true);
+		const result = await FincashService.updateObsById(Number(id), desc.trim());
+
+		if (result instanceof Error) {
+			return Swal.fire({
+				icon: "error",
+				title: "Atenção",
+				text: "Erro ao cadastrar Observação",
+				showConfirmButton: true,
+			});
+		}
+
+		Swal.fire({
+			icon: "success",
+			title: "Sucesso!",
+			text: "Observação alterada com sucesso!",
+			showConfirmButton: true,
+		});
+		setLoading(false);
+		if (fincash) fincash.obs = desc;
+	}
+
 	return (
 		<LayoutMain
 			title={fincash ? `Caixa: ${format(fincash.created_at, 'dd/MM/yyyy')}` : ''}
@@ -455,14 +478,14 @@ export const FincashDetail: React.FC = () => {
 						sx={{ mt: 2 }}
 						value={desc}
 						onChange={(e) => setDesc(e.target.value)}
-						label="Descrição"
+						label="Observação"
 						id="elevation-multiline-static"
 						autoComplete="off"
 						disabled={loading}
 
 					/>
-					<Button variant="contained" color="primary" size="large" sx={{ maxWidth: 250 }} disabled={loading || fincash?.obs == desc}>
-						Alterar Descrição
+					<Button variant="contained" color="primary" size="large" sx={{ maxWidth: 250 }} disabled={loading || fincash?.obs == desc} onClick={changeObs}>
+						Alterar Observação
 					</Button>
 				</Box>
 			</Paper>

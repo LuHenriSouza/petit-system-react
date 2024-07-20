@@ -13,14 +13,16 @@ import {
 	Typography,
 	useMediaQuery,
 	TableContainer,
+	Button,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { format } from 'date-fns';
 import { LayoutMain } from "../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
 import { Environment } from "../../shared/environment";
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
+import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
@@ -100,6 +102,16 @@ export const ShowSales: React.FC = () => {
 	return (
 		<>
 			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do caixa"}>
+				{
+					id &&
+					<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
+						<Box display={'flex'} justifyContent={'space-between'}>
+							<Link to={`/caixa/${id}`}>
+								<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
+							</Link>
+						</Box>
+					</Paper>
+				}
 				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Box minHeight={625}>
 						<TableContainer>

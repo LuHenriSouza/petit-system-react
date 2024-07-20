@@ -201,6 +201,16 @@ const registerCardValue = async (cardValue: number, fincash_id: number): Promise
     }
 };
 
+const updateObsById = async (id: number, obs: string): Promise<void | Error> => {
+    try {
+        await Api.put(`/fincash/obs/${id}`, { obs }, Autorization());
+        console.log()
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
+    }
+};
+
 // const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
 //         await Api.put(`/product/${id}`, dados, Autorization());
@@ -225,6 +235,7 @@ export const FincashService = {
     create,
     getAll,
     getById,
+    updateObsById,
     getOpenFincash,
     getLastFincash,
     getDetailedData,
