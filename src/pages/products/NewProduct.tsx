@@ -1,7 +1,7 @@
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
 import { Link } from 'react-router-dom';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { FormHandles } from '@unform/core';
 import './../../shared/css/sweetAlert.css';
 import { VForm } from '../../shared/forms/VForm';
@@ -10,7 +10,7 @@ import { VTextField } from '../../shared/forms/VTextField';
 import { ProductService } from '../../shared/services/api';
 import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
-import { Alert, Box, Button, Paper, Typography } from "@mui/material";
+import { Alert, Box, Button, CircularProgress, Paper, Typography } from "@mui/material";
 
 const selectManuItens: IMenuItens[] = [
 	{ text: '1 - Bebidas', value: '1' },
@@ -49,6 +49,11 @@ export const NewProduct: React.FC = () => {
 	const formRef = useRef<FormHandles>(null);
 
 	const [querryError, setQuerryError] = useState(false);
+	const [loading, setLoading] = useState(false);
+
+	useEffect(()=>{
+		inputCode.current?.focus();
+	},[inputCode]);
 
 	const handleKeyDownCode = (e: React.KeyboardEvent<HTMLDivElement>) => {
 		if (e.code === 'Enter' || e.key === 'Enter') inputName.current?.focus();
@@ -64,6 +69,7 @@ export const NewProduct: React.FC = () => {
 	};
 
 	const handleSubmit = async (data: IFormData) => {
+		setLoading(true);
 		try {
 			const getNumbers = data.price.split(' ');
 			data.price = getNumbers[1];
@@ -88,9 +94,6 @@ export const NewProduct: React.FC = () => {
 						inputCode.current?.focus();
 					},
 				});
-
-
-
 			}
 		} catch (errors) {
 			if (errors instanceof yup.ValidationError) {
@@ -114,6 +117,8 @@ export const NewProduct: React.FC = () => {
 				return;
 			}
 			setQuerryError(true);
+		} finally {
+			setLoading(false);
 		}
 
 	};
@@ -128,7 +133,7 @@ export const NewProduct: React.FC = () => {
 						</Link>
 					</Box>
 				</Paper>
-				<Paper  variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
 					{(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
 					<VForm
@@ -158,7 +163,9 @@ export const NewProduct: React.FC = () => {
 								/>
 							</Box>
 						</Box>
-						<Button type='button' variant='contained' size={'large'} sx={{ my: 1, mt: 3 }} onClick={() => formRef.current?.submitForm()}>Cadastrar</Button>
+						<Button type='button' variant='contained' size={'large'} sx={{ my: 2, mt: 3, minWidth:150, minHeight:45 }} onClick={() => formRef.current?.submitForm()} disabled={loading}>
+							{loading ? <CircularProgress size={35} /> : 'Cadastrar'}
+						</Button>
 					</VForm>
 				</Paper >
 			</LayoutMain >

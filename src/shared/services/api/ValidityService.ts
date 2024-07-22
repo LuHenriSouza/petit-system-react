@@ -58,9 +58,9 @@ const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS): Promise<T
     }
 };
 
-const create = async (prod_id: number, validity: Date, quantity: number): Promise<number | Error> => {
+const create = async (prod_id: number, validity: Date): Promise<number | Error> => {
     try {
-        const { data } = await Api.post('/validity', { prod_id, validity, quantity }, Autorization());
+        const { data } = await Api.post('/validity', { prod_id, validity }, Autorization());
         if (data) {
             return data.id;
         }
@@ -72,8 +72,18 @@ const create = async (prod_id: number, validity: Date, quantity: number): Promis
     }
 };
 
+const deleteById = async (id: number) => {
+    try {
+        await Api.delete(`/validity/${id}`, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao apagar o registro.');
+    }
+}
+
 export const ValidityService = {
     getAll,
     create,
+    deleteById,
     getAllByProd,
 };

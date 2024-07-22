@@ -17,6 +17,20 @@ export const CloseFincash: React.FC = () => {
 	const formValueRef = useRef<FormHandles>(null);
 	const formCalcRef = useRef<FormHandles>(null);
 
+	// -----------------------CALC INPUT REFS-------------------------------
+	const input010 = useRef<HTMLInputElement>(null);
+	const input025 = useRef<HTMLInputElement>(null);
+	const input050 = useRef<HTMLInputElement>(null);
+	const input1 = useRef<HTMLInputElement>(null);
+	const input2 = useRef<HTMLInputElement>(null);
+	const input5 = useRef<HTMLInputElement>(null);
+	const input10 = useRef<HTMLInputElement>(null);
+	const input20 = useRef<HTMLInputElement>(null);
+	const input50 = useRef<HTMLInputElement>(null);
+	const input100 = useRef<HTMLInputElement>(null);
+	const input200 = useRef<HTMLInputElement>(null);
+	// -----------------------CALC INPUT REFS-------------------------------
+
 	const navigate = useNavigate();
 
 	const [fincash, setFincash] = useState<IFincash>();
@@ -77,6 +91,19 @@ export const CloseFincash: React.FC = () => {
 		});
 	}
 
+	const handleKeyDown = (
+		e: React.KeyboardEvent<HTMLDivElement>,
+		nextInputRef?: React.RefObject<HTMLInputElement>
+	) => {
+		if (nextInputRef) {
+			if ((e.key === "Enter" || e.code === "Enter") && nextInputRef.current) {
+				nextInputRef.current.focus();
+			}
+		} else {
+			if (e.key === "Enter" || e.code === "Enter") formCalcRef.current?.submitForm();
+		}
+	};
+
 	const handleSubmitValue = async (data: IFinishParams) => {
 		const getNumbers = data.FinalTotalValue.split(' ');
 		const value = getNumbers[1];
@@ -84,10 +111,11 @@ export const CloseFincash: React.FC = () => {
 			title: 'Fechar Caixa',
 			text: `Tem certeza que deseja fechar o caixa com "R$ ${value}" ?`,
 			icon: 'warning',
+			allowEnterKey: false,
 			showCancelButton: true,
 			cancelButtonColor: '#aaa',
 			cancelButtonText: 'Cancelar',
-			confirmButtonText: 'Fechar'
+			confirmButtonText: 'Confirmar',
 		}).then((result) => {
 			if (result.isConfirmed) {
 				if (fincash) {
@@ -115,10 +143,11 @@ export const CloseFincash: React.FC = () => {
 			title: 'Fechar Caixa',
 			text: `Tem certeza que deseja fechar o caixa com "R$ ${updatedTotalValue}" ?`,
 			icon: 'warning',
+			allowEnterKey: false,
 			showCancelButton: true,
 			cancelButtonColor: '#aaa',
 			cancelButtonText: 'Cancelar',
-			confirmButtonText: 'Fechar'
+			confirmButtonText: 'Confirmar'
 		}).then((result) => {
 			if (result.isConfirmed) {
 				if (fincash) {
@@ -177,27 +206,27 @@ export const CloseFincash: React.FC = () => {
 									<Box display={'flex'} flexDirection={'column'} gap={1}>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 0.05</Typography>
-											<VTextField onChange={(e) => handleChange(e, '0.05')} name="0.05" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '0.05')} name="0.05" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} onKeyDown={(e) => handleKeyDown(e, input010)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 0.10</Typography>
-											<VTextField onChange={(e) => handleChange(e, '0.10')} name="0.10" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '0.10')} name="0.10" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input010} onKeyDown={(e) => handleKeyDown(e, input025)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 0.25</Typography>
-											<VTextField onChange={(e) => handleChange(e, '0.25')} name="0.25" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '0.25')} name="0.25" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input025} onKeyDown={(e) => handleKeyDown(e, input050)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 0.50</Typography>
-											<VTextField onChange={(e) => handleChange(e, '0.50')} name="0.50" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '0.50')} name="0.50" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input050} onKeyDown={(e) => handleKeyDown(e, input1)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 1.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '1.00')} name="1.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '1.00')} name="1.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input1} onKeyDown={(e) => handleKeyDown(e, input2)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 2.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '2.00')} name="2.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '2.00')} name="2.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input2} onKeyDown={(e) => handleKeyDown(e, input5)} />
 										</Box>
 									</Box>
 								</Box>
@@ -206,27 +235,27 @@ export const CloseFincash: React.FC = () => {
 
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 5.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '5.00')} name="5.00" sx={{ maxWidth: 100, ml: 2 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '5.00')} name="5.00" sx={{ maxWidth: 100, ml: 2 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input5} onKeyDown={(e) => handleKeyDown(e, input10)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 10.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '10.00')} name="10.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '10.00')} name="10.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input10} onKeyDown={(e) => handleKeyDown(e, input20)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 20.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '20.00')} name="20.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '20.00')} name="20.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input20} onKeyDown={(e) => handleKeyDown(e, input50)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 50.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '50.00')} name="50.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '50.00')} name="50.00" sx={{ maxWidth: 100, ml: 1 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input50} onKeyDown={(e) => handleKeyDown(e, input100)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 100.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '100.00')} name="100.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '100.00')} name="100.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input100} onKeyDown={(e) => handleKeyDown(e, input200)} />
 										</Box>
 										<Box display={'flex'} gap={1} alignItems={'center'}>
 											<Typography>R$ 200.00</Typography>
-											<VTextField onChange={(e) => handleChange(e, '200.00')} name="200.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault="{0}" />
+											<VTextField onChange={(e) => handleChange(e, '200.00')} name="200.00" sx={{ maxWidth: 100 }} inputProps={{ type: 'number' }} autoComplete="off" valueDefault={undefined} inputRef={input200} onKeyDown={(e) => handleKeyDown(e)} />
 										</Box>
 									</Box>
 								</Box>

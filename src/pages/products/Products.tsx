@@ -6,6 +6,7 @@ import {
     Alert,
     Paper,
     Button,
+    Skeleton,
     TableRow,
     useTheme,
     TextField,
@@ -13,7 +14,6 @@ import {
     TableHead,
     TableCell,
     Pagination,
-    TableFooter,
     useMediaQuery,
 } from '@mui/material';
 import * as yup from 'yup';
@@ -30,6 +30,9 @@ import { VTextField } from '../../shared/forms/VTextField';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
 import { IProduct, ProductService } from '../../shared/services/api';
+
+const NUMBER_OF_SKELETONS = Array(7).fill(null);
+
 
 const selectManuItens: IMenuItens[] = [
     { text: '1 - Bebidas', value: '1' },
@@ -72,7 +75,11 @@ export const Products: React.FC = () => {
     const [totalCount, setTotalCount] = useState(0);
     const [rows, setRows] = useState<IProduct[]>([]);
     const [querryError, setQuerryError] = useState(false);
-    // const [isLoading, setIsLoading] = useState(false);
+
+    // Loading
+    const [loading, setLoading] = useState(true);
+    const [editLoading, setEditLoading] = useState(false);
+    const [loadingPage, setLoadingPage] = useState(true);
 
     const formRef = useRef<FormHandles>(null);
 
@@ -84,26 +91,37 @@ export const Products: React.FC = () => {
     const page = useMemo(() => {
         return searchParams.get('page') || 1;
     }, [searchParams]);
+
     useEffect(() => {
+        setLoadingPage(true);
+        setLoading(true);
         debounce(() => {
             listProducts();
         });
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [search, page, debounce]);
+    }, [search, page]);
 
 
-    const listProducts = () => {
-        // setIsLoading(true);
-        ProductService.getAll(Number(page), search)
-            .then((result) => {
-                // setIsLoading(false);
-                if (result instanceof Error) {
-                    alert(result.message);
-                } else {
-                    setRows(result.data);
-                    setTotalCount(result.totalCount);
-                }
+    const listProducts = async () => {
+        try {
+
+            const result = await ProductService.getAll(Number(page), search);
+
+            if (result instanceof Error) {
+                alert(result.message);
+            } else {
+                setRows(result.data);
+                setTotalCount(result.totalCount);
+            }
+
+        } catch (e) {
+            console.error(e);
+        } finally {
+            debounce(() => {
+                setLoading(false);
             });
+            setLoadingPage(false);
+        }
     }
 
     const handleDelete = (id: number, name: string) => {
@@ -141,6 +159,7 @@ export const Products: React.FC = () => {
     }
 
     const handleSubmit = async (data: IFormData) => {
+        setEditLoading(true);
         try {
             const getNumbers = data.price.split(' ');
             data.price = getNumbers[1];
@@ -172,6 +191,8 @@ export const Products: React.FC = () => {
                 return;
             }
             setQuerryError(true);
+        } finally {
+            setEditLoading(false);
         }
     }
 
@@ -192,7 +213,6 @@ export const Products: React.FC = () => {
                     </Link>
                 </Box>
             </Paper>
-
             <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto', minHeight: 600 }}>
                 {(querryError && <Alert severity="error">Já existe um produto com este código !</Alert>)}
                 <VForm
@@ -200,116 +220,134 @@ export const Products: React.FC = () => {
                     placeholder={''}
                     ref={formRef}
                 >
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                {(!smDown && <TableCell width={160}>Código</TableCell>)}
-                                <TableCell width={406}>Nome</TableCell>
-                                {(!smDown && <TableCell width={305}>Setor</TableCell>)}
-                                <TableCell width={340}>Preço</TableCell>
-                                <TableCell width={232}>Ações</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {rows.map(row => (
-                                isEdit !== row.id ?
-                                    <TableRow key={row.id} hover>
-
-                                        {(!smDown && <TableCell>{row.code}</TableCell>)}
-                                        <TableCell>{row.name}</TableCell>
-                                        {(!smDown && (
-                                            <TableCell>{
-                                                row.sector === 1 ? '1 - Bebidas' :
-                                                    row.sector === 2 ? '2 - Chocolates' :
-                                                        row.sector === 3 ? '3 - Salgadinhos' :
-                                                            row.sector === 4 ? '4 - Sorvetes' :
-                                                                `${row.sector} - Desconhecido`
-                                            }
-                                            </TableCell>
-                                        ))}
-                                        <TableCell>R$ {row.price}</TableCell>
-                                        <TableCell>
-                                            {(!isEdit &&
-                                                <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
-                                                    <Icon>delete</Icon>
-                                                </Fab>
-                                            )}
-                                            {(smDown &&
-                                                <Link to={'/produtos/edit/' + row.id}>
-                                                    <Fab size="medium" color="warning" aria-label="add">
-                                                        <Icon>edit</Icon>
-                                                    </Fab>
-                                                </Link>
-                                            )}
-                                            {(!smDown &&
-                                                <Fab size="medium" color="warning" aria-label="add" onClick={() => handleEditMode(row.id)}>
-                                                    <Icon>edit</Icon>
-                                                </Fab>
-                                            )}
-
-                                        </TableCell>
-                                    </TableRow >
-                                    :
-                                    <TableRow key={row.id} hover>
-                                        <TableCell>{row.code}</TableCell>
-                                        <TableCell>
-                                            <Box maxWidth={330}>
-                                                <VTextField name='id' valueDefault={`${row.id}`} sx={{ display: 'none' }} />
-                                                <VTextField name='name' label={'Nome'} autoComplete="off" valueDefault={row.name} />
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio' />
-                                        </TableCell>
-                                        <TableCell>
-                                            <Box width={180}>
-                                                <VTextField
-                                                    name='price'
-                                                    label={'Preço'}
-                                                    autoComplete="off"
-                                                    valueDefault={`R$ ${row.price}`}
-                                                    cash
-                                                />
-                                            </Box>
-                                        </TableCell>
-                                        <TableCell>
-                                            <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2 }} onClick={() => setIsEdit(0)}>
-                                                <Icon>close</Icon>
-                                            </Fab>
-                                            <Fab size="medium" color="success" aria-label="add" onClick={() => formRef.current?.submitForm()}>
-                                                <Icon>check</Icon>
-                                            </Fab>
-                                        </TableCell>
-                                    </TableRow >
-                            ))}
-                        </TableBody>
-
-                        {totalCount === 0 && (
-                            <caption>{Environment.LISTAGEM_VAZIA}</caption>
-                        )}
-
-                        <TableFooter>
-                            {/* {(isLoading && !isLoading &&
-                            <TableRow>
-                                <TableCell colSpan={5}>
-                                    <LinearProgress variant='indeterminate' />
-                                    </TableCell>
-                                    </TableRow>
-                                )} */}
-                            {(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
+                    <Box minHeight={640}>
+                        <Table>
+                            <TableHead>
                                 <TableRow>
-                                    <TableCell colSpan={3}>
-                                        <Pagination
-                                            page={Number(page)}
-                                            count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-                                            onChange={(_, newPage) => setSearchParams({ search, page: newPage.toString() }, { replace: true })}
-                                            siblingCount={smDown ? 0 : 1}
-                                        />
-                                    </TableCell>
+                                    {(!smDown && <TableCell width={160}>Código</TableCell>)}
+                                    <TableCell width={406}>Nome</TableCell>
+                                    {(!smDown && <TableCell width={305}>Setor</TableCell>)}
+                                    <TableCell width={340}>Preço</TableCell>
+                                    <TableCell width={232}>Ações</TableCell>
                                 </TableRow>
+                            </TableHead>
+                            <TableBody>
+
+                                {!loading ? rows.map(
+                                    row => (
+                                        isEdit !== row.id ?
+                                            <TableRow key={row.id} hover>
+
+                                                {(!smDown && <TableCell>{row.code}</TableCell>)}
+                                                <TableCell>{row.name}</TableCell>
+                                                {(!smDown && (
+                                                    <TableCell>{
+                                                        row.sector === 1 ? '1 - Bebidas' :
+                                                            row.sector === 2 ? '2 - Chocolates' :
+                                                                row.sector === 3 ? '3 - Salgadinhos' :
+                                                                    row.sector === 4 ? '4 - Sorvetes' :
+                                                                        `${row.sector} - Desconhecido`
+                                                    }
+                                                    </TableCell>
+                                                ))}
+                                                <TableCell>R$ {row.price}</TableCell>
+                                                <TableCell>
+                                                    {(!isEdit &&
+                                                        <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
+                                                            <Icon>delete</Icon>
+                                                        </Fab>
+                                                    )}
+                                                    {(smDown &&
+                                                        <Link to={'/produtos/edit/' + row.id}>
+                                                            <Fab size="medium" color="warning" aria-label="add">
+                                                                <Icon>edit</Icon>
+                                                            </Fab>
+                                                        </Link>
+                                                    )}
+                                                    {(!smDown &&
+                                                        <Fab size="medium" color="warning" aria-label="add" onClick={() => handleEditMode(row.id)}>
+                                                            <Icon>edit</Icon>
+                                                        </Fab>
+                                                    )}
+
+                                                </TableCell>
+                                            </TableRow >
+                                            :
+                                            <TableRow key={row.id} hover>
+                                                <TableCell>{row.code}</TableCell>
+                                                <TableCell>
+                                                    <Box maxWidth={330}>
+                                                        <VTextField name='id' valueDefault={`${row.id}`} sx={{ display: 'none' }} />
+                                                        <VTextField name='name' label={'Nome'} autoComplete="off" valueDefault={row.name} />
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <VSelect name='sector' label='Setor' menuItens={selectManuItens} defaultSelected={row.sector} messageError='Setor não pode ser vazio' />
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Box width={180}>
+                                                        <VTextField
+                                                            name='price'
+                                                            label={'Preço'}
+                                                            autoComplete="off"
+                                                            valueDefault={`R$ ${row.price}`}
+                                                            cash
+                                                        />
+                                                    </Box>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2 }} onClick={() => setIsEdit(0)}>
+                                                        <Icon>close</Icon>
+                                                    </Fab>
+                                                    <Fab size="medium" color="success" aria-label="add" onClick={() => formRef.current?.submitForm()} disabled={editLoading}>
+                                                        <Icon>check</Icon>
+                                                    </Fab>
+                                                </TableCell>
+                                            </TableRow >
+                                    )
+                                )
+                                    :
+
+                                    NUMBER_OF_SKELETONS.map((_, index) => (
+                                        <TableRow key={index}>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 200 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Skeleton sx={{ minHeight: 40, maxWidth: 60 }} />
+                                            </TableCell>
+                                            <TableCell >
+                                                <Fab disabled size='medium' sx={{ mr: 2 }}></Fab>
+                                                <Fab disabled size='medium'></Fab>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
+
+                                }
+                            </TableBody>
+
+                            {totalCount === 0 && !loading && (
+                                <caption>{Environment.LISTAGEM_VAZIA}</caption>
                             )}
-                        </TableFooter>
-                    </Table>
+
+                        </Table>
+                    </Box>
+                    {(totalCount > 0 && totalCount > Environment.LIMITE_DE_LINHAS) && (
+                        <Pagination
+                            sx={{ m: 1 }}
+                            disabled={loadingPage}
+                            page={Number(page)}
+                            count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
+                            onChange={(_, newPage) => { setSearchParams({ search, page: newPage.toString() }, { replace: true }); }}
+                            siblingCount={smDown ? 0 : 1}
+                        />
+                    )}
                 </VForm>
             </Paper>
         </LayoutMain >

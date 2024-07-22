@@ -3,7 +3,6 @@ import {
 	Fab,
 	Paper,
 	Table,
-	Skeleton,
 	useTheme,
 	TableRow,
 	TableCell,
@@ -13,22 +12,20 @@ import {
 	Typography,
 	useMediaQuery,
 	TableContainer,
-	Button,
+	Skeleton,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { format } from 'date-fns';
-import { LayoutMain } from "../../shared/layouts";
+import { LayoutMain } from "../../../shared/layouts";
 import { useEffect, useMemo, useState } from "react";
-import { Environment } from "../../shared/environment";
-import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
+import { Environment } from "../../../shared/environment";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
-import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
+import { FincashService, IFincash, IGetSales, SaleService } from "../../../shared/services/api";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
-export const ShowSales: React.FC = () => {
-	const { id } = useParams();
+export const AllSales: React.FC = () => {
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 	const navigate = useNavigate();
@@ -45,73 +42,27 @@ export const ShowSales: React.FC = () => {
 	}, [searchParams]);
 
 
-	const listSales = async (fincashId: number) => {
-		try {
-			const result = await SaleService.getSalesByFincash(fincashId, Number(page));
-			if (result instanceof Error) {
-				alert(result.message);
-			} else {
-				console.log(result);
+	// const listSales = async (fincashData: IFincash) => {
+	// 	try {
+	// 		// const result = await SaleService.getSalesByFincash(fincashData.id, Number(page));
+	// 		// if (result instanceof Error) {
+	// 		// 	alert(result.message);
+	// 		// } else {
+	// 		// 	console.log(result);
 
-				setTotalCount(result.totalCount);
-				setRows(result.data);
-			}
-		} catch (e) {
-			console.error(e);
-		} finally {
-			setLoading(false);
-		}
-	}
-
-	useEffect(() => {
-		if (id) {
-			fetchDataId(Number(id));
-		} else {
-			fetchData();
-		}
-	}, [page]);
-
-	const fetchDataId = async (id: number) => {
-		setLoading(true);
-		listSales(id);
-
-	}
-
-	const fetchData = async () => {
-		setLoading(true);
-		if (!fincash) {
-			const fincashData = await FincashService.getOpenFincash();
-			if (fincashData instanceof Error) {
-				Swal.fire({
-					icon: "error",
-					title: "Erro",
-					text: "Nenhum caixa aberto encontrado!",
-					showConfirmButton: true,
-				});
-				navigate('/caixa/novo');
-			} else {
-				setFincash(fincashData);
-				listSales(fincashData.id);
-			}
-		} else {
-			listSales(fincash.id);
-		}
-
-	}
-
+	// 		// 	setTotalCount(result.totalCount);
+	// 		// 	setRows(result.data);
+	// 		// }
+	// 	} catch (e) {
+	// 		console.error(e);
+	// 	} finally {
+	// 		setLoading(false);
+	// 	}
+	// }
+	
 	return (
 		<>
-			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do caixa"}>
-				{
-					id &&
-					<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
-						<Box display={'flex'} justifyContent={'space-between'}>
-							<Link to={`/caixa/${id}`}>
-								<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
-							</Link>
-						</Box>
-					</Paper>
-				}
+			<LayoutMain title="Vendas" subTitle={"Gerencie todas as vendas"}>
 				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Box minHeight={625}>
 						<TableContainer>
@@ -135,7 +86,7 @@ export const ShowSales: React.FC = () => {
 													<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
 													<TableCell>R$ {row.totalValue}</TableCell>
 													<TableCell>
-														<Link to={id ? `/vendas/${row.sale_id}?back=${id}` : '/vendas/' + row.sale_id}>
+														<Link to={'/vendas/' + row.sale_id}>
 															<Fab
 																size="medium"
 																color="info"

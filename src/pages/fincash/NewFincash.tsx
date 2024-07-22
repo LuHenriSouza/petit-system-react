@@ -19,11 +19,12 @@ interface IFormDataValidated {
 interface IFormData {
     opener: string;
     value: string;
+    obs: string;
 }
 
 
 const formValidation: yup.Schema<IFormDataValidated> = yup.object().shape({
-    opener: yup.string().required().min(3).max(50),
+    opener: yup.string().required().min(3).max(30),
     value: yup.number().required().min(0),
 });
 
@@ -34,17 +35,19 @@ export const NewFincash: React.FC = () => {
     const theme = useTheme()
     const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
+
     const navigate = useNavigate();
 
+    const inputRefValue = useRef<HTMLInputElement>();
     const formRef = useRef<FormHandles>(null);
 
     useEffect(() => {
 
         const fetchData = async () => {
-            const result = await FincashService.getOpenFincash();
+            const [result, lastFincash] = await Promise.all([FincashService.getOpenFincash(), FincashService.getLastFincash()]);
+
             setOpenFincash(result);
 
-            const lastFincash = await FincashService.getLastFincash();
             if (!(lastFincash instanceof Error))
                 formRef.current?.setFieldValue('value', `R$ ${lastFincash.finalValue}`);
         }
@@ -64,20 +67,35 @@ export const NewFincash: React.FC = () => {
         try {
             const getNumbers = data.value.split(' ');
             data.value = getNumbers[1];
-            const dataValidated = await formValidation.validate(data, { abortEarly: false })
-            const result = await FincashService.create(dataValidated);
-            console.log(result);
-            if (!(result instanceof Error)) {
-                Swal.fire({
-                    icon: "success",
-                    title: "Caixa aberto com sucesso!",
-                    showConfirmButton: false,
-                    timer: 1500,
-                });
-                setAtt(1);
+            data.obs = data.obs.trim();
+            const dataValidated = await formValidation.validate(data, { abortEarly: false });
 
-            }
+            Swal.fire({
+                title: 'Tem Certeza?',
+                allowEnterKey: false,
+                text: `Abir Caixa com ${data.value} ?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: theme.palette.primary.main,
+                cancelButtonColor: '#aaa',
+                cancelButtonText: 'Cancelar',
+                confirmButtonText: 'Confirmar'
+            }).then(async (confirm) => {
+                if (confirm.isConfirmed) {
+                    const result = await FincashService.create(dataValidated);
+                    console.log(result);
+                    if (!(result instanceof Error)) {
+                        Swal.fire({
+                            icon: "success",
+                            title: "Caixa aberto com sucesso!",
+                            showConfirmButton: false,
+                            timer: 1500,
+                        });
+                        setAtt(1);
 
+                    }
+                }
+            });
         } catch (errors) {
             console.log(errors);
 
@@ -94,6 +112,13 @@ export const NewFincash: React.FC = () => {
             }
         }
     };
+    const handleKeyDownName = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.code === 'Enter' || e.key === 'Enter') inputRefValue.current?.focus();
+    }
+
+    const handleKeyDownValue = (e: React.KeyboardEvent<HTMLDivElement>) => {
+        if (e.code === 'Enter' || e.key === 'Enter') formRef.current?.submitForm();
+    }
 
     return (
 
@@ -101,15 +126,28 @@ export const NewFincash: React.FC = () => {
             <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                 <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
                 <VForm onSubmit={handleSubmit} placeholder={''} ref={formRef}>
-                    <Box display={'flex'} gap={7} marginBottom={4}>
-                        <Box width={300}>
-                            <VTextField label={'Nome'} name="opener" autoComplete="off" />
+                    <Box display={'flex'} flexDirection={'column'} marginBottom={4} maxWidth={900}>
+                        <Box display={'flex'} gap={7} >
+                            <Box width={300}>
+                                <VTextField label={'Nome'} name="opener" onKeyDown={handleKeyDownName} tabIndex={901} />
+                            </Box>
+                            <Box width={300}>
+                                <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash inputRef={inputRefValue} onKeyDown={handleKeyDownValue} tabIndex={902} />
+                            </Box>
+                            <Button variant="contained" size="large" sx={{ width: 120 }} onClick={() => formRef.current?.submitForm()} tabIndex={904}><OpenInBrowserIcon sx={{ mr: 1 }} />Abrir</Button>
                         </Box>
-                        <Box width={300}>
-                            <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash autoComplete="off" />
+                        <Box >
+                            <VTextField
+                                rows={4}
+                                fullWidth
+                                multiline
+                                name={'obs'}
+                                sx={{ mt: 2 }}
+                                label="Observações"
+                            />
                         </Box>
-                        <Button variant="contained" size="large" sx={{ width: 120 }} onClick={() => formRef.current?.submitForm()}><OpenInBrowserIcon sx={{ mr: 1 }} />Abrir</Button>
                     </Box>
+
                 </VForm>
             </Paper>
         </LayoutMain>

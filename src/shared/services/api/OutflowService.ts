@@ -43,9 +43,9 @@ const create = async (dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_a
     }
 };
 
-const getAllById = async (page = 1, id: number): Promise<TProductTotalCount | Error> => {
+const getAllById = async (page = 1, id: number, limit = 7): Promise<TProductTotalCount | Error> => {
     try {
-        const urlRelativa = `/cashoutflow/all/${id}?page=${page}&limit=6`;
+        const urlRelativa = `/cashoutflow/all/${id}?page=${page}&limit=${limit}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
@@ -60,7 +60,6 @@ const getAllById = async (page = 1, id: number): Promise<TProductTotalCount | Er
         return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
     }
 };
-
 
 const getById = async (id: number): Promise<ICashOutflow | Error> => {
     try {
@@ -77,12 +76,26 @@ const getById = async (id: number): Promise<ICashOutflow | Error> => {
     }
 };
 
-const updateDescById = async (id: number, dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_at' | 'type' | 'fincash_id' | 'value'> ): Promise<void | Error> => {
+const updateDescById = async (id: number, dados: Omit<ICashOutflow, 'id' | 'created_at' | 'updated_at' | 'type' | 'fincash_id' | 'value'>): Promise<void | Error> => {
     try {
         await Api.put(`/cashoutflow/${id}`, dados, Autorization());
     } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
+    }
+};
+
+const getTotalByFincash = async (fincash_id: number): Promise<number | Error> => {
+    try {
+        const urlRelativa = `/cashoutflow/total/${fincash_id}`;
+        const { data } = await Api.get(urlRelativa, Autorization());
+        if (data || data == 0) {
+            return data;
+        }
+        return new Error('Erro ao pegar o registros.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
     }
 };
 
@@ -101,5 +114,6 @@ export const OutflowService = {
     getById,
     getAllById,
     updateDescById,
+    getTotalByFincash,
     // deleteById,
 };

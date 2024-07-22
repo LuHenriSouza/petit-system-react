@@ -18,7 +18,7 @@ export interface IGetSales {
 
 export interface ISaleRaw {
     id: number,
-    obs: string,
+    obs?: string,
     fincash_id: number,
     created_at: Date,
     updated_at: Date,
@@ -30,6 +30,11 @@ export interface ISale {
     prod_id: number;
     quantity: number;
     price: number;
+}
+
+export interface ISaleObs {
+    data: Omit<ISale, "id">[],
+    obs: string,
 }
 
 export interface ISaleDetail {
@@ -56,7 +61,7 @@ type TSaleTotalCount = {
     totalCount: number;
 }
 
-const create = async (dados: Omit<ISale, 'id'>[]): Promise<number | Error> => {
+const create = async (dados: ISaleObs): Promise<number | Error> => {
     try {
         const { data } = await Api.post<ISale>('/sale', dados, Autorization());
 

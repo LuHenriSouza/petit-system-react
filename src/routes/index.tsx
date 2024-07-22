@@ -4,6 +4,7 @@ import {
     Groups,
     Page404,
     OutFlow,
+    AllSales,
     Products,
     Validity,
     Suppliers,
@@ -12,9 +13,13 @@ import {
     NewProduct,
     NewFincash,
     SaleDetail,
+    Promotions,
+    AllFincashs,
     CloseFincash,
     UpdateProduct,
     OutflowDetail,
+    FincashDetail,
+    FincashResult,
 } from '../pages';
 import { Button } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
@@ -34,9 +39,13 @@ export const AppRoutes = () => {
 
             {/* Caixa / Vendas */}
             <Route path="/caixa" element={<Sale />} />
+            <Route path="/caixa/:id" element={<FincashDetail />} />
             <Route path="/caixa/novo" element={<NewFincash />} />
             <Route path="/vendas" element={<ShowSales />} />
+            <Route path="/vendas/caixa/:id" element={<ShowSales />} />
             <Route path="/vendas/:id" element={<SaleDetail />} />
+            <Route path="/vendas/admin" element={<AllSales />} />
+            <Route path="/caixa/dados/:id" element={<FincashResult />} />
 
             {/* Saidas */}
             <Route path="/saidas" element={<OutFlow />} />
@@ -46,7 +55,8 @@ export const AppRoutes = () => {
             <Route path="/fornecedores" element={<Suppliers />} />
 
             {/* Fechamentos */}
-            <Route path='/fechamentos' element={<CloseFincash />} />
+            <Route path='/fechar' element={<CloseFincash />} />
+            <Route path='/fechamentos' element={<AllFincashs />} />
 
             {/* Grupos */}
             <Route path='/grupos' element={<Groups />} />
@@ -56,6 +66,10 @@ export const AppRoutes = () => {
 
             {/* Validades */}
             <Route path="/validades" element={<Validity />} />
+
+            {/* Promções */}
+            <Route path="/promo" element={<Promotions />} />
+
 
             {/* Página 404 */}
             <Route path='/*' element={<Page404 />} />

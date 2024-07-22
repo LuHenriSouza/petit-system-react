@@ -6,7 +6,9 @@ import {
 	Button,
 	Dialog,
 	Switch,
+	Skeleton,
 	TableRow,
+	Snackbar,
 	TableBody,
 	TableCell,
 	TextField,
@@ -19,7 +21,6 @@ import {
 	DialogActions,
 	FormControlLabel,
 	DialogContentText,
-	Snackbar,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -27,11 +28,12 @@ import AddIcon from '@mui/icons-material/Add';
 import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
 
 
 const STOCK_ROW_LIMIT = 7;
+const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
 const validitySchema = yup.object().shape({
 	validity: yup.date().required()
@@ -42,20 +44,27 @@ export const Stock: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { debounce } = useDebounce();
 
-	const [rows, setRows] = useState<IProductWithStock[]>();
-	const [totalCount, setTotalCount] = useState(0);
+	const inputDate = useRef<HTMLInputElement>();
+	const inputQnt = useRef<HTMLInputElement>();
+
+
+
 	const [open, setOpen] = useState(false);
-	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
-	const [selectedProd, setSelectedProd] = useState(0);
-	const [selectedProdName, setSelectedProdName] = useState('');
 	const [qntStock, setQntStock] = useState(0);
-	const [errorSelect, setErrorSelect] = useState(false);
+	const [loading, setLoading] = useState(true);
 	const [errorQnt, setErrorQnt] = useState(false);
-	const [switchActivated, setSwitchActivated] = useState(false);
-	const [validityDate, setValidityDate] = useState<Date>();
+	const [totalCount, setTotalCount] = useState(0);
 	const [errorDate, setErrorDate] = useState(false);
 	const [openSnack, setOpenSnack] = useState(false);
+	const [selectedProd, setSelectedProd] = useState(0);
+	const [loadingPage, setLoadingPage] = useState(true);
+	const [errorSelect, setErrorSelect] = useState(false);
+	const [validityDate, setValidityDate] = useState<Date>();
+	const [rows, setRows] = useState<IProductWithStock[]>([]);
 	const [openSnackError, setOpenSnackError] = useState(false);
+	const [selectedProdName, setSelectedProdName] = useState('');
+	const [switchActivated, setSwitchActivated] = useState(false);
+	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
 
 	const stockPage = useMemo(() => {
 		return searchParams.get('stockPage') || 1;
@@ -100,12 +109,23 @@ export const Stock: React.FC = () => {
 	}
 
 	const listStocks = async () => {
-		const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
-		if (response instanceof Error) {
-			alert("Ocorreu algum erro");
-		} else {
-			setRows(response.data);
-			setTotalCount(response.totalCount);
+		try {
+			setLoadingPage(true);
+			setLoading(true);
+			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
+			if (response instanceof Error) {
+				alert("Ocorreu algum erro");
+			} else {
+				setRows(response.data);
+				setTotalCount(response.totalCount);
+			}
+		} catch (e) {
+			console.error(e);
+		} finally {
+			debounce(() => {
+				setLoading(false);
+			});
+			setLoadingPage(false);
 		}
 	}
 
@@ -154,20 +174,25 @@ export const Stock: React.FC = () => {
 					});
 
 					// ESSA PARTE NAO FUNCIONOU:
-					// setQntStock(0);
-					// setSelectedProd(0);
-					// setErrorQnt(false);
-					// setErrorDate(false);
-					// setErrorSelect(false);
-					// setSelectedProdName('');
-					// setSwitchActivated(false);
+					setQntStock(0);
+					setSelectedProd(0);
+					setErrorQnt(false);
+					setErrorDate(false);
+					setErrorSelect(false);
+					setSelectedProdName('');
+					if (inputDate.current) {
+						inputDate.current.value = '';
+					}
+					if (inputQnt.current) {
+						inputQnt.current.value = '';
+					}
 				}
 				listStocks();
 				if (switchActivated) {
 					if (!validityDate) {
 						setErrorDate(true);
 					} else {
-						const result = await ValidityService.create(selectedProd, validityDate, qntStock);
+						const result = await ValidityService.create(selectedProd, validityDate);
 						if (result instanceof Error) {
 							setOpenSnackError(true);
 						} else {
@@ -191,7 +216,7 @@ export const Stock: React.FC = () => {
 						size="small"
 						placeholder={'Pesquisar'}
 						value={stockSearch}
-						onChange={(event) => { setSearchParams((old) => { old.set('stockSearch', event.target.value); return old; }) }}
+						onChange={(event) => { setSearchParams((old) => { old.set('stockSearch', event.target.value); old.delete('stockPage'); return old; }) }}
 						autoComplete="off"
 					/>
 					<Button variant="contained" onClick={handleClickOpen}><AddIcon sx={{ mr: 1 }} />Adicionar</Button>
@@ -211,27 +236,49 @@ export const Stock: React.FC = () => {
 							</TableRow>
 						</TableHead>
 						<TableBody>
-							{rows?.map((row) => (
-								<TableRow
-									key={row.code}
-									hover
-								// selected={productSelectedRow == row.id}
-								// sx={{ cursor: "pointer" }}
-								// onClick={() => handleProductRowClick(row.id)}
-								>
-									<TableCell>{row.code}</TableCell>
-									<TableCell>{row.name}</TableCell>
-									<TableCell>{row.stock}</TableCell>
-								</TableRow>
-							))}
+							{
+								!loading &&
+								rows.map(
+									(row) => (
+										<TableRow
+											key={row.code}
+											hover
+										>
+											<TableCell>{row.code}</TableCell>
+											<TableCell>{row.name}</TableCell>
+											<TableCell>{row.stock}</TableCell>
+										</TableRow>
+									)
+								)
+							}
+							{
+								loading &&
+								NUMBER_OF_SKELETONS.map(
+									(_, index) => (
+										<TableRow key={index}>
+											<TableCell >
+												<Skeleton sx={{ maxWidth: 100 }} />
+											</TableCell>
+											<TableCell >
+												<Skeleton sx={{ maxWidth: 150 }} />
+											</TableCell>
+											<TableCell >
+												<Skeleton sx={{ maxWidth: 50 }} />
+											</TableCell>
+										</TableRow>
+									)
+								)
+							}
+
 						</TableBody>
-						{totalCount === 0 && (
+						{totalCount === 0 && !loading && (
 							<caption>Nenhum grupo encontrado</caption>
 						)}
 					</Table>
 				</Box>
 				{totalCount > 0 && totalCount > STOCK_ROW_LIMIT && (
 					<Pagination
+						disabled={loadingPage}
 						page={Number(stockPage)}
 						count={Math.ceil(totalCount / STOCK_ROW_LIMIT)}
 						onChange={(_, newPage) =>
@@ -264,6 +311,7 @@ export const Stock: React.FC = () => {
 					<Box minHeight={80} display={'flex'} gap={6}>
 						<Autocomplete
 							id="combo-box"
+							value={{ label: selectedProdName, id: selectedProd }}
 							options={allProducts ?? []}
 							sx={{ width: 300 }}
 							renderOption={(props, option) => {
@@ -290,6 +338,7 @@ export const Stock: React.FC = () => {
 							inputProps={{ type: 'number' }}
 							onChange={(e) => { setQntStock(Number(e.target.value)); setErrorQnt(false); }}
 							onFocus={() => setErrorQnt(false)}
+							inputRef={inputQnt}
 						/>
 					</Box>
 					<FormGroup sx={{ mb: 2 }}>
@@ -311,6 +360,7 @@ export const Stock: React.FC = () => {
 								setErrorDate(false);
 							}}
 							onFocus={() => setErrorDate(false)}
+							inputRef={inputDate}
 						/>
 					)}
 				</DialogContent>

@@ -1,11 +1,12 @@
 import {
+	Fab,
 	Box,
 	Grid,
 	Paper,
 	Alert,
 	Table,
 	Button,
-	Dialog,
+	Snackbar,
 	TableRow,
 	TextField,
 	TableBody,
@@ -13,12 +14,6 @@ import {
 	TableHead,
 	Typography,
 	Pagination,
-	DialogTitle,
-	DialogActions,
-	DialogContent,
-	DialogContentText,
-	Fab,
-	Icon,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from "sweetalert2";
@@ -27,12 +22,13 @@ import UndoIcon from "@mui/icons-material/Undo";
 import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
-import { useEffect, useMemo, useState } from "react";
+import RemoveIcon from "@mui/icons-material/Remove";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { format, addDays, isDate, differenceInDays, startOfDay } from 'date-fns';
 import { IProduct, IProductWithValidity, ProductService, ValidityService } from "../../shared/services/api";
 
-const VALIDITY_ROW_LIMIT = 7;
-const PRODUCT_ROW_LIMIT = 8;
+const VALIDITY_ROW_LIMIT = 6;
+const PRODUCT_ROW_LIMIT = 9;
 
 const validitySchema = yup.object().shape({
 	validity: yup.date().required()
@@ -42,7 +38,7 @@ export const Validity: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 	const { debounce } = useDebounce();
 
-	const [open, setOpen] = useState(false);
+	const inputDate = useRef<HTMLInputElement>();
 
 	const [prodTotalCount, setProdTotalCount] = useState(0);
 	const [prodRows, setProdRows] = useState<IProduct[]>([]);
@@ -100,10 +96,8 @@ export const Validity: React.FC = () => {
 	}
 
 
-	const [qnt, setQnt] = useState(0);
-	const [errorQnt, setErrorQnt] = useState(false);
 	const [validity, setValidity] = useState<Date>();
-	const [errorDate, setErrorDate] = useState(false);
+	const [openSnackError, setOpenSnackError] = useState(false);
 
 	const handleProdRowClick = (id: number) => {
 		setProdSelectedRow(id);
@@ -113,39 +107,24 @@ export const Validity: React.FC = () => {
 		setProdSelectedRow(0);
 	}
 
-	const handleClickOpen = () => {
-		setOpen(true);
-	}
-
-	const handleClose = () => {
-		setQnt(0);
-		setOpen(false);
-		setErrorQnt(false);
-		setErrorDate(false);
-	};
-
 	const handleSubmit = async () => {
 
 		const isValid = await validitySchema.isValid({ validity: validity });
 		if (!isValid) {
-			setErrorDate(true);
-			return;
-		}
-
-		if (qnt < 1) {
-			setErrorQnt(true);
+			setOpenSnackError(true);
 			return;
 		}
 
 		if (!validity) {
-			setErrorDate(true);
+			setOpenSnackError(true);
 		} else {
-			const result = await ValidityService.create(prodSelectedRow, validity, qnt);
+			const result = await ValidityService.create(prodSelectedRow, validity);
 			if (result instanceof Error) {
 				Swal.fire({
-					icon: "error",
-					title: "Erro desconhecido ao Cadastrar!",
-					text: 'Envie uma reclamação na aba "Suporte"'
+					icon: "warning",
+					title: "Validade já cadastrada",
+					showConfirmButton: false,
+					timer: 1000
 				});
 			} else {
 				Swal.fire({
@@ -156,6 +135,10 @@ export const Validity: React.FC = () => {
 				});
 			}
 			listValidities();
+			setValidity(undefined);
+			if (inputDate.current) {
+				inputDate.current.value = '';
+			}
 		}
 	}
 
@@ -181,7 +164,7 @@ export const Validity: React.FC = () => {
 			return '';
 		}
 	}
-	const HandleText = (validity: Date): string => {
+	const handleText = (validity: Date): string => {
 		if (!isDate(validity)) {
 			console.error('Invalid date:', validity);
 			return 'textSecondary';
@@ -199,6 +182,28 @@ export const Validity: React.FC = () => {
 			return '';
 		}
 	}
+
+	const handleRemove = async (id: number) => {
+
+		const response = await ValidityService.deleteById(id);
+
+		if (response instanceof Error) {
+			console.error("Ocorreu algum erro no momento da remoção da validade!");
+		} else {
+			Swal.fire({
+				icon: "success",
+				title: "Validade Removida !",
+				showConfirmButton: false,
+				timer: 1000,
+			});
+		}
+		listValidities();
+	}
+
+	const handleKeyDownDate = (e: React.KeyboardEvent<HTMLDivElement>) => {
+		if (e.code === 'Enter' || e.key === 'Enter') handleSubmit();
+	}
+
 	return (
 		<LayoutMain title="Validades" subTitle="Adicione ou gerencie validades">
 			<Grid container>
@@ -214,7 +219,7 @@ export const Validity: React.FC = () => {
 								autoComplete="off"
 								value={prodSearch}
 								placeholder={'Pesquisar'}
-								onChange={(event) => { setSearchParams((old) => { old.set('prodSearch', event.target.value); return old; }) }}
+								onChange={(event) => { setSearchParams((old) => { old.set('prodSearch', event.target.value);old.delete('prodPage'); return old; }) }}
 							/>
 						</Box>
 					</Paper>
@@ -251,6 +256,7 @@ export const Validity: React.FC = () => {
 						</Box>
 						{prodTotalCount > 0 && prodTotalCount > PRODUCT_ROW_LIMIT && (
 							<Pagination
+								sx={{ mt: 2 }}
 								page={Number(prodPage)}
 								count={Math.ceil(prodTotalCount / PRODUCT_ROW_LIMIT)}
 								onChange={(_, newPage) =>
@@ -279,27 +285,47 @@ export const Validity: React.FC = () => {
 								<UndoIcon fontSize="small" sx={{ mr: 1 }} />
 								Limpar Seleção
 							</Button>
-							<Button
-								variant="outlined"
-								onClick={handleClickOpen}
-								disabled={!prodSelectedRow}
-							>
-								<AddIcon sx={{ mr: 1 }} />
-								Adicionar Validade
-							</Button>
+							<Box>
+								<TextField
+									size="small"
+									autoComplete="off"
+									inputProps={{ type: 'date' }}
+									sx={{ maxWidth: 200, ml: 2 }}
+									inputRef={inputDate}
+									onKeyDown={handleKeyDownDate}
+									onChange={(e) => {
+										const dateString = e.target.value;
+										if (dateString) {
+											const date = new Date(dateString);
+											setValidity(date);
+										} else {
+											setValidity(undefined);
+										}
+									}}
+									disabled={!prodSelectedRow}
+								/>
+								<Button
+									sx={{ minHeight: 40, ml: 2 }}
+									variant="outlined"
+									onClick={handleSubmit}
+									disabled={!prodSelectedRow}
+								>
+									<AddIcon sx={{ mr: 1 }} />
+									Adicionar Validade
+								</Button>
+							</Box>
 						</Box>
 					</Paper>
 					<Paper
 						sx={{ backgroundColor: "#fff", px: 3, py: 1, mr: 5 }}
 						variant="elevation"
 					>
-						<Box minHeight={500}>
+						<Box minHeight={535}>
 							<Table>
 								<TableHead>
 									<TableRow>
 										<TableCell>Código</TableCell>
 										<TableCell>Nome</TableCell>
-										<TableCell>Quantidade</TableCell>
 										<TableCell>Validade</TableCell>
 										<TableCell>Ações</TableCell>
 									</TableRow>
@@ -313,26 +339,20 @@ export const Validity: React.FC = () => {
 											<TableCell>{val.code}</TableCell>
 											<TableCell>{val.name}</TableCell>
 											<TableCell>
-												<TextField
-													autoComplete="off"
-													sx={{ maxWidth: 80 }}
-													inputProps={{ type: 'number' }}
-													// onChange={(e) => { setQnt(Number(e.target.value)); setErrorQnt(false); }}
-													// onFocus={() => setErrorQnt(false)}
-													value={val.quantity}
-												/>
-											</TableCell>
-											<TableCell>
 												<Typography variant="body1" color={() => dateColorFinder(new Date(val.validity))}>
-													{format(val.validity, 'dd/MM/yyyy ')}{HandleText(new Date(val.validity))}
+													{format(val.validity, 'dd/MM/yyyy ')}{handleText(new Date(val.validity))}
 												</Typography>
 											</TableCell>
 											<TableCell>
-												<Fab size="small" color="error" aria-label="add"
-												// onClick={() => formRef.current?.submitForm()}
+												<Fab
+													size="medium"
+													color="error"
+													aria-label="remove"
+													onClick={() => handleRemove(val.id)}
 												>
-													<Icon>delete</Icon>
-												</Fab></TableCell>
+													<RemoveIcon />
+												</Fab>
+											</TableCell>
 										</TableRow>
 									))}
 								</TableBody>
@@ -343,6 +363,7 @@ export const Validity: React.FC = () => {
 						</Box>
 						{valTotalCount > 0 && valTotalCount > VALIDITY_ROW_LIMIT && (
 							<Pagination
+								sx={{ mt: 2 }}
 								page={Number(ValidityPage)}
 								count={Math.ceil(valTotalCount / VALIDITY_ROW_LIMIT)}
 								onChange={(_, newPage) =>
@@ -356,55 +377,23 @@ export const Validity: React.FC = () => {
 					</Paper>
 				</Grid>
 			</Grid>
-			{/* ------------------- ------------------- ADD MODAL ------------------- ------------------- */}
-			<Dialog
-				open={open}
-				onClose={handleClose}
-				fullWidth
-				sx={{
-					"& .MuiDialog-paper":
-						{ backgroundColor: "#fff", }
-				}}>
-				<DialogTitle>Adicionar</DialogTitle>
-				<DialogContent>
-					{errorQnt && (<Alert severity='warning' sx={{ mb: 1 }}>Quantidade precisa ser maior que 0</Alert>)}
-					{errorDate && (<Alert severity='warning' sx={{ mb: 1 }}>Data inválida</Alert>)}
-					<DialogContentText mb={4}>
-						Cadastrar estoque
-					</DialogContentText>
-					<Box minHeight={80} display={'flex'} gap={6}>
-						<TextField
-							autoComplete="off"
-							inputProps={{ type: 'date' }}
-							// value={validityDate}
-							onChange={(e) => {
-								const dateString = e.target.value;
-								if (dateString) {
-									const date = new Date(dateString);
-									setValidity(date);
-								} else {
-									setValidity(undefined);
-								}
-								setErrorDate(false);
-							}}
-							onFocus={() => setErrorDate(false)}
-						/>
-						<TextField
-							autoComplete="off"
-							label={'Quantidade'}
-							sx={{ maxWidth: 140 }}
-							inputProps={{ type: 'number' }}
-							onChange={(e) => { setQnt(Number(e.target.value)); setErrorQnt(false); }}
-							onFocus={() => setErrorQnt(false)}
-						/>
-					</Box>
-
-				</DialogContent>
-				<DialogActions>
-					<Button onClick={handleClose} variant='outlined'>Cancelar</Button>
-					<Button onClick={handleSubmit} variant='contained'>Cadastrar</Button>
-				</DialogActions>
-			</Dialog>
+			{/* ------------------- ------------------- SNACK BAR FAILED ------------------- ------------------- */}
+			<Snackbar
+				open={openSnackError}
+				autoHideDuration={2000}
+				sx={{ minWidth: 500 }}
+				onClose={() => setOpenSnackError(false)}
+				anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+			>
+				<Alert
+					onClose={() => setOpenSnackError(false)}
+					severity="error"
+					variant="filled"
+					sx={{ width: '100%' }}
+				>
+					Data Inválida !
+				</Alert>
+			</Snackbar>
 		</LayoutMain>
 	);
 };
