@@ -24,7 +24,7 @@ export const Sale: React.FC = () => {
 	const [code, setCode] = useState('');
 	const [totalPrice, setTotalPrice] = useState(0);
 	const [notFound, setNotFound] = useState(false);
-	const [lastResult, setLastResult] = useState('');
+	const [lastResult, setLastResult] = useState<IProduct | undefined>();
 	const [products, setProducts] = useState<IProduct[]>([]);
 	const [submitLoading, setSubmitLoading] = useState(false);
 	const [openFincash, setOpenFincash] = useState<Error | IFincash>(Error('default'));
@@ -112,8 +112,12 @@ export const Sale: React.FC = () => {
 	const handleEnter = async (e: React.KeyboardEvent<HTMLDivElement>) => {
 		setNotFound(false);
 		if (e.code === 'Enter' || e.key === 'Enter') {
-			if (!code.trim() && !lastResult.trim()) return;
-			handleProducts(code.trim() ? code : lastResult)
+			if (!code.trim() && !lastResult) return;
+			if (!code.trim() && lastResult) {
+				handleProducts('', lastResult);
+			} else {
+				handleProducts(code.trim());
+			}
 		}
 	};
 
@@ -131,7 +135,7 @@ export const Sale: React.FC = () => {
 			if (result instanceof Error) {
 				setNotFound(true);
 			} else {
-				setLastResult(prodCode);
+				setLastResult(result);
 				// Check if the product is already in the products array
 				const existingProductIndex = products.findIndex((p) => p.code === result.code);
 
@@ -177,7 +181,7 @@ export const Sale: React.FC = () => {
 			if (result instanceof Error) return alert('Venda não efetuada.');
 			setProducts([]);
 			setObs('');
-			setLastResult('');
+			setLastResult(undefined);
 			Swal.fire({
 				icon: "success",
 				title: "Venda efetuada com sucesso!",
@@ -195,9 +199,9 @@ export const Sale: React.FC = () => {
 			obsInputRef.current?.focus();
 		}
 	}, [obsFocus])
-	useEffect(()=>{
+	useEffect(() => {
 		inputFocus();
-	},[notFound])
+	}, [notFound])
 	// GROUP HANDLES
 	const [selectedGroup, setSelectedGroup] = useState(0);
 	const [prodGroup, setProdGroup] = useState<IProduct[]>();

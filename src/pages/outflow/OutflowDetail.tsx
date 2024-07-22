@@ -21,6 +21,10 @@ export const OutflowDetail: React.FC = () => {
 		return searchParams.get('caixa');
 	}, [searchParams]);
 
+	const backPage = useMemo(() => {
+		return searchParams.get('backPage');
+	}, [searchParams]);
+
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -80,7 +84,7 @@ export const OutflowDetail: React.FC = () => {
 		<LayoutMain title={"Saída " + id} subTitle={"Saída " + id}>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
 				<Box display={'flex'} justifyContent={'space-between'}>
-					<Link to={caixa ? `/caixa/${caixa}` : '/saidas'}>
+					<Link to={caixa ? `/caixa/${caixa}?backPage=${backPage}` : '/saidas'}>
 						<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
 					</Link>
 				</Box>

@@ -44,6 +44,10 @@ export const ShowSales: React.FC = () => {
 		return searchParams.get('page') || 1;
 	}, [searchParams]);
 
+	const backPage = useMemo(() => {
+		return searchParams.get('backPage') || 1;
+	}, [searchParams]);
+
 
 	const listSales = async (fincashId: number) => {
 		try {
@@ -106,7 +110,7 @@ export const ShowSales: React.FC = () => {
 					id &&
 					<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
 						<Box display={'flex'} justifyContent={'space-between'}>
-							<Link to={`/caixa/${id}`}>
+							<Link to={`/caixa/${id}?backPage=${backPage}`}>
 								<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
 							</Link>
 						</Box>
@@ -192,7 +196,12 @@ export const ShowSales: React.FC = () => {
 								<Pagination
 									page={Number(page)}
 									count={Math.ceil(totalCount / Environment.LIMITE_DE_LINHAS)}
-									onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
+									onChange={(_, newPage) =>
+										setSearchParams((old) => {
+											old.set("page", newPage.toString());
+											return old;
+										})
+									}
 									siblingCount={smDown ? 0 : 1}
 								/>
 							</TableCell>

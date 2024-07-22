@@ -207,7 +207,7 @@ export const AllFincashs: React.FC = () => {
 
 													<TableCell>
 														<Box display={'flex'}>
-															<Link to={'/caixa/' + row.id}>
+															<Link to={'/caixa/' + row.id + '?backPage=' + page}>
 																<Fab
 																	size="medium"
 																	color="info"
