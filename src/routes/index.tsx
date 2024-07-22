@@ -19,6 +19,7 @@ import {
     UpdateProduct,
     OutflowDetail,
     FincashDetail,
+    FincashResult,
 } from '../pages';
 import { Button } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
@@ -44,6 +45,7 @@ export const AppRoutes = () => {
             <Route path="/vendas/caixa/:id" element={<ShowSales />} />
             <Route path="/vendas/:id" element={<SaleDetail />} />
             <Route path="/vendas/admin" element={<AllSales />} />
+            <Route path="/caixa/dados/:id" element={<FincashResult />} />
 
             {/* Saidas */}
             <Route path="/saidas" element={<OutFlow />} />

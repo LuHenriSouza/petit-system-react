@@ -27,6 +27,7 @@ export * from './suppliers/Suppliers';
 export * from './fincash/NewFincash';
 export * from './fincash/CloseFincash';
 export * from './fincash/FincashDetail';
+export * from './fincash/FincashResult';
 
 // Groups
 export * from './groups/Groups';

@@ -51,6 +51,7 @@ interface ISaleComplete {
     updated_at: string
 }
 
+
 export interface IComplete {
     fincash: IFincash,
     sales: ISaleComplete[]
@@ -71,6 +72,32 @@ type TFincashComplete = {
     totalFincashValue: number;
 }
 
+export interface IResponse {
+    prod_id: number,
+    prod_code: number,
+    prod_name: string,
+    prod_price: number,
+    prod_sector: number,
+    quantity: number,
+    solded_price: number,
+    total_value: number
+}
+
+export enum EColumnsOrderBy {
+    prod_id = 'prod_id',
+    quantity = 'quantity',
+    prod_code = 'prod_code',
+    prod_name = 'prod_name',
+    prod_price = 'prod_price',
+    prod_sector = 'prod_sector',
+    total_value = 'total_value',
+    solded_price = 'solded_price',
+}
+
+interface OrderByObj {
+    column: keyof typeof EColumnsOrderBy;
+    order: 'asc' | 'desc'
+}
 
 const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
     try {
@@ -211,6 +238,20 @@ const updateObsById = async (id: number, obs: string): Promise<void | Error> => 
     }
 };
 
+const getSaleDataByFincash = async (id: number, orderBy: OrderByObj): Promise<IResponse[] | Error> => {
+    try {
+        const { data } = await Api.post(`/fincash/data/${id}`, orderBy, Autorization());
+        if (data) {
+            return data;
+        }else{
+            return Error('Erro na resposta');
+        }
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao procurar registro.');
+    }
+};
+
 // const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
 //         await Api.put(`/product/${id}`, dados, Autorization());
@@ -241,6 +282,7 @@ export const FincashService = {
     getDetailedData,
     getTotalByFincash,
     registerCardValue,
+    getSaleDataByFincash,
     //     updateById,
     //     deleteById,
 };
