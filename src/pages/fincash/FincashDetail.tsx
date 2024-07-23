@@ -52,6 +52,10 @@ export const FincashDetail: React.FC = () => {
 		return searchParams.get('outflowPage') || 1;
 	}, [searchParams]);
 
+	const backPage = useMemo(() => {
+		return searchParams.get('backPage');
+	}, [searchParams]);
+
 	useEffect(() => {
 		if (fincash) {
 			listOutflow(fincash.id);
@@ -191,7 +195,7 @@ export const FincashDetail: React.FC = () => {
 		>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1 }}>
 				<Box display={'flex'} justifyContent={'space-between'}>
-					<Link to={'/fechamentos'}>
+					<Link to={backPage ? `/fechamentos?page=${backPage}` : '/fechamentos'}>
 						<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
 					</Link>
 				</Box>
@@ -241,7 +245,7 @@ export const FincashDetail: React.FC = () => {
 							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
 						<Box display={'flex'} flexDirection={'column'}>
-							<Link to={`/vendas/caixa/${id}`}>
+							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`}>
 								<Button
 									variant="contained"
 									size={'large'}
@@ -253,7 +257,7 @@ export const FincashDetail: React.FC = () => {
 								</Button>
 							</Link>
 
-							<Link to={`/caixa/dados/${id}`}>
+							<Link to={`/caixa/dados/${id}?backPage=${backPage}`}>
 								<Button
 									variant="contained"
 									size={'large'}
@@ -432,7 +436,7 @@ export const FincashDetail: React.FC = () => {
 													</Typography>
 												</TableCell>
 												<TableCell>
-													<Link to={`/saidas/${outflow.id}?caixa=${fincash?.id}`}>
+													<Link to={`/saidas/${outflow.id}?caixa=${fincash?.id}&backPage=${backPage}`}>
 														<Fab
 															size="small"
 															color="info"
@@ -457,7 +461,10 @@ export const FincashDetail: React.FC = () => {
 									disabled={loadingOutflows}
 									page={Number(outflowPage)}
 									count={Math.ceil(outflowTotalCount / OUTFLOW_ROW_LIMIT)}
-									onChange={(_, newPage) => setSearchParams({ outflowPage: newPage.toString() }, { replace: true })}
+									onChange={(_, newPage) => setSearchParams((old) => {
+										old.set("outflowPage", newPage.toString());
+										return old;
+									})}
 									siblingCount={0}
 								/>
 							)}

@@ -72,6 +72,11 @@ type TFincashComplete = {
     totalFincashValue: number;
 }
 
+type TDataTotalCount = {
+    data: IResponse[];
+    totalCount: number;
+}
+
 export interface IResponse {
     prod_id: number,
     prod_code: number,
@@ -94,9 +99,10 @@ export enum EColumnsOrderBy {
     solded_price = 'solded_price',
 }
 
-interface OrderByObj {
+export interface OrderByObj {
     column: keyof typeof EColumnsOrderBy;
-    order: 'asc' | 'desc'
+    order: 'asc' | 'desc',
+    sectors: number[],
 }
 
 const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
@@ -238,14 +244,17 @@ const updateObsById = async (id: number, obs: string): Promise<void | Error> => 
     }
 };
 
-const getSaleDataByFincash = async (id: number, orderBy: OrderByObj): Promise<IResponse[] | Error> => {
+const getSaleDataByFincash = async (id: number, orderBy: OrderByObj, page: number, limit: number, filter = ''): Promise<TDataTotalCount | Error> => {
     try {
-        const { data } = await Api.post(`/fincash/data/${id}`, orderBy, Autorization());
+        const urlRelativa = `/fincash/data/${id}?page=${page}&limit=${limit}&filter=${filter}`;
+        const { data, headers } = await Api.post(urlRelativa, orderBy, Autorization());
         if (data) {
-            return data;
-        }else{
-            return Error('Erro na resposta');
+            return {
+                data,
+                totalCount: Number(headers['x-total-count'] || Environment.LIMITE_DE_LINHAS),
+            };
         }
+        return new Error('Erro ao achar o registro.');
     } catch (error) {
         console.error(error);
         return new Error((error as { message: string }).message || 'Erro ao procurar registro.');

@@ -1,30 +1,61 @@
-import { Box, Checkbox, FormControlLabel, FormGroup } from '@mui/material';
+import { Box, Checkbox, FormControl, FormControlLabel, FormGroup } from '@mui/material';
+import { useEffect, useState } from 'react';
 
 export interface ICheckItens {
-	label: string,
-	defaultChecked?: boolean,
+    id: string;
+    label: string;
+    defaultChecked?: boolean;
 }
 
-interface IVSelectProps {
-	menuItens: ICheckItens[],
-	flexDirection?: 'column' | 'column-reverse' | 'row' | 'row-reverse'
-	/* onValueChange?: (selectedValue: string) => void; */
+interface IVCheckProps {
+    disabled?: boolean;
+    menuItens: ICheckItens[];
+    flexDirection?: 'column' | 'column-reverse' | 'row' | 'row-reverse';
+    onValueChange?: (selectedValues: string[]) => void;
 }
 
-export const CustomCheckbox: React.FC<IVSelectProps> = ({ menuItens, flexDirection = 'row' }) => {
-	return (
-		<FormGroup>
-			<Box display={'flex'} flexDirection={flexDirection}>
-				{
-					menuItens.map((item) =>
-						<FormControlLabel
-							key={item.label}
-							label={item.label}
-							control={<Checkbox defaultChecked={item.defaultChecked} />}
-						/>
-					)
-				}
-			</Box>
-		</FormGroup>
-	);
+export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirection = 'row', disabled, onValueChange }) => {
+    const [checked, setChecked] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        const initialCheckedState: Record<string, boolean> = {};
+        menuItens.forEach((item) => {
+            initialCheckedState[item.id] = item.defaultChecked ?? false;
+        });
+        setChecked(initialCheckedState);
+    }, []);
+
+    const handleChange = (key: string, isChecked: boolean) => {
+        const updatedChecked = {
+            ...checked,
+            [key]: isChecked,
+        };
+        setChecked(updatedChecked);
+
+        const selectedKeys = Object.keys(updatedChecked).filter((key) => updatedChecked[key]);
+		console.log('selected: '+ selectedKeys)
+        onValueChange?.(selectedKeys);
+    };
+
+    return (
+        <FormControl>
+            <FormGroup>
+                <Box display={'flex'} flexDirection={flexDirection}>
+                    {menuItens.map((item) => (
+                        <FormControlLabel
+                            key={item.id}
+                            label={item.label}
+                            control={
+                                <Checkbox
+                                    onChange={(e) => handleChange(item.id, e.target.checked)}
+                                    checked={checked[item.id] ?? false}
+                                    disabled={disabled}
+                                />
+                            }
+                        />
+                    ))}
+                </Box>
+            </FormGroup>
+        </FormControl>
+    );
 };
