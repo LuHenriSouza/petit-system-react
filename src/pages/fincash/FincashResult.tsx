@@ -21,7 +21,7 @@ import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { CustomRadio } from '../../shared/forms/customInputs/CustomRadio';
 import { CustomCheckbox } from '../../shared/forms/customInputs/CustomCheckbox';
 import { CustomSelect, IMenuItens } from '../../shared/forms/customInputs/CustomSelect';
-import { EColumnsOrderBy, FincashService, IResponse, OrderByObj } from '../../shared/services/api';
+import { EColumnsOrderBy, FincashService, GroupService, IResponse, OrderByObj } from '../../shared/services/api';
 
 export const FincashResult: React.FC = () => {
 	const DEFAULT_LIMIT = 10
@@ -31,6 +31,7 @@ export const FincashResult: React.FC = () => {
 	const { debounce } = useDebounce();
 
 	const [rows, setRows] = useState<IResponse[]>();
+	const [groups, setGroups] = useState<IMenuItens[]>([]);
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
 	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'quantity', order: 'asc', sectors: [1, 2, 3, 4] });
@@ -80,11 +81,12 @@ export const FincashResult: React.FC = () => {
 	const listData = async () => {
 		try {
 			setLoading(true);
-			const result = await FincashService.getSaleDataByFincash(Number(id), orderBy, Number(page), DEFAULT_LIMIT, search);
-			if (result instanceof Error) return;
-			setRows(result.data);
-			setTotalCount(result.totalCount);
-
+			const [data, groups] = await Promise.all([FincashService.getSaleDataByFincash(Number(id), orderBy, Number(page), DEFAULT_LIMIT, search), GroupService.getAll(1, '', 999999)]);
+			if (data instanceof Error) return;
+			setRows(data.data);
+			setTotalCount(data.totalCount);
+			if (groups instanceof Error) return;
+			setGroups(groups.data.map((g) => { return { value: String(g.id), text: g.name } }));
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -147,6 +149,12 @@ export const FincashResult: React.FC = () => {
 										flexDirection='column'
 									/>
 								</Box>
+							</Box>
+							<Box display={'flex'} alignItems={'center'} mt={2}>
+								<Typography mr={3}>
+									Grupo:
+								</Typography>
+								<CustomSelect menuItens={[{ text: 'Todos', value: ' ' }, ...groups]} onValueChange={(e) => setOrderBy({ ...orderBy, group_id: Number(e) })} minWidth={250} defaultSelected={0}/>
 							</Box>
 						</Box>
 					</Grid>
