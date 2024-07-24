@@ -1,14 +1,54 @@
-import { Box, Grid, Paper, Typography } from '@mui/material';
+import {
+	Box,
+	Grid,
+	Paper,
+	Typography,
+} from '@mui/material';
+import { useEffect, useState } from 'react';
 import { LayoutMain } from '../../shared/layouts';
 import { LineChart, PieChart } from '@mui/x-charts';
+import { ProductService } from '../../shared/services/api';
 
 export const Dashboard: React.FC = () => {
-	const data = [
-		{ id: 0, value: 10, label: 'Setor 1' },
-		{ id: 1, value: 10, label: 'Setor 2' },
-		{ id: 2, value: 80, label: 'Setor 3' },
-		{ id: 3, value: 5, label: 'Setor 4' },
-	];
+	const [loading, setLoading] = useState(true);
+	const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
+	const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
+	useEffect(() => {
+		getData();
+	}, [])
+
+	const getData = async () => {
+		try {
+			setLoading(true);
+
+			const result = await ProductService.getQuantityBySector();
+			if (result instanceof Error) return;
+			console.log(result)
+			const obj = result.map((i) => {
+				return {
+					id: i.sector,
+					value: i.quantity,
+					label:
+						i.sector == 1 ? 'Bebidas'
+							: i.sector == 2 ? 'Chocolates'
+								: i.sector == 3 ? 'Salgadinhos'
+									: i.sector == 4 ? 'Sorvetes' : 'Erro'
+				}
+			});
+			setSectorProdQnt(obj)
+			const record: Record<string, number> = {}
+			const total = obj.map((i) => i.value).reduce((a, b) => a + b);
+			for (const o of obj) {
+				record[o.label] = o.value * 100 / total;
+			}
+			setSectorPercent(record);
+		} catch (e) {
+			console.log(e);
+		} finally {
+			setLoading(false);
+		}
+	}
+
 	return (
 		<LayoutMain title="Dashboard" subTitle=''>
 			<Grid container gap={2}>
@@ -34,7 +74,7 @@ export const Dashboard: React.FC = () => {
 					</CustomPaper>
 				</Grid>
 				<Grid item xs={3.5}>
-					<CustomPaper borderColor='yellowgreen' border>
+					<CustomPaper borderColor='#32CD32' border>
 						<Typography variant='h5'>
 							Média Diária
 						</Typography>
@@ -48,17 +88,29 @@ export const Dashboard: React.FC = () => {
 					<CustomPaper height={500} borderColor='blueviolet' border>
 						<Box display={'flex'} flexDirection={'column'} p={1}>
 							<Typography variant='h5'>
-								Média Diária
+								Rendimento Mensal
 							</Typography>
 							<LineChart
 								xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
 								series={[
 									{
 										data: [2, 5.5, 2, 8.5, 1.5, 5],
-									},
+										color: 'blueviolet',
+									}
 								]}
 								width={900}
 								height={400}
+								grid={{ vertical: true, horizontal: true }}
+								slotProps={{
+									popper: {
+										sx: {
+											'& .MuiChartsTooltip-root': {
+												backgroundColor: '#fff',
+												border: 1,
+											}
+										}
+									}
+								}}
 							/>
 						</Box>
 					</CustomPaper>
@@ -70,11 +122,13 @@ export const Dashboard: React.FC = () => {
 								Setores
 							</Typography>
 							<PieChart
+								loading={loading}
+								colors={['goldenrod', '#32CD32', '#1E90FF', 'blueviolet']}
 								series={[
 									{
-										data,
+										data: sectorProdQnt,
 										highlightScope: { faded: 'global', highlighted: 'item' },
-										faded: { innerRadius: 30, additionalRadius: -30, color: 'gray' },
+										faded: { innerRadius: 30, additionalRadius: -5, color: 'gray' },
 										innerRadius: 30,
 										outerRadius: 100,
 										paddingAngle: 3,
@@ -83,9 +137,25 @@ export const Dashboard: React.FC = () => {
 										endAngle: 270,
 										cx: 150,
 										cy: 150,
+										arcLabel(item) {
+											if (item.label) return `${sectorPercent[item.label].toFixed(1)}%`
+											return '';
+										},
 									},
 								]}
-								height={600}
+								slotProps={{
+									itemContent: {
+										sx: {
+											backgroundColor: '#fff',
+											border: 1,
+											fontFamily: 'Roboto, Helvetica, Arial, sans-serif',
+											'& .MuiChartsTooltip-labelCell, & .MuiChartsTooltip-valueCell': {
+												color: 'black',
+											}
+										}
+									}
+								}}
+								height={300}
 							/>
 						</Box>
 					</CustomPaper>
