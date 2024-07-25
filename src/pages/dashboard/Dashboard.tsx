@@ -123,7 +123,8 @@ export const Dashboard: React.FC = () => {
 							</Typography>
 							<PieChart
 								loading={loading}
-								colors={['goldenrod', '#32CD32', '#1E90FF', 'blueviolet']}
+								sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
+								colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
 								series={[
 									{
 										data: sectorProdQnt,
