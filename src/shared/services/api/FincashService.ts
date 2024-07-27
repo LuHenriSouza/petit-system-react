@@ -19,6 +19,8 @@ export interface IFincash {
     obs?: string | null,
     totalValue?: number | null,
     cardValue?: number | null,
+    invoicing?: number | null,
+    profit?: number | null,
     diferenceLastFincash?: number | null,
 
     break?: number | null,

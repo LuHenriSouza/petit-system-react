@@ -242,37 +242,26 @@ export const FincashDetail: React.FC = () => {
 								</Typography>
 							</Box>
 						}
-						{/* {
-							fincash?.cardValue &&
-							<Box display={'flex'}>
+						{
+							fincash?.cardValue !== 0 &&
+							<Box display={'flex'} mt={3}>
 								<Typography variant="h5" mx={1}>
 									Faturamento:
 								</Typography>
-								<Typography variant="h5" color={
-									fincash?.finalValue &&
-										(outflows?.total || outflows?.total == 0) &&
-										((fincash.finalValue - fincash.value) + outflows.total) < 0 ? '#e00' : '#00e000'
-								}
-								>
+								<Typography variant="h5" color={!fincash?.invoicing||fincash.invoicing < 0 ? '#e00' : '#00e000'}>
 									{
-										fincash?.finalValue ?
-											(outflows?.total || outflows?.total == 0) &&
-												((fincash.finalValue - fincash.value) + outflows.total) < 0 ?
-												'Erro'
-												:
-												fincash?.finalValue &&
-												(outflows?.total || outflows?.total == 0) &&
-												'R$ +' + ((fincash.finalValue - fincash.value) + outflows.total).toFixed(2)
+										fincash?.invoicing ?
+											'R$ ' + Number(fincash.invoicing).toFixed(2)
 											:
-											'0.00'
+											'R$ 0.00'
 									}
 								</Typography>
 							</Box>
-						} */}
+						}
 						<Typography variant="h5" fontWeight={'bold'} margin={1} mt={5}>
 							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
-						<Box display={'flex'} flexDirection={'column'} mt={5} gap={4}>
+						<Box display={'flex'} flexDirection={'column'} mt={5} gap={2}>
 							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`} style={{ maxWidth: 245 }}>
 								<Button
 									variant="contained"
