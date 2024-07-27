@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import './../../shared/css/sweetAlert.css';
 import { FormHandles } from "@unform/core";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from '@mui/icons-material/Edit';
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import HistoryIcon from '@mui/icons-material/History';
@@ -78,7 +79,8 @@ export const FincashDetail: React.FC = () => {
 				}
 				if (fincash.finalValue == null) fincash.finalValue = 0;
 				if (fincash.totalValue == null) fincash.totalValue = 0;
-				if (fincash.cardValue == null) fincash.cardValue = 0;
+				if (fincash.cardValue == null || reload == 2) fincash.cardValue = 0;
+
 				setFincash(fincash);
 
 			} catch (e) {
@@ -219,7 +221,6 @@ export const FincashDetail: React.FC = () => {
 								<Typography variant="h5" mx={1}>
 									Vendas em Dinheiro:
 								</Typography>
-
 								<Typography variant="h5" color={
 									fincash?.finalValue &&
 										(outflows?.total || outflows?.total == 0) &&
@@ -241,6 +242,33 @@ export const FincashDetail: React.FC = () => {
 								</Typography>
 							</Box>
 						}
+						{/* {
+							fincash?.cardValue &&
+							<Box display={'flex'}>
+								<Typography variant="h5" mx={1}>
+									Faturamento:
+								</Typography>
+								<Typography variant="h5" color={
+									fincash?.finalValue &&
+										(outflows?.total || outflows?.total == 0) &&
+										((fincash.finalValue - fincash.value) + outflows.total) < 0 ? '#e00' : '#00e000'
+								}
+								>
+									{
+										fincash?.finalValue ?
+											(outflows?.total || outflows?.total == 0) &&
+												((fincash.finalValue - fincash.value) + outflows.total) < 0 ?
+												'Erro'
+												:
+												fincash?.finalValue &&
+												(outflows?.total || outflows?.total == 0) &&
+												'R$ +' + ((fincash.finalValue - fincash.value) + outflows.total).toFixed(2)
+											:
+											'0.00'
+									}
+								</Typography>
+							</Box>
+						} */}
 						<Typography variant="h5" fontWeight={'bold'} margin={1} mt={5}>
 							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
@@ -376,9 +404,25 @@ export const FincashDetail: React.FC = () => {
 												</>
 												:
 												<Box>
-													<Typography variant="h5" m={1}>
-														Cartão: R$ {fincash.cardValue}
-													</Typography>
+													<Box display={'flex'} gap={2}>
+														<Typography variant="h5" m={1}>
+															Cartão: R$ {fincash.cardValue}
+														</Typography>
+														<Fab
+															size="small"
+															onClick={() => {
+																fincash.cardValue = null;
+																setFincash(fincash);
+																setReload(2);
+															}}
+															sx={{
+																backgroundColor: '#fa0',
+																'&:hover': { backgroundColor: '#fc5' },
+															}}
+														>
+															<EditIcon color='info' />
+														</Fab>
+													</Box>
 													<Box display={'flex'}>
 														<Typography variant="h5" mx={1}>
 															Quebra:
