@@ -272,25 +272,21 @@ export const FincashDetail: React.FC = () => {
 						<Typography variant="h5" fontWeight={'bold'} margin={1} mt={5}>
 							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
-						<Box display={'flex'} flexDirection={'column'}>
-							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`}>
+						<Box display={'flex'} flexDirection={'column'} mt={5} gap={4}>
+							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`} style={{ maxWidth: 245 }}>
 								<Button
 									variant="contained"
 									size={'large'}
-									sx={{ mt: 5 }}
-
 								>
 									<HistoryIcon sx={{ mr: 1 }} />
 									Histórico de Vendas
 								</Button>
 							</Link>
 
-							<Link to={`/caixa/dados/${id}?backPage=${backPage}`}>
+							<Link to={`/caixa/dados/${id}?backPage=${backPage}`} style={{ maxWidth: 219 }}>
 								<Button
 									variant="contained"
 									size={'large'}
-									sx={{ mt: 2 }}
-
 								>
 									<FindInPageIcon sx={{ mr: 1 }} />
 									Análise de dados
@@ -399,7 +395,7 @@ export const FincashDetail: React.FC = () => {
 														</Button>
 													</Box>
 													{reload == 2 ?
-														<Button variant="contained" onClick={()=>setReload(1)} sx={{mt:3}}>
+														<Button variant="contained" onClick={() => setReload(1)} sx={{ mt: 3 }}>
 															<ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar
 														</Button>
 														:
