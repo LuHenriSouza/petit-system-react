@@ -398,9 +398,15 @@ export const FincashDetail: React.FC = () => {
 															<AddIcon />
 														</Button>
 													</Box>
-													<Typography variant="h5" mt={4} color={'#e93000'}>
-														Insira o valor do cartão
-													</Typography>
+													{reload == 2 ?
+														<Button variant="contained" onClick={()=>setReload(1)} sx={{mt:3}}>
+															<ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar
+														</Button>
+														:
+														<Typography variant="h5" mt={4} color={'#e93000'}>
+															Insira o valor do cartão
+														</Typography>
+													}
 												</>
 												:
 												<Box>
