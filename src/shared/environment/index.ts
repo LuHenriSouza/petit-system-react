@@ -14,5 +14,5 @@ export const Environment = {
     /**
      * Url base de consultado dos dados dessa aplicação
      */
-    URL_BASE: 'http://127.0.0.1:3333',
+    URL_BASE: 'http://177.30.39.225:3333',
 };
