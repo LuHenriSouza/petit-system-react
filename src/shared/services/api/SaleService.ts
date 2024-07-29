@@ -13,7 +13,7 @@ export interface IGetSales {
     sale_id: number,
     obs: string,
     created_at: Date,
-    totalValue: number,
+    total_value: number,
 }
 
 export interface ISaleRaw {
