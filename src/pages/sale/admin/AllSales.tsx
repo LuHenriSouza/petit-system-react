@@ -1,45 +1,45 @@
-import {
-	Box,
-	Fab,
-	Paper,
-	Table,
-	useTheme,
-	TableRow,
-	TableCell,
-	TableBody,
-	TableHead,
-	Pagination,
-	Typography,
-	useMediaQuery,
-	TableContainer,
-	Skeleton,
-} from "@mui/material";
-import Swal from "sweetalert2";
-import { format } from 'date-fns';
+// import {
+// 	Box,
+// 	Fab,
+// 	Paper,
+// 	Table,
+// 	useTheme,
+// 	TableRow,
+// 	TableCell,
+// 	TableBody,
+// 	TableHead,
+// 	Pagination,
+// 	Typography,
+// 	useMediaQuery,
+// 	TableContainer,
+// 	Skeleton,
+// } from "@mui/material";
+// import Swal from "sweetalert2";
+// import { format } from 'date-fns';
 import { LayoutMain } from "../../../shared/layouts";
-import { useEffect, useMemo, useState } from "react";
-import { Environment } from "../../../shared/environment";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import { FincashService, IFincash, IGetSales, SaleService } from "../../../shared/services/api";
+// import { useEffect, useMemo, useState } from "react";
+// import { Environment } from "../../../shared/environment";
+// import { Link, useNavigate, useSearchParams } from "react-router-dom";
+// import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+// import { FincashService, IFincash, IGetSales, SaleService } from "../../../shared/services/api";
 
-const NUMBER_OF_SKELETONS = Array(7).fill(null);
+// const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
 export const AllSales: React.FC = () => {
-	const theme = useTheme();
-	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
-	const navigate = useNavigate();
+	// const theme = useTheme();
+	// const smDown = useMediaQuery(theme.breakpoints.down('sm'));
+	// const navigate = useNavigate();
 
 
-	const [searchParams, setSearchParams] = useSearchParams();
-	const [rows, setRows] = useState<IGetSales[]>([]);
-	const [totalCount, setTotalCount] = useState(0);
-	const [loading, setLoading] = useState(true);
-	const [fincash, setFincash] = useState<IFincash>();
+	// const [searchParams, setSearchParams] = useSearchParams();
+	// const [rows, setRows] = useState<IGetSales[]>([]);
+	// const [totalCount, setTotalCount] = useState(0);
+	// const [loading, setLoading] = useState(true);
+	// const [fincash, setFincash] = useState<IFincash>();
 
-	const page = useMemo(() => {
-		return searchParams.get('page') || 1;
-	}, [searchParams]);
+	// const page = useMemo(() => {
+	// 	return searchParams.get('page') || 1;
+	// }, [searchParams]);
 
 
 	// const listSales = async (fincashData: IFincash) => {
@@ -63,7 +63,8 @@ export const AllSales: React.FC = () => {
 	return (
 		<>
 			<LayoutMain title="Vendas" subTitle={"Gerencie todas as vendas"}>
-				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+				<></>
+				{/* <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 					<Box minHeight={625}>
 						<TableContainer>
 							<Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -149,7 +150,7 @@ export const AllSales: React.FC = () => {
 							</TableCell>
 						</TableRow>
 					)}
-				</Paper>
+				</Paper> */}
 			</LayoutMain >
 		</>
 	);
