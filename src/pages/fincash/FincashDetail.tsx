@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import './../../shared/css/sweetAlert.css';
 import { FormHandles } from "@unform/core";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from '@mui/icons-material/Edit';
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import HistoryIcon from '@mui/icons-material/History';
@@ -78,7 +79,8 @@ export const FincashDetail: React.FC = () => {
 				}
 				if (fincash.finalValue == null) fincash.finalValue = 0;
 				if (fincash.totalValue == null) fincash.totalValue = 0;
-				if (fincash.cardValue == null) fincash.cardValue = 0;
+				if (fincash.cardValue == null || reload == 2) fincash.cardValue = 0;
+
 				setFincash(fincash);
 
 			} catch (e) {
@@ -219,7 +221,6 @@ export const FincashDetail: React.FC = () => {
 								<Typography variant="h5" mx={1}>
 									Vendas em Dinheiro:
 								</Typography>
-
 								<Typography variant="h5" color={
 									fincash?.finalValue &&
 										(outflows?.total || outflows?.total == 0) &&
@@ -241,28 +242,40 @@ export const FincashDetail: React.FC = () => {
 								</Typography>
 							</Box>
 						}
+						{
+							fincash?.cardValue !== 0 &&
+							<Box display={'flex'} mt={3}>
+								<Typography variant="h5" mx={1}>
+									Faturamento:
+								</Typography>
+								<Typography variant="h5" color={!fincash?.invoicing||fincash.invoicing < 0 ? '#e00' : '#00e000'}>
+									{
+										fincash?.invoicing ?
+											'R$ ' + Number(fincash.invoicing).toFixed(2)
+											:
+											'R$ 0.00'
+									}
+								</Typography>
+							</Box>
+						}
 						<Typography variant="h5" fontWeight={'bold'} margin={1} mt={5}>
 							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
 						</Typography>
-						<Box display={'flex'} flexDirection={'column'}>
-							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`}>
+						<Box display={'flex'} flexDirection={'column'} mt={5} gap={2}>
+							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`} style={{ maxWidth: 245 }}>
 								<Button
 									variant="contained"
 									size={'large'}
-									sx={{ mt: 5 }}
-
 								>
 									<HistoryIcon sx={{ mr: 1 }} />
 									Histórico de Vendas
 								</Button>
 							</Link>
 
-							<Link to={`/caixa/dados/${id}?backPage=${backPage}`}>
+							<Link to={`/caixa/dados/${id}?backPage=${backPage}`} style={{ maxWidth: 219 }}>
 								<Button
 									variant="contained"
 									size={'large'}
-									sx={{ mt: 2 }}
-
 								>
 									<FindInPageIcon sx={{ mr: 1 }} />
 									Análise de dados
@@ -370,15 +383,37 @@ export const FincashDetail: React.FC = () => {
 															<AddIcon />
 														</Button>
 													</Box>
-													<Typography variant="h5" mt={4} color={'#e93000'}>
-														Insira o valor do cartão
-													</Typography>
+													{reload == 2 ?
+														<Button variant="contained" onClick={() => setReload(1)} sx={{ mt: 3 }}>
+															<ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar
+														</Button>
+														:
+														<Typography variant="h5" mt={4} color={'#e93000'}>
+															Insira o valor do cartão
+														</Typography>
+													}
 												</>
 												:
 												<Box>
-													<Typography variant="h5" m={1}>
-														Cartão: R$ {fincash.cardValue}
-													</Typography>
+													<Box display={'flex'} gap={2}>
+														<Typography variant="h5" m={1}>
+															Cartão: R$ {fincash.cardValue}
+														</Typography>
+														<Fab
+															size="small"
+															onClick={() => {
+																fincash.cardValue = null;
+																setFincash(fincash);
+																setReload(2);
+															}}
+															sx={{
+																backgroundColor: '#fa0',
+																'&:hover': { backgroundColor: '#fc5' },
+															}}
+														>
+															<EditIcon color='info' />
+														</Fab>
+													</Box>
 													<Box display={'flex'}>
 														<Typography variant="h5" mx={1}>
 															Quebra:

@@ -19,6 +19,8 @@ export interface IFincash {
     obs?: string | null,
     totalValue?: number | null,
     cardValue?: number | null,
+    invoicing?: number | null,
+    profit?: number | null,
     diferenceLastFincash?: number | null,
 
     break?: number | null,
@@ -103,6 +105,7 @@ export interface OrderByObj {
     column: keyof typeof EColumnsOrderBy;
     order: 'asc' | 'desc',
     sectors: number[],
+    group_id?: number,
 }
 
 const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
