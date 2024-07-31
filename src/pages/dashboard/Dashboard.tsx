@@ -4,26 +4,42 @@ import {
 	Paper,
 	Typography,
 } from '@mui/material';
+import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { LayoutMain } from '../../shared/layouts';
 import { LineChart, PieChart } from '@mui/x-charts';
-import { ProductService } from '../../shared/services/api';
-
+import { FincashService, ProductService } from '../../shared/services/api';
 export const Dashboard: React.FC = () => {
-	const [loading, setLoading] = useState(true);
+	const [loadingMonth, setLoadingMonth] = useState(true);
+	const [perMonth, setPerMonth] = useState<{ date: (number | string)[], value: number[] }>({ date: [], value: [] });
+	const [loadingSector, setLoadingSector] = useState(true);
 	const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
 	const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
 	useEffect(() => {
-		getData();
+		getDataSector();
+		getDataCurrentMonth();
 	}, [])
 
-	const getData = async () => {
+	const getDataCurrentMonth = async () => {
 		try {
-			setLoading(true);
+			setLoadingMonth(true);
+			const response = await FincashService.getCurrentMonth();
+			if (response instanceof Error) return console.log(response);
+			const values = response.map((i) => i.totalValue);
+			const dates = response.map((i) => new Date(i.finalDate).getTime());
+			setPerMonth({ date: dates, value: values })
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setLoadingMonth(false);
+		}
+	}
+	const getDataSector = async () => {
+		try {
+			setLoadingSector(true);
 
 			const result = await ProductService.getQuantityBySector();
 			if (result instanceof Error) return;
-			console.log(result)
 			const obj = result.map((i) => {
 				return {
 					id: i.sector,
@@ -45,7 +61,7 @@ export const Dashboard: React.FC = () => {
 		} catch (e) {
 			console.log(e);
 		} finally {
-			setLoading(false);
+			setLoadingSector(false);
 		}
 	}
 
@@ -91,16 +107,17 @@ export const Dashboard: React.FC = () => {
 								Rendimento Mensal
 							</Typography>
 							<LineChart
-								xAxis={[{ data: [1, 2, 3, 5, 8, 10] }]}
+								loading={loadingMonth}
+								xAxis={[{ data: perMonth?.date, scaleType: 'utc' }]} //DATA
 								series={[
 									{
-										data: [2, 5.5, 2, 8.5, 1.5, 5],
+										data: perMonth?.value, //VALOR
 										color: 'blueviolet',
 									}
 								]}
 								width={900}
 								height={400}
-								grid={{ vertical: true, horizontal: true }}
+								grid={{ horizontal: true }}
 								slotProps={{
 									popper: {
 										sx: {
@@ -122,7 +139,7 @@ export const Dashboard: React.FC = () => {
 								Setores
 							</Typography>
 							<PieChart
-								loading={loading}
+								loading={loadingSector}
 								sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
 								colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
 								series={[

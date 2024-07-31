@@ -10,6 +10,13 @@ const Autorization = () => {
     }
 }
 
+export interface IResponseData {
+    id: number;
+    cardValue: number;
+    totalValue: number;
+    finalDate: Date;
+}
+
 export interface IFincash {
     id: number,
 
@@ -264,6 +271,20 @@ const getSaleDataByFincash = async (id: number, orderBy: OrderByObj, page: numbe
     }
 };
 
+const getCurrentMonth = async (): Promise<IResponseData[] | Error> => {
+    try {
+        const urlRelativa = `/data/month/current`;
+        const { data } = await Api.get(urlRelativa, Autorization());
+        if (data) {
+            return data;
+        }
+        return new Error('Erro ao achar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao procurar registro.');
+    }
+};
+
 // const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
 //         await Api.put(`/product/${id}`, dados, Autorization());
@@ -292,6 +313,7 @@ export const FincashService = {
     getOpenFincash,
     getLastFincash,
     getDetailedData,
+    getCurrentMonth,
     getTotalByFincash,
     registerCardValue,
     getSaleDataByFincash,
