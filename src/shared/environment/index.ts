@@ -15,4 +15,6 @@ export const Environment = {
      * Url base de consultado dos dados dessa aplicação
      */
     URL_BASE: 'https://api.petitsystem.top',
+
+    test: 'test',
 };
