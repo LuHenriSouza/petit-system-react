@@ -11,7 +11,7 @@ import { LineChart, PieChart } from '@mui/x-charts';
 import { FincashService, ProductService } from '../../shared/services/api';
 export const Dashboard: React.FC = () => {
 	const [loadingMonth, setLoadingMonth] = useState(true);
-	const [perMonth, setPerMonth] = useState<{ date: (number | string)[], value: number[] }>({ date: [], value: [] });
+	const [perMonth, setPerMonth] = useState<{ date: (number | string)[], value: number[], invoicing: number[] }>({ date: [], value: [], invoicing: [] });
 	const [loadingSector, setLoadingSector] = useState(true);
 	const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
 	const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
@@ -24,10 +24,12 @@ export const Dashboard: React.FC = () => {
 		try {
 			setLoadingMonth(true);
 			const response = await FincashService.getCurrentMonth();
-			if (response instanceof Error) return console.log(response);
-			const values = response.map((i) => i.totalValue);
-			const dates = response.map((i) => new Date(i.finalDate).getTime());
-			setPerMonth({ date: dates, value: values })
+			console.log('response: ' + response)
+			if (response instanceof Error) return console.log('error: ' + response);
+			const value = response.map((i) => i.totalValue);
+			const date = response.map((i) => new Date(i.finalDate).getTime());
+			const invoicing = response.map((i) => i.invoicing);
+			setPerMonth({ date, value, invoicing })
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -108,26 +110,71 @@ export const Dashboard: React.FC = () => {
 							</Typography>
 							<LineChart
 								loading={loadingMonth}
-								xAxis={[{ data: perMonth?.date, scaleType: 'utc' }]} //DATA
+								xAxis={[{
+									data: perMonth?.date,
+									scaleType: 'utc',
+									valueFormatter: (v) => {
+										if (v) {
+											return format(new Date(v), 'dd');
+										} else return 'invalid date';
+									},
+								},
+								{
+									data: perMonth?.date,
+									scaleType: 'utc',
+									valueFormatter: (v) => {
+										if (v) {
+											return format(new Date(v), 'dd');
+										} else return 'invalid date';
+									},
+								}]} //DATA
 								series={[
 									{
 										data: perMonth?.value, //VALOR
 										color: 'blueviolet',
+									},
+									{
+										data: perMonth?.invoicing, //VALOR
+										color: '#1E90FF',
 									}
 								]}
 								width={900}
 								height={400}
-								grid={{ horizontal: true }}
-								slotProps={{
-									popper: {
-										sx: {
-											'& .MuiChartsTooltip-root': {
-												backgroundColor: '#fff',
-												border: 1,
-											}
-										}
+								slots={{
+									axisContent: (props) => {
+										const { axisValue, dataIndex, series } = props;
+										if (!axisValue || dataIndex === undefined || dataIndex === null || !series) return '';
+
+										const dataSeries = Array.isArray(series) ? series : [];
+										console.log(dataSeries)
+										const value = dataSeries[0].data;
+										const invoicing = dataSeries[1].data;
+
+										return (
+											<Box
+												sx={{
+													padding: 2,
+													backgroundColor: "white",
+													border: "1px solid black",
+													borderRadius: 1
+												}}
+											>
+												<Typography>
+													{format(new Date(axisValue), "dd/MM/yyyy")}
+													<hr />
+													<Box display={'flex'} alignItems={'center'} gap={1}>
+														<Box sx={{ backgroundColor: series[0].color, width: 13, height: 13 }} />{`Registrado: R$ ${value[dataIndex]}`}
+													</Box>
+													<hr />
+													<Box display={'flex'} alignItems={'center'} gap={1}>
+														<Box sx={{ backgroundColor: series[1].color, width: 13, height: 13 }} />{`Faturamento: R$ ${invoicing[dataIndex]}`}
+													</Box>
+												</Typography>
+											</Box>
+										);
 									}
 								}}
+								grid={{ horizontal: true }}
 							/>
 						</Box>
 					</CustomPaper>

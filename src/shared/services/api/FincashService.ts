@@ -14,6 +14,7 @@ export interface IResponseData {
     id: number;
     cardValue: number;
     totalValue: number;
+    invoicing: number;
     finalDate: Date;
 }
 
