@@ -123,6 +123,20 @@ const getQuantityBySector = async (): Promise<{ sector: number, quantity: number
     }
 }
 
+const getValueBySector = async (): Promise<{ sector: number, value: number }[] | Error> => {
+    try {
+        const { data } = await Api.get('/product/per-value', Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (e) {
+        console.log(e)
+        return new Error((e as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+}
+
 export const ProductService = {
     getAll,
     create,
@@ -130,5 +144,6 @@ export const ProductService = {
     getByCode,
     deleteById,
     updateById,
+    getValueBySector,
     getQuantityBySector,
 };
