@@ -8,6 +8,7 @@ import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import LocalOfferRoundedIcon from '@mui/icons-material/LocalOfferRounded';
+import CallMissedOutgoingIcon from '@mui/icons-material/CallMissedOutgoing';
 import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 
@@ -86,5 +87,10 @@ export const items = [
         title: 'Vendas (todas)',
         path: '/vendas/admin',
         icon: (<QueryStatsIcon fontSize='small' />)
+    },
+    {
+        title: 'Saídas (Produtos)',
+        path: '/saida/produto',
+        icon: (<CallMissedOutgoingIcon fontSize='small' />)
     }
 ];

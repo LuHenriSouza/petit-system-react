@@ -8,6 +8,7 @@ export * from './dashboard/Dashboard';
 export * from './products/Products';
 export * from './products/NewProduct';
 export * from './products/UpdateProduct';
+export * from './products/ProductOutput';
 
 // Fincash
 export * from './sale/Sale';

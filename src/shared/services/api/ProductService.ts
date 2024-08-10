@@ -27,6 +27,21 @@ type TProductTotalCount = {
     totalCount: number;
 }
 
+export interface IProdOutput {
+    id: number,
+
+    prod_id: number,
+    quantity: number,
+    reason: string,
+
+    desc?: string,
+    fincash_id?: number,
+    
+    created_at: Date,
+    updated_at: Date,
+    deleted_at?: Date
+}
+
 const getAll = async (page = 1, filter = '', limit = Environment.LIMITE_DE_LINHAS): Promise<TProductTotalCount | Error> => {
     try {
         const urlRelativa = `/product?page=${page}&limit=${limit}&filter=${filter}`;
@@ -137,11 +152,27 @@ const getValueBySector = async (): Promise<{ sector: number, value: number }[] |
     }
 }
 
+const prodOutput = async (prod_output: IProdOutput) => {
+    try {
+        const { data } = await Api.post('/product/output', prod_output, Autorization());
+
+        if (data) {
+            return data.id;
+        }
+
+        return new Error('Erro ao criar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao criar o registro.');
+    }
+}
+
 export const ProductService = {
     getAll,
     create,
     getById,
     getByCode,
+    prodOutput,
     deleteById,
     updateById,
     getValueBySector,
