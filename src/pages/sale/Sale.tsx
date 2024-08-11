@@ -119,6 +119,14 @@ export const Sale: React.FC = () => {
 				handleProducts(code.trim());
 			}
 		}
+
+		if (e.code === 'Space' || e.key === 'Space') {
+			if ((products && products.length === 0) || submitLoading) {
+				return setCode('');
+			} else {
+				handleSubmit();
+			}
+		}
 	};
 
 	const handleProducts = async (prodCode: string, product?: IProduct) => {
@@ -192,6 +200,7 @@ export const Sale: React.FC = () => {
 			return alert(error);
 		} finally {
 			setSubmitLoading(false);
+			setCode('')
 		}
 	}
 	useEffect(() => {
