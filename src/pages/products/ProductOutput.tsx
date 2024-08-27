@@ -8,14 +8,14 @@ import { FormHandles } from '@unform/core';
 import { ProductService } from '../../shared/services/api';
 import { EProdOutReason } from '../outflow/enum/EProdOutReason';
 
-const OUTFLOW_ROW_LIMIT = 6;
-const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
+// const OUTFLOW_ROW_LIMIT = 6;
+// const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
 
 export const ProductOutput: React.FC = () => {
 	const [selectedProd, setSelectedProd] = useState(0);
 	const [selectedProdName, setSelectedProdName] = useState('');
 	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
-	const [errorSelect, setErrorSelect] = useState(false);
+	// const [errorSelect, setErrorSelect] = useState(false);
 
 	const reasons = [
 		{ text: 'Consumo', value: EProdOutReason.Consumo },
@@ -154,7 +154,7 @@ export const ProductOutput: React.FC = () => {
 													setSelectedProdName(newValue.label);
 												} else { setSelectedProd(0); setSelectedProdName(''); }
 
-												setErrorSelect(false);
+												// setErrorSelect(false);
 											}}
 										/>
 									</Box>
