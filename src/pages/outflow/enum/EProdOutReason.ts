@@ -1,5 +1,6 @@
 export enum EProdOutReason {
     Vencimento = 'vencimento',
     Consumo = 'consumo',
-    Improprio = 'improprio'
+    Improprio = 'improprio',
+    Outro = 'outro'
 }

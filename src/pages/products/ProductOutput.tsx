@@ -2,30 +2,64 @@ import { Autocomplete, Box, Button, Grid, Paper, Table, TableBody, TableCell, Ta
 import { LayoutMain } from '../../shared/layouts';
 import { VForm } from '../../shared/forms/VForm';
 import { VSelect } from '../../shared/forms/VSelect';
+import * as yup from 'yup';
 import { VTextField } from '../../shared/forms/VTextField';
 import { useEffect, useRef, useState } from 'react';
 import { FormHandles } from '@unform/core';
 import { ProductService } from '../../shared/services/api';
 import { EProdOutReason } from '../outflow/enum/EProdOutReason';
+import Swal from 'sweetalert2';
 
 // const OUTFLOW_ROW_LIMIT = 6;
 // const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
+
+interface IFormData {
+	quantity: number,
+	reason: EProdOutReason,
+	desc: string,
+}
+
+const outputSchema = yup.object().shape({
+	prod_id: yup.number().required().min(0),
+	quantity: yup.number().required().min(0),
+	reason: yup.mixed<EProdOutReason>().required().oneOf(Object.values(EProdOutReason)),
+	fincash_id: yup.number().min(0),
+	desc: yup.string(),
+});
+
 
 export const ProductOutput: React.FC = () => {
 	const [selectedProd, setSelectedProd] = useState(0);
 	const [selectedProdName, setSelectedProdName] = useState('');
 	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
+	const [ACError, setACError] = useState(false);
 	// const [errorSelect, setErrorSelect] = useState(false);
 
 	const reasons = [
 		{ text: 'Consumo', value: EProdOutReason.Consumo },
 		{ text: 'Vencido', value: EProdOutReason.Vencimento },
-		{ text: 'Impróprio p/ Consumo', value: EProdOutReason.Improprio }
+		{ text: 'Impróprio p/ Consumo', value: EProdOutReason.Improprio },
+		{ text: 'Outro', value: EProdOutReason.Outro }
 	];
 
-	const handleSubmit = () => {
+	const handleSubmit = (data: IFormData) => {
+		setACError(false);
+		if (!selectedProd) {
+			setACError(true);
+			return;
+		}
 
+		const output = {
+			prod_id: selectedProd,
+			quantity: data.quantity,
+			reason: data.reason,
+			desc: data.desc
+		}
+		const validated = outputSchema.validate(output, { abortEarly: false });
+			
+		console.log(output);
 	}
+
 	const formRef = useRef<FormHandles>(null);
 	useEffect(() => {
 		getAllProducts();
