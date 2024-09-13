@@ -4,6 +4,7 @@ import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
+import AccountBalanceIcon from '@mui/icons-material/AccountBalance';
 import DateRangeRoundedIcon from '@mui/icons-material/DateRangeRounded';
 import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
@@ -92,5 +93,10 @@ export const items = [
         title: 'Saídas (Produtos)',
         path: '/saida/produto',
         icon: (<CallMissedOutgoingIcon fontSize='small' />)
+    },
+    {
+        title: 'Boletos',
+        path: '/boletos',
+        icon: (<AccountBalanceIcon fontSize='small' />)
     }
 ];

@@ -41,3 +41,6 @@ export * from './validity/Validity';
 
 // Promotions
 export * from './promotions/Promotions';
+
+// Payments
+export * from './payments/Payments';

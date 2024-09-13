@@ -7,6 +7,7 @@ import {
     AllSales,
     Products,
     Validity,
+    Payments,
     Suppliers,
     Dashboard,
     ShowSales,
@@ -70,7 +71,10 @@ export const AppRoutes = () => {
             <Route path="/validades" element={<Validity />} />
 
             {/* Promções */}
-            <Route path="/promo" element={<Promotions />} />
+            <Route path="/promo" element={<Promotions />} />        
+        
+            {/* Pagamentos / Boletos */}
+            <Route path="/boletos" element={<Payments />} />
 
 
             {/* Página 404 */}
