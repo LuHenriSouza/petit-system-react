@@ -42,6 +42,27 @@ export interface IProdOutput {
     deleted_at?: Date
 }
 
+export interface IOutputQuery {
+    output_id: number,
+    fincash_id?: number,
+    quantity: number,
+    reason: string,
+    desc?: string,
+	created_at: Date,
+	updated_at: Date,
+		
+    prod_id: number,
+    prod_code: string,
+	prod_name: string,
+	prod_sector: number,
+	prod_price: number
+}
+
+interface IProdOutputResponse {
+    data: IOutputQuery[],
+    totalCount: number,
+}
+
 const getAll = async (page = 1, filter = '', limit = Environment.LIMITE_DE_LINHAS): Promise<TProductTotalCount | Error> => {
     try {
         const urlRelativa = `/product?page=${page}&limit=${limit}&filter=${filter}`;
@@ -152,7 +173,7 @@ const getValueBySector = async (): Promise<{ sector: number, value: number }[] |
     }
 }
 
-const prodOutput = async (prod_output: IProdOutput) => {
+const prodOutput = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | 'updated_at'>) => {
     try {
         const { data } = await Api.post('/product/output', prod_output, Autorization());
 
@@ -167,6 +188,24 @@ const prodOutput = async (prod_output: IProdOutput) => {
     }
 }
 
+const getAllOutputs = async (page = 1, limit = 7): Promise<IProdOutputResponse | Error> =>{
+    try {
+        const urlRelativa = `/product-output/getall?page=${page}&limit=${limit}`;
+        const { data, headers } = await Api.get(urlRelativa, Autorization());
+        if (data) {
+            return {
+                data,
+                totalCount: Number(headers['x-total-count'] || Environment.LIMITE_DE_LINHAS),
+            };
+        }
+
+        return new Error('Erro ao listar os registros.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao listar os registros.');
+    }
+}
+
 export const ProductService = {
     getAll,
     create,
@@ -175,6 +214,7 @@ export const ProductService = {
     prodOutput,
     deleteById,
     updateById,
+    getAllOutputs,
     getValueBySector,
     getQuantityBySector,
 };

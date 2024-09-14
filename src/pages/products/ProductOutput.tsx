@@ -1,17 +1,20 @@
-import { Autocomplete, Box, Button, Grid, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Fab, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { LayoutMain } from '../../shared/layouts';
 import { VForm } from '../../shared/forms/VForm';
 import { VSelect } from '../../shared/forms/VSelect';
-import * as yup from 'yup';
 import { VTextField } from '../../shared/forms/VTextField';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FormHandles } from '@unform/core';
-import { ProductService } from '../../shared/services/api';
+import { FincashService, IOutputQuery, ProductService } from '../../shared/services/api';
+import { format } from 'date-fns';
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+
 import { EProdOutReason } from '../outflow/enum/EProdOutReason';
 import Swal from 'sweetalert2';
+import { Link, useSearchParams } from 'react-router-dom';
 
-// const OUTFLOW_ROW_LIMIT = 6;
-// const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
+const OUTFLOW_ROW_LIMIT = 6;
+const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
 
 interface IFormData {
 	quantity: number,
@@ -19,21 +22,28 @@ interface IFormData {
 	desc: string,
 }
 
-const outputSchema = yup.object().shape({
-	prod_id: yup.number().required().min(0),
-	quantity: yup.number().required().min(0),
-	reason: yup.mixed<EProdOutReason>().required().oneOf(Object.values(EProdOutReason)),
-	fincash_id: yup.number().min(0),
-	desc: yup.string(),
-});
-
-
 export const ProductOutput: React.FC = () => {
+	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
+	const [searchParams, setSearchParams] = useSearchParams();
+
 	const [selectedProd, setSelectedProd] = useState(0);
 	const [selectedProdName, setSelectedProdName] = useState('');
-	const [allProducts, setAllProducts] = useState<{ label: string, id: number }[]>();
+
 	const [ACError, setACError] = useState(false);
-	// const [errorSelect, setErrorSelect] = useState(false);
+	const [qntError, setQntError] = useState(false);
+	const [reasonError, setReasonError] = useState(false);
+
+	const [loadingSubmit, setLoadingSubmit] = useState(false);
+	const [loadingPage, setLoadingPage] = useState(true);
+	const [loading, setLoading] = useState(true);
+
+	const [totalCount, setTotalCount] = useState(0);
+	const [rows, setRows] = useState<IOutputQuery[]>([]);
+
+
+	const page = useMemo(() => {
+		return searchParams.get('page') || 1;
+	}, [searchParams]);
 
 	const reasons = [
 		{ text: 'Consumo', value: EProdOutReason.Consumo },
@@ -42,22 +52,79 @@ export const ProductOutput: React.FC = () => {
 		{ text: 'Outro', value: EProdOutReason.Outro }
 	];
 
-	const handleSubmit = (data: IFormData) => {
-		setACError(false);
-		if (!selectedProd) {
-			setACError(true);
-			return;
-		}
+	useEffect(() => {
+		listOutputs();
+	}, [page]);
 
-		const output = {
-			prod_id: selectedProd,
-			quantity: data.quantity,
-			reason: data.reason,
-			desc: data.desc
+	const listOutputs = async () => {
+		setLoading(true);
+		setLoadingPage(true);
+		const result = await ProductService.getAllOutputs(Number(page), OUTFLOW_ROW_LIMIT);
+		if (result instanceof Error) {
+			alert(result.message);
+		} else {
+			setTotalCount(result.totalCount);
+			setRows(result.data);
 		}
-		const validated = outputSchema.validate(output, { abortEarly: false });
-			
-		console.log(output);
+		setLoading(false);
+		setLoadingPage(false);
+
+	};
+
+	const handleSubmit = async (data: IFormData) => {
+		try {
+			setLoadingSubmit(true);
+			if (!selectedProd) {
+				setACError(true);
+				return;
+			}
+			if (data.quantity < 1) {
+				setQntError(true);
+				return;
+			}
+			if (!data.reason) {
+				setReasonError(true);
+				return;
+			}
+			let fincash_id: number | undefined = undefined;
+			const fincash = await FincashService.getOpenFincash();
+			if (!(fincash instanceof Error)) {
+				fincash_id = fincash.id;
+			}
+			const output = {
+				prod_id: selectedProd,
+				quantity: data.quantity,
+				reason: data.reason,
+				desc: data.desc,
+				fincash_id
+			}
+			const result = await ProductService.prodOutput(output);
+			if (result instanceof Error) {
+				Swal.fire({
+					icon: "error",
+					title: "Erro!",
+					text: "Estoque não cadaastrado",
+					showConfirmButton: true,
+				});
+			} else {
+				Swal.fire({
+					icon: "success",
+					title: "Sucesso",
+					text: "Saída cadastrada com sucesso!",
+					showConfirmButton: true,
+				});
+				formRef.current?.setFieldValue('reason', '');
+				formRef.current?.setFieldValue('quantity', '');
+				formRef.current?.setFieldValue('desc', '');
+				setSelectedProd(0);
+				setSelectedProdName('');
+				listOutputs();
+			}
+		} catch (e) {
+			console.error(e);
+		} finally {
+			setLoadingSubmit(false);
+		}
 	}
 
 	const formRef = useRef<FormHandles>(null);
@@ -86,28 +153,30 @@ export const ProductOutput: React.FC = () => {
 								<Table>
 									<TableHead>
 										<TableRow>
-											<TableCell>Descrição</TableCell>
-											<TableCell>Valor</TableCell>
-											<TableCell>Tipo</TableCell>
+											<TableCell>Data</TableCell>
+											<TableCell>Produto</TableCell>
+											<TableCell>Quantidade</TableCell>
+											<TableCell>Motivo</TableCell>
 											<TableCell>Ações</TableCell>
 										</TableRow>
 									</TableHead>
 
 									<TableBody>
-										{/* {
+										{
 										!loading ? rows.map(
 											(row, index) => {
 												return (
 													<TableRow key={index}>
 														<TableCell >
-															<Typography noWrap overflow="hidden" textOverflow="ellipsis" maxWidth={100}>
-																{row.desc}
-															</Typography>
+															{format(row.created_at, 'dd / MM')}														
 														</TableCell>
-														<TableCell>R$ {row.value}</TableCell>
-														<TableCell>{row.type}</TableCell>
+														<TableCell >
+															{row.prod_name}														
+														</TableCell>
+														<TableCell>{row.quantity}</TableCell>
+														<TableCell>{row.reason}</TableCell>
 														<TableCell>
-															<Link to={'/saidas/' + row.id}>
+															<Link to={'/produto/saida/' + row.output_id}>
 																<Fab
 																	size="medium"
 																	color="info"
@@ -129,28 +198,31 @@ export const ProductOutput: React.FC = () => {
 											NUMBER_OF_SKELETONS.map((_, index) => (
 												<TableRow key={index}>
 													<TableCell >
-														<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+														<Skeleton sx={{ minHeight: 40, maxWidth: 70 }} />
 													</TableCell>
 													<TableCell >
-														<Skeleton sx={{ minHeight: 40, maxWidth: 50 }} />
+														<Skeleton sx={{ minHeight: 40, maxWidth: 120 }} />
 													</TableCell>
 													<TableCell >
-														<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
+														<Skeleton sx={{ minHeight: 40, maxWidth: 40 }} />
+													</TableCell>
+													<TableCell >
+														<Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
 													</TableCell>
 													<TableCell >
 														<Fab disabled size='medium'></Fab>
 													</TableCell>
 												</TableRow>
 											))
-									} */}
+									}
 									</TableBody>
-									{/* {totalCount === 0 && !loading && (
+									{totalCount === 0 && !loading && (
 									<caption>Nenhuma saída registrada</caption>
-								)} */}
+								)}
 								</Table>
 							</TableContainer>
 						</Box>
-						{/* {totalCount > 0 && (
+						{totalCount > 0 && (
 						<Pagination
 							sx={{ m: 1 }}
 							disabled={loadingPage}
@@ -159,7 +231,7 @@ export const ProductOutput: React.FC = () => {
 							onChange={(_, newPage) => setSearchParams({ page: newPage.toString() }, { replace: true })}
 							siblingCount={0}
 						/>
-					)} */}
+					)}
 					</Paper>
 				</Grid>
 				<Grid item xs={6}>
@@ -188,21 +260,28 @@ export const ProductOutput: React.FC = () => {
 													setSelectedProdName(newValue.label);
 												} else { setSelectedProd(0); setSelectedProdName(''); }
 
-												// setErrorSelect(false);
+												setACError(false);
 											}}
 										/>
+										{ACError && (<Typography variant='body2' ml={2} mt={0.5} color={'#ee0000'}>Selecione um produto.</Typography>)}
 									</Box>
 								</Box>
-								<VTextField
-									label={'Quantidade'}
-									onChange={undefined}
-									name="0.05"
-									sx={{ maxWidth: 120 }}
-									inputProps={{ type: 'number' }}
-									autoComplete="off"
-								/>
+								<Box>
+									<VTextField
+										label={'Quantidade'}
+										onChange={() => {
+											setQntError(false);
+										}}
+										name="quantity"
+										sx={{ maxWidth: 120 }}
+										inputProps={{ type: 'number' }}
+										autoComplete="off"
+									/>
+									{qntError && (<Typography variant='body2' ml={1} mt={0.5} color={'#ee0000'}>Quantidade precisa ser maior que 0.</Typography>)}
+								</Box>
 								<Box width={220}>
-									<VSelect label='Motivo' name='reason' menuItens={reasons} />
+									<VSelect label='Motivo' name='reason' menuItens={reasons} onValueChange={() => { setReasonError(false); }} />
+									{reasonError && (<Typography variant='body2' ml={1} mt={0.5} color={'#ee0000'}>Escolha um motivo.</Typography>)}
 								</Box>
 								<VTextField
 									name="desc"
@@ -213,9 +292,13 @@ export const ProductOutput: React.FC = () => {
 									id="elevation-multiline-static"
 									autoComplete="off"
 								/>
-								<Button variant="contained" onClick={() => formRef.current?.submitForm()}
-								// disabled={loadingPageSubmit}
-								>Confirmar</Button>
+								<Button
+									variant="contained"
+									onClick={() => formRef.current?.submitForm()}
+									disabled={loadingSubmit}
+								>
+									Confirmar
+								</Button>
 							</Box>
 						</VForm>
 					</Paper>
