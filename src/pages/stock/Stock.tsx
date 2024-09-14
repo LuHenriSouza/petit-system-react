@@ -198,6 +198,7 @@ export const Stock: React.FC = () => {
 						} else {
 							setOpenSnack(true);
 						}
+						setValidityDate(undefined);
 					}
 				}
 			}
