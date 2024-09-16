@@ -4,6 +4,7 @@ export * from './GroupService';
 export * from './ProductService';
 export * from './FincashService';
 export * from './OutflowService';
+export * from './PaymentService';
 export * from './SupplierService';
 export * from './ValidityService';
 export * from './Auth/AuthService';
