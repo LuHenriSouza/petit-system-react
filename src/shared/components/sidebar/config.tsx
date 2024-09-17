@@ -1,6 +1,6 @@
-import SavingsIcon from '@mui/icons-material/Savings';
+// import SavingsIcon from '@mui/icons-material/Savings';
+// import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import AllInboxIcon from '@mui/icons-material/AllInbox';
-import QueryStatsIcon from '@mui/icons-material/QueryStats';
 import FolderRoundedIcon from '@mui/icons-material/FolderRounded';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import ArchiveRoundedIcon from '@mui/icons-material/ArchiveRounded';
@@ -74,21 +74,21 @@ export const items = [
         path: '/fornecedores',
         icon: (<LocalShippingIcon fontSize='small' />)
     },
-    {
-        title: 'Promoções',
-        path: '/promo',
-        icon: (<SavingsIcon fontSize='small' />)
-    },
+    // {
+    //     title: 'Promoções',
+    //     path: '/promo',
+    //     icon: (<SavingsIcon fontSize='small' />)
+    // },
     {
         title: 'Fechamentos',
         path: '/fechamentos',
         icon: (<RequestQuoteRoundedIcon fontSize='small' />)
     },
-    {
-        title: 'Vendas (todas)',
-        path: '/vendas/admin',
-        icon: (<QueryStatsIcon fontSize='small' />)
-    },
+    // {
+    //     title: 'Vendas (todas)',
+    //     path: '/vendas/admin',
+    //     icon: (<QueryStatsIcon fontSize='small' />)
+    // },
     {
         title: 'Saídas (Produtos)',
         path: '/saida/produto',
