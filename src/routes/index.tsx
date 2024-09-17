@@ -7,6 +7,7 @@ import {
     AllSales,
     Products,
     Validity,
+    Payments,
     Suppliers,
     Dashboard,
     ShowSales,
@@ -20,6 +21,7 @@ import {
     OutflowDetail,
     FincashDetail,
     FincashResult,
+    ProductOutput,
 } from '../pages';
 import { Button } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
@@ -36,6 +38,7 @@ export const AppRoutes = () => {
             <Route path="/produtos" element={<Products />} />
             <Route path="/produtos/novo" element={<NewProduct />} />
             <Route path="/produtos/edit/:id" element={<UpdateProduct />} />
+            <Route path="/saida/produto" element={<ProductOutput />} />
 
             {/* Caixa / Vendas */}
             <Route path="/caixa" element={<Sale />} />
@@ -68,7 +71,10 @@ export const AppRoutes = () => {
             <Route path="/validades" element={<Validity />} />
 
             {/* Promções */}
-            <Route path="/promo" element={<Promotions />} />
+            <Route path="/promo" element={<Promotions />} />        
+        
+            {/* Pagamentos / Boletos */}
+            <Route path="/boletos" element={<Payments />} />
 
 
             {/* Página 404 */}

@@ -119,6 +119,28 @@ export const Sale: React.FC = () => {
 				handleProducts(code.trim());
 			}
 		}
+
+		if (e.code === 'Space' || e.key === 'Space') {
+			if ((products && products.length === 0) || submitLoading) {
+				return setCode('');
+			} else {
+				handleSubmit();
+			}
+		}
+
+		if (e.code === 'ArrowLeft' || e.key === 'ArrowLeft') {
+			if (!code.trim() && !lastResult) return;
+			if (!code.trim() && lastResult) {
+				handleQuantityChange(lastResult.code, -1);
+			}
+		}
+
+		if (e.code === 'ArrowRight' || e.key === 'ArrowRight') {
+			if (!code.trim() && !lastResult) return;
+			if (!code.trim() && lastResult) {
+				handleQuantityChange(lastResult.code, 1)
+			}
+		}
 	};
 
 	const handleProducts = async (prodCode: string, product?: IProduct) => {
@@ -192,6 +214,7 @@ export const Sale: React.FC = () => {
 			return alert(error);
 		} finally {
 			setSubmitLoading(false);
+			setCode('')
 		}
 	}
 	useEffect(() => {
@@ -271,6 +294,7 @@ export const Sale: React.FC = () => {
 												key={row.code}
 												hover
 												sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+												onClick={()=>setLastResult(row)}
 											>
 												<TableCell>{row.code}</TableCell>
 												<TableCell>{row.name}</TableCell>

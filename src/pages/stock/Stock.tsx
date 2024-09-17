@@ -21,6 +21,7 @@ import {
 	DialogActions,
 	FormControlLabel,
 	DialogContentText,
+	Typography,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -30,6 +31,7 @@ import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
+import { CustomSelect } from '../../shared/forms/customInputs/CustomSelect';
 
 
 const STOCK_ROW_LIMIT = 7;
@@ -58,6 +60,7 @@ export const Stock: React.FC = () => {
 	const [openSnack, setOpenSnack] = useState(false);
 	const [selectedProd, setSelectedProd] = useState(0);
 	const [loadingPage, setLoadingPage] = useState(true);
+	const [orderBy, setOrderBy] = useState('updated_at');
 	const [errorSelect, setErrorSelect] = useState(false);
 	const [validityDate, setValidityDate] = useState<Date>();
 	const [rows, setRows] = useState<IProductWithStock[]>([]);
@@ -79,7 +82,7 @@ export const Stock: React.FC = () => {
 			listStocks();
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [stockPage, stockSearch]);
+	}, [stockPage, stockSearch, orderBy]);
 
 	const handleClickOpen = () => {
 		setOpen(true);
@@ -112,7 +115,7 @@ export const Stock: React.FC = () => {
 		try {
 			setLoadingPage(true);
 			setLoading(true);
-			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
+			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch, orderBy);
 			if (response instanceof Error) {
 				alert("Ocorreu algum erro");
 			} else {
@@ -198,6 +201,7 @@ export const Stock: React.FC = () => {
 						} else {
 							setOpenSnack(true);
 						}
+						setValidityDate(undefined);
 					}
 				}
 			}
@@ -226,7 +230,18 @@ export const Stock: React.FC = () => {
 				sx={{ backgroundColor: "#fff", px: 3, py: 3, mr: 5, mb: 1 }}
 				variant="elevation"
 			>
-				<Box minHeight={460} m={1}>
+				<Box display={'flex'} alignItems={'center'}>
+					<Typography mr={3}>
+						Ordenar Por:
+					</Typography>
+					<CustomSelect
+						menuItens={[{ text: 'Ultima atualização', value: 'updated_at' }, { text: 'Estoque', value: 'stock' }]}
+						onValueChange={(e) => setOrderBy(e)}
+						minWidth={200}
+						defaultSelected={0}
+					/>
+				</Box>
+				<Box minHeight={440} m={1}>
 					<Table>
 						<TableHead>
 							<TableRow>

@@ -19,9 +19,9 @@ type TStockTotalCount = {
     totalCount: number;
 }
 
-const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, filter = ''): Promise<TStockTotalCount | Error> => {
+const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, filter = '', orderBy = 'updated_at'): Promise<TStockTotalCount | Error> => {
     try {
-        const urlRelativa = `/stock?page=${page}&limit=${limit}&filter=${filter}`;
+        const urlRelativa = `/stock?page=${page}&limit=${limit}&filter=${filter}&orderBy=${orderBy}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {

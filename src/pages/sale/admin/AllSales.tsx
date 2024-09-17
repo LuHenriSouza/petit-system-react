@@ -86,7 +86,7 @@ export const AllSales: React.FC = () => {
 												<TableRow key={row.sale_id}>
 													<TableCell>{row.sale_id}</TableCell>
 													<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
-													<TableCell>R$ {row.totalValue}</TableCell>
+													<TableCell>R$ {row.total_value}</TableCell>
 													<TableCell>
 														<Link to={'/vendas/' + row.sale_id}>
 															<Fab

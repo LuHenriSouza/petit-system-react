@@ -8,6 +8,7 @@ export * from './dashboard/Dashboard';
 export * from './products/Products';
 export * from './products/NewProduct';
 export * from './products/UpdateProduct';
+export * from './products/ProductOutput';
 
 // Fincash
 export * from './sale/Sale';
@@ -40,3 +41,6 @@ export * from './validity/Validity';
 
 // Promotions
 export * from './promotions/Promotions';
+
+// Payments
+export * from './payments/Payments';
