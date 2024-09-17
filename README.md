@@ -14,13 +14,13 @@
   Para logar na aplicação use esse login:
   <br/>
   <br/>
-  Usuário:
+  Email:
   ```
-  admin
+  usertest@petit.com
   ```
   Senha:
   ```
-  admin
+  123456
   ```
 
   Link:
