@@ -189,7 +189,10 @@ export const ProductOutput: React.FC = () => {
 																	<VisibilityRoundedIcon color="info" />
 																	</Fab>
 																	</Link> */}
-															<TableCell sx={{ maxWidth: 200, cursor: 'pointer' }} onClick={() => setOpen(row.output_id)}>
+															<TableCell
+																sx={{ maxWidth: 200, cursor: row.desc ? 'pointer' : 'default' }}
+																onClick={() => row.desc && setOpen(row.output_id)}
+															>
 																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={1}>
 																	{row.desc}
 																</Typography>
