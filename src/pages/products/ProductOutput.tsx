@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Dialog, DialogContent, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { LayoutMain } from '../../shared/layouts';
 import { VForm } from '../../shared/forms/VForm';
 import { VSelect } from '../../shared/forms/VSelect';
@@ -39,6 +39,8 @@ export const ProductOutput: React.FC = () => {
 
 	const [totalCount, setTotalCount] = useState(0);
 	const [rows, setRows] = useState<IOutputQuery[]>([]);
+
+	const [open, setOpen] = useState(0);
 
 
 	const page = useMemo(() => {
@@ -143,7 +145,7 @@ export const ProductOutput: React.FC = () => {
 	}
 
 	return (
-		<LayoutMain title="Saidas" subTitle="Adicione saídas ao caixa">
+		<LayoutMain title="Saidas" subTitle="Adicione saídas ao estoque">
 			<Grid container spacing={2}>
 				<Grid item xs={7}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
@@ -175,23 +177,36 @@ export const ProductOutput: React.FC = () => {
 															</TableCell>
 															<TableCell>{row.quantity}</TableCell>
 															<TableCell>{row.reason}</TableCell>
-															<TableCell width={220}>
-																{/* <Link to={'/saida/produto/' + row.output_id + '?backPage=' + page}>
+															{/* <Link to={'/saida/produto/' + row.output_id + '?backPage=' + page}>
 																<Fab
-																	size="medium"
-																	color="info"
-																	sx={{
-																		backgroundColor: '#5bc0de',
-																		'&:hover': { backgroundColor: '#6fd8ef' },
+																size="medium"
+																color="info"
+																sx={{
+																	backgroundColor: '#5bc0de',
+																	'&:hover': { backgroundColor: '#6fd8ef' },
 																	}}
-																>
+																	>
 																	<VisibilityRoundedIcon color="info" />
-																</Fab>
-															</Link> */}
-																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={6}>
+																	</Fab>
+																	</Link> */}
+															<TableCell sx={{ maxWidth: 200, cursor: 'pointer' }} onClick={() => setOpen(row.output_id)}>
+																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={1}>
 																	{row.desc}
 																</Typography>
 															</TableCell>
+															<Dialog
+																open={open == row.output_id}
+																onClose={() => setOpen(0)}
+																maxWidth={'lg'}
+																sx={{
+																	"& .MuiDialog-paper":
+																		{ backgroundColor: "#fff", }
+																}}
+															>
+																<DialogContent sx={{ minHeight: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+																	<Typography>{row.desc}</Typography>
+																</DialogContent>
+															</Dialog>
 														</TableRow>
 													);
 												}

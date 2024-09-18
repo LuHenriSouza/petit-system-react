@@ -1,4 +1,4 @@
-import { Box, Button, Fab, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from "@mui/material";
+import { Alert, Box, Button, Fab, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material";
 import { LayoutMain } from "../../shared/layouts";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { Link, useSearchParams } from "react-router-dom";
@@ -19,6 +19,7 @@ const NUMBER_OF_SKELETONS = Array(ROW_LIMIT).fill(null);
 
 
 export const Payments: React.FC = () => {
+	const theme = useTheme();
 	const formRef = useRef<FormHandles>(null);
 
 	const [suppliers, setSuppliers] = useState<IMenuItens[]>([]);
@@ -26,6 +27,7 @@ export const Payments: React.FC = () => {
 	const [loading, setLoading] = useState(true);
 	const [totalCount, setTotalCount] = useState(0);
 	const [loadingPage, setLoadingPage] = useState(false);
+	const [fetchError, setFetchError] = useState(false);
 	const [loadingSubmit, setLoadingSubmit] = useState(false);
 	const [rows, setRows] = useState<IPaymentResponse[]>([]);
 
@@ -75,20 +77,32 @@ export const Payments: React.FC = () => {
 	}
 
 	const handleRemove = async (id: number) => {
+		Swal.fire({
+			title: 'Tem Certeza?',
+			icon: 'warning',
+			iconColor: theme.palette.error.main,
+			showCancelButton: true,
+			confirmButtonColor: theme.palette.error.main,
+			cancelButtonColor: '#aaa',
+			cancelButtonText: 'Cancelar',
+			confirmButtonText: 'Deletar'
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				const response = await PaymentService.deleteById(id);
 
-		const response = await PaymentService.deleteById(id);
-
-		if (response instanceof Error) {
-			console.error("Ocorreu algum erro no momento da remoção da validade!");
-		} else {
-			Swal.fire({
-				icon: "success",
-				title: "Validade Removida !",
-				showConfirmButton: false,
-				timer: 1000,
-			});
-		}
-		listPayments();
+				if (response instanceof Error) {
+					console.error("Ocorreu algum erro no momento da remoção do boleto!");
+				} else {
+					Swal.fire({
+						icon: "success",
+						title: "Boleto Removido !",
+						showConfirmButton: false,
+						timer: 1000,
+					});
+				}
+				listPayments();
+			}
+		});
 	}
 
 	const handleSubmit = async (data: { supplier_id: number, desc?: string, code: string }) => {
@@ -100,12 +114,12 @@ export const Payments: React.FC = () => {
 			const result = await PaymentService.create(data);
 
 			if (result instanceof Error) {
-				alert(result)
+				setFetchError(true);
 			} else {
 				Swal.fire({
 					icon: "success",
 					title: "Sucesso",
-					text: "Saída cadastrada com sucesso!",
+					text: "Boleto cadastrado com sucesso!",
 					showConfirmButton: true,
 				});
 				formRef.current?.setFieldValue('supplier_id', 0);
@@ -143,6 +157,7 @@ export const Payments: React.FC = () => {
 											<TableCell>Valor</TableCell>
 											<TableCell>Vencimento</TableCell>
 											<TableCell>Ações</TableCell>
+											<TableCell>Descrição</TableCell>
 										</TableRow>
 									</TableHead>
 
@@ -180,6 +195,11 @@ export const Payments: React.FC = () => {
 																>
 																	<DeleteIcon color="info" />
 																</Fab>
+															</TableCell>
+															<TableCell sx={{ maxWidth: 120 }}>
+																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={1}>
+																	{row.desc}
+																</Typography>
 															</TableCell>
 														</TableRow>
 													);
@@ -226,6 +246,7 @@ export const Payments: React.FC = () => {
 				<Grid item xs={5}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Typography variant="h5" sx={{ m: 2 }}>Novo Boleto:</Typography>
+						{(fetchError && <Alert severity="error">Já existe um boleto com este código !</Alert>)}
 						<VForm ref={formRef} onSubmit={handleSubmit} placeholder={''}>
 							<Box display={'flex'} flexDirection={'column'} gap={3} margin={3}>
 								<Box display={'flex'} gap={5}>
@@ -238,7 +259,7 @@ export const Payments: React.FC = () => {
 										/>
 									</Box>
 								</Box>
-								<VTextField name="code" label="Código" autoComplete="off" />
+								<VTextField name="code" label="Código" autoComplete="off" onKeyDown={() => setFetchError(false)} />
 								<VTextField
 									name="desc"
 									rows={4}
