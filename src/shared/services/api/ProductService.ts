@@ -188,6 +188,34 @@ const getValueBySector = async (): Promise<{ sector: number, value: number }[] |
     }
 }
 
+const getStockValueBySector = async (): Promise<{ sector: number, value: number }[] | Error> => {
+    try {
+        const { data } = await Api.get('/product/per-stock-value', Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (e) {
+        console.log(e)
+        return new Error((e as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+}
+
+const getStockBySector = async (): Promise<{ sector: number, stock: number }[] | Error> => {
+    try {
+        const { data } = await Api.get('/product/per-stock', Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (e) {
+        console.log(e)
+        return new Error((e as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+}
+
 const prodOutput = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | 'updated_at'>) => {
     try {
         const { data } = await Api.post('/product/output', prod_output, Autorization());
@@ -232,5 +260,7 @@ export const ProductService = {
     getAllOutputs,
     getOutputById,
     getValueBySector,
+    getStockBySector,
     getQuantityBySector,
+    getStockValueBySector,
 };
