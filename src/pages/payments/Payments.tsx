@@ -153,14 +153,13 @@ export const Payments: React.FC = () => {
 													return (
 														<TableRow key={row.id}>
 															<TableCell>{row.name}</TableCell>
-															<TableCell>{row.value}</TableCell>
+															<TableCell>R$ {row.value}</TableCell>
 															<TableCell>{format(row.expiration, 'dd/MM/yyyy')}</TableCell>
 															<TableCell>
-																<Link to={'/boleto/' + row.id}>
+																<Link to={'/boleto/' + row.id + '?backPage=' + page}>
 																	<Fab
 																		size="medium"
 																		color="info"
-																		onClick={() => console.log('Clique no ícone')}
 																		sx={{
 																			backgroundColor: '#5bc0de',
 																			'&:hover': { backgroundColor: '#6fd8ef' },
@@ -182,11 +181,6 @@ export const Payments: React.FC = () => {
 																	<DeleteIcon color="info" />
 																</Fab>
 															</TableCell>
-															{/* <TableCell >
-																	<Typography noWrap overflow="hidden" textOverflow="ellipsis" maxWidth={100}>
-																		{row.desc}
-																	</Typography>
-															</TableCell> */}
 														</TableRow>
 													);
 												}

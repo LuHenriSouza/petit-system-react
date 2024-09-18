@@ -44,3 +44,4 @@ export * from './promotions/Promotions';
 
 // Payments
 export * from './payments/Payments';
+export * from './payments/PaymentDetail';

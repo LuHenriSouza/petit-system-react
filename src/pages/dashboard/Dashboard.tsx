@@ -35,12 +35,19 @@ export const Dashboard: React.FC = () => {
 	const [loadingMonth, setLoadingMonth] = useState(true);
 	const [perMonth, setPerMonth] = useState<{ date: (number | string)[], value: number[], invoicing: number[] }>({ date: [], value: [], invoicing: [] });
 	const [loadingSector, setLoadingSector] = useState(true);
-	const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
-	const [sectorProdRelation, setSectorProdRelation] = useState<{ id: number, value: number, label: string }[]>([]);
+	// const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
+	// const [sectorProdRelation, setSectorProdRelation] = useState<{ id: number, value: number, label: string }[]>([]);
 	const [sectorProdValue, setSectorProdValue] = useState<{ id: number, value: number, label: string }[]>([]);
 	const [sectorPercentValue, setSectorPercentValue] = useState<Record<string, number>>({});
-	const [sectorPercentRelation, setSectorPercentRelation] = useState<Record<string, number>>({});
-	const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
+
+	const [sectorProdSTOCK, setSectorProdSTOCK] = useState<{ id: number, value: number, label: string }[]>([]);
+	const [sectorPercentSTOCK, setSectorPercentSTOCK] = useState<Record<string, number>>({});
+	
+	const [sectorProdStockVal, setSectorProdStockVal] = useState<{ id: number, value: number, label: string }[]>([]);
+	const [sectorPercentStockVal, setSectorPercentStockVal] = useState<Record<string, number>>({});
+
+	// const [sectorPercentRelation, setSectorPercentRelation] = useState<Record<string, number>>({});
+	// const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
 
 	useEffect(() => {
 		getSectorData();
@@ -68,28 +75,28 @@ export const Dashboard: React.FC = () => {
 		try {
 			setLoadingSector(true);
 
-			// QUANTITY
-			const resultQNT = await ProductService.getQuantityBySector();
-			if (resultQNT instanceof Error) return;
-			const objQNT = resultQNT.map((i) => {
-				return {
-					id: i.sector,
-					value: i.quantity,
-					label:
-						i.sector == 1 ? 'Bebidas'
-							: i.sector == 2 ? 'Chocolates'
-								: i.sector == 3 ? 'Salgadinhos'
-									: i.sector == 4 ? 'Sorvetes' : 'Erro'
-				}
-			});
-			setSectorProdQnt(objQNT)
 
-			const percentQNT: Record<string, number> = {}
-			const totalQNT = objQNT.map((i) => i.value).reduce((a, b) => a + b);
-			for (const o of objQNT) {
-				percentQNT[o.label] = o.value * 100 / totalQNT;
-			}
-			setSectorPercent(percentQNT);
+			// QUANTITY
+			// const resultQNT = await ProductService.getQuantityBySector();
+			// if (resultQNT instanceof Error) return;
+			// const objQNT = resultQNT.map((i) => {
+			// 	return {
+			// 		id: i.sector,
+			// 		value: i.quantity,
+			// 		label:
+			// 			i.sector == 1 ? 'Bebidas'
+			// 				: i.sector == 2 ? 'Chocolates'
+			// 					: i.sector == 3 ? 'Salgadinhos'
+			// 						: i.sector == 4 ? 'Sorvetes' : 'Erro'
+			// 	}
+			// });
+			// setSectorProdQnt(objQNT)
+			// const percentQNT: Record<string, number> = {}
+			// const totalQNT = objQNT.map((i) => i.value).reduce((a, b) => a + b);
+			// for (const o of objQNT) {
+			// 	percentQNT[o.label] = o.value * 100 / totalQNT;
+			// }
+			// setSectorPercent(percentQNT);
 
 
 			// VALUE
@@ -113,24 +120,71 @@ export const Dashboard: React.FC = () => {
 				percentVAL[o.label] = o.value * 100 / totalVAL;
 			}
 			setSectorPercentValue(percentVAL);
+			
 
-
+			// POTENTIAL INVOICING
+			const resultINV = await ProductService.getStockValueBySector();
+			if (resultINV instanceof Error) return;
+			const objINV = resultINV.map((i) => {
+				return {
+					id: i.sector,
+					value: i.value,
+					label:
+						i.sector == 1 ? 'Bebidas'
+							: i.sector == 2 ? 'Chocolates'
+								: i.sector == 3 ? 'Salgadinhos'
+									: i.sector == 4 ? 'Sorvetes' : 'Erro'
+				}
+			});
+			setSectorProdStockVal(objINV)
+			const percentINV: Record<string, number> = {}
+			const totalINV = objINV.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			for (const o of objINV) {
+				percentINV[o.label] = o.value * 100 / totalINV;
+			}
+			setSectorPercentStockVal(percentINV);
+			
+			
 			// RELATION
-			const objarr = []
-			for (let i = 0; i < objQNT.length; i++) {
-				objarr.push({
-					id: objQNT[i].id,
-					value: objVAL[i].value / objQNT[i].value,
-					label: objQNT[i].label
-				});
+			// const objarr = []
+			// for (let i = 0; i < objQNT.length; i++) {
+			// 	objarr.push({
+			// 		id: objQNT[i].id,
+			// 		value: objVAL[i].value / objQNT[i].value,
+			// 		label: objQNT[i].label
+			// 	});
+			// }
+			// setSectorProdRelation(objarr);
+			// const record: Record<string, number> = {}
+			// const total = objarr.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			// for (const o of objarr) {
+			// 	record[o.label] = o.value * 100 / total;
+			// }
+			// setSectorPercentRelation(record);
+
+
+			// STOCK
+			const resultSTOCK = await ProductService.getStockBySector();
+			if (resultSTOCK instanceof Error) return;
+			const objSTOCK = resultSTOCK.map((i) => {
+				return {
+					id: i.sector,
+					value: i.stock,
+					label:
+						i.sector == 1 ? 'Bebidas'
+							: i.sector == 2 ? 'Chocolates'
+								: i.sector == 3 ? 'Salgadinhos'
+									: i.sector == 4 ? 'Sorvetes' : 'Erro'
+				}
+			});
+			setSectorProdSTOCK(objSTOCK);
+			const percentSTOCK: Record<string, number> = {}
+			const totalSTOCK = objSTOCK.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			for (const o of objSTOCK) {
+				percentSTOCK[o.label] = o.value * 100 / totalSTOCK;
 			}
-			setSectorProdRelation(objarr);
-			const record: Record<string, number> = {}
-			const total = objarr.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
-			for (const o of objarr) {
-				record[o.label] = o.value * 100 / total;
-			}
-			setSectorPercentRelation(record);
+			setSectorPercentSTOCK(percentSTOCK);
+
 
 		} catch (e) {
 			console.log(e);
@@ -288,15 +342,15 @@ export const Dashboard: React.FC = () => {
 							<Box pl={2.5} mt={3} display={'flex'} flexDirection={'column'}>
 								<Box>
 									<Typography variant='h6'>
-										Relação Faturamento/Quantidade:
+										Estoque:
 									</Typography>
 									<PieChart
 										loading={loadingSector}
 										sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
-										colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
+										colors={['#1E90FF', 'goldenrod', '#32CD32', '#aA4Bf2']}
 										series={[
 											{
-												data: sectorProdRelation,
+												data: sectorProdSTOCK,
 												highlightScope: { faded: 'global', highlighted: 'item' },
 												faded: { innerRadius: 30, additionalRadius: -5, color: 'gray' },
 												innerRadius: 30,
@@ -308,7 +362,7 @@ export const Dashboard: React.FC = () => {
 												cx: 150,
 												cy: 150,
 												arcLabel(item) {
-													if (item.label) return `${sectorPercentRelation[item.label].toFixed(1)}%`
+													if (item.label) return `${sectorPercentSTOCK[item.label].toFixed(1)}%`
 													return '';
 												},
 											},
@@ -335,7 +389,7 @@ export const Dashboard: React.FC = () => {
 									<PieChart
 										loading={loadingSector}
 										sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
-										colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
+										colors={['#1E90FF', 'goldenrod', '#32CD32', '#aA4Bf2']}
 										series={[
 											{
 												data: sectorProdValue,
@@ -372,15 +426,15 @@ export const Dashboard: React.FC = () => {
 								</Box>
 								<Box>
 									<Typography variant='h6'>
-										Quantidade:
+										Potencial:
 									</Typography>
 									<PieChart
 										loading={loadingSector}
 										sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
-										colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
+										colors={['#1E90FF', 'goldenrod', '#32CD32', '#aA4Bf2']}
 										series={[
 											{
-												data: sectorProdQnt,
+												data: sectorProdStockVal,
 												highlightScope: { faded: 'global', highlighted: 'item' },
 												faded: { innerRadius: 30, additionalRadius: -5, color: 'gray' },
 												innerRadius: 30,
@@ -392,7 +446,7 @@ export const Dashboard: React.FC = () => {
 												cx: 150,
 												cy: 150,
 												arcLabel(item) {
-													if (item.label) return `${sectorPercent[item.label].toFixed(1)}%`
+													if (item.label) return `${sectorPercentStockVal[item.label].toFixed(1)}%`
 													return '';
 												},
 											},

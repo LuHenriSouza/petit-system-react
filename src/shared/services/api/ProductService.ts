@@ -130,6 +130,21 @@ const getById = async (id: number): Promise<IProduct | Error> => {
     }
 };
 
+const getOutputById = async (id: number): Promise<IOutputQuery | Error> => {
+    try {
+        const { data } = await Api.get(`/product-output/${id}`, Autorization());
+
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
 const getByCode = async (code: string): Promise<IProduct | Error> => {
     try {
         const { data } = await Api.get(`/product/code/${code}`, Autorization());
@@ -162,6 +177,34 @@ const getQuantityBySector = async (): Promise<{ sector: number, quantity: number
 const getValueBySector = async (): Promise<{ sector: number, value: number }[] | Error> => {
     try {
         const { data } = await Api.get('/product/per-value', Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (e) {
+        console.log(e)
+        return new Error((e as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+}
+
+const getStockValueBySector = async (): Promise<{ sector: number, value: number }[] | Error> => {
+    try {
+        const { data } = await Api.get('/product/per-stock-value', Autorization());
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (e) {
+        console.log(e)
+        return new Error((e as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+}
+
+const getStockBySector = async (): Promise<{ sector: number, stock: number }[] | Error> => {
+    try {
+        const { data } = await Api.get('/product/per-stock', Autorization());
         if (data) {
             return data;
         }
@@ -215,6 +258,9 @@ export const ProductService = {
     deleteById,
     updateById,
     getAllOutputs,
+    getOutputById,
     getValueBySector,
+    getStockBySector,
     getQuantityBySector,
+    getStockValueBySector,
 };

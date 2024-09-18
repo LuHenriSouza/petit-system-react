@@ -22,6 +22,7 @@ import {
     FincashDetail,
     FincashResult,
     ProductOutput,
+    PaymentDetail,
 } from '../pages';
 import { Button } from '@mui/material';
 import { Routes, Route } from 'react-router-dom';
@@ -75,6 +76,7 @@ export const AppRoutes = () => {
         
             {/* Pagamentos / Boletos */}
             <Route path="/boletos" element={<Payments />} />
+            <Route path="/boleto/:id" element={<PaymentDetail />} />
 
 
             {/* Página 404 */}

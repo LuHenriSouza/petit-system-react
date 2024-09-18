@@ -71,8 +71,24 @@ const deleteById = async (id: number) => {
     }
 }
 
+const getById = async (id: number): Promise<IPaymentResponse | Error> => {
+    try {
+        const { data } = await Api.get(`/payment/${id}`, Autorization());
+
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
 export const PaymentService = {
     getAll,
     create,
+    getById,
     deleteById,
 };
