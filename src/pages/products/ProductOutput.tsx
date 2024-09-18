@@ -13,7 +13,7 @@ import { EProdOutReason } from '../outflow/enum/EProdOutReason';
 import Swal from 'sweetalert2';
 import { useSearchParams } from 'react-router-dom';
 
-const OUTFLOW_ROW_LIMIT = 6;
+const OUTFLOW_ROW_LIMIT = 9;
 const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
 
 interface IFormData {
@@ -215,19 +215,19 @@ export const ProductOutput: React.FC = () => {
 												NUMBER_OF_SKELETONS.map((_, index) => (
 													<TableRow key={index}>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 70 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 70 }} />
 														</TableCell>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 120 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 120 }} />
 														</TableCell>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 40 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 40 }} />
 														</TableCell>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 100 }} />
 														</TableCell>
 														<TableCell width={220}>
-															<Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 100 }} />
 														</TableCell>
 													</TableRow>
 												))
@@ -241,7 +241,7 @@ export const ProductOutput: React.FC = () => {
 						</Box>
 						{totalCount > 0 && (
 							<Pagination
-								sx={{ m: 1 }}
+								sx={{ m: 1, mt: 2 }}
 								disabled={loadingPage}
 								page={Number(page)}
 								count={Math.ceil(totalCount / OUTFLOW_ROW_LIMIT)}
