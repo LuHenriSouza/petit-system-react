@@ -130,6 +130,21 @@ const getById = async (id: number): Promise<IProduct | Error> => {
     }
 };
 
+const getOutputById = async (id: number): Promise<IOutputQuery | Error> => {
+    try {
+        const { data } = await Api.get(`/product-output/${id}`, Autorization());
+
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
 const getByCode = async (code: string): Promise<IProduct | Error> => {
     try {
         const { data } = await Api.get(`/product/code/${code}`, Autorization());
@@ -215,6 +230,7 @@ export const ProductService = {
     deleteById,
     updateById,
     getAllOutputs,
+    getOutputById,
     getValueBySector,
     getQuantityBySector,
 };
