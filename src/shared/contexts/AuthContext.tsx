@@ -35,9 +35,9 @@ export const AuthProvider: React.FC<IAuthProviderProps> = ({ children }) => {
     if (result instanceof Error) {
       return result.message;
     } else {
-      console.log('authContext/handleLogin: ' + result.accessToken)
       localStorage.setItem(LOCAL_STORAGE_KEY__ACCESS_TOKEN, result.accessToken);
       setAccessToken(result.accessToken);
+      window.location.reload();
     }
   }, []);
 

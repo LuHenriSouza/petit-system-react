@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {
 	Avatar,
 	Divider,
 	Drawer,
+	Skeleton,
 	useMediaQuery,
 	useTheme
 } from '@mui/material';
@@ -18,6 +19,7 @@ import { useDrawerContext } from '../../contexts';
 
 
 import DashboardRoundedIcon from '@mui/icons-material/DashboardRounded';
+import { AuthService } from '../../services/api';
 
 
 interface ISideBarProps {
@@ -27,6 +29,16 @@ interface ISideBarProps {
 export const SideBar: React.FC<ISideBarProps> = ({ children }) => {
 	const theme = useTheme();
 	const location = useLocation();
+
+	const [loading, setLoading] = useState(true);
+	const [role, setRole] = useState('');
+
+	useEffect(() => {
+		setLoading(true);
+		AuthService.getRole().then(setRole).finally(() => {
+			setLoading(false);
+		});
+	}, [])
 
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
 
@@ -69,20 +81,37 @@ export const SideBar: React.FC<ISideBarProps> = ({ children }) => {
 						}}
 					>
 
-						{items.map((item) => {
-							const active = item.path ? (location.pathname === item.path) : false;
+						{
+							!loading ?
+								<>
+									{items.map((item) => {
+										const active = item.path ? (location.pathname === item.path) : false;
 
-							return (
-								<SideNavItem
-									key={item.title}
-									active={active}
-									icon={item.icon}
-									path={item.path}
-									title={item.title}
-									clicked={smDown ? toggleDrawerOpen : undefined}
-								/>
-							);
-						})}
+										return (
+											<Box key={item.title}>
+												{item.role.includes(role) &&
+													<SideNavItem
+														active={active}
+														icon={item.icon}
+														path={item.path}
+														title={item.title}
+														clicked={smDown ? toggleDrawerOpen : undefined}
+													/>
+												}
+											</Box>
+										);
+									})}
+								</>
+								:
+								<>
+									{Array(9).fill(null).map(() =>
+										<Box p={1}>
+											<Skeleton sx={{ minHeight: 50, backgroundColor:'#eeeeee33' }} />
+										</Box>
+									)}
+								</>
+						}
+
 
 					</Box>
 
