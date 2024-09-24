@@ -104,8 +104,8 @@ export const SideBar: React.FC<ISideBarProps> = ({ children }) => {
 								</>
 								:
 								<>
-									{Array(9).fill(null).map(() =>
-										<Box p={1}>
+									{Array(9).fill(null).map((_, i) =>
+										<Box p={1} key={i}>
 											<Skeleton sx={{ minHeight: 50, backgroundColor:'#eeeeee33' }} />
 										</Box>
 									)}
