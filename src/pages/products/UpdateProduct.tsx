@@ -12,6 +12,7 @@ import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
 import { IProduct, ProductService } from '../../shared/services/api';
 import { Alert, Box, Button, Paper, Typography } from "@mui/material";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
+import { nToBRL } from '../../shared/services/formatters';
 
 const selectManuItens: IMenuItens[] = [
     { text: '1 - Bebidas', value: '1' },
@@ -88,8 +89,8 @@ export const UpdateProduct: React.FC = () => {
 
     const handleSubmit = async (data: IFormData) => {
         try {
-            const getNumbers = data.price.split(' ');
-            data.price = getNumbers[1];
+            const getNumbers = data.price.replace(/[^\d,.-]/g, '');
+            data.price = getNumbers.replace('.', '').replace(',', '.');
             const dataValidated = await formValidation.validate(data, { abortEarly: false })
             const result = await ProductService.updateById(Number(id), dataValidated);
 
@@ -119,7 +120,7 @@ export const UpdateProduct: React.FC = () => {
             setQuerryError(true);
         }
     }
-    const defaultPrice = `R$ ${data?.price}`
+    const defaultPrice = nToBRL(data?.price);
     return (
         <>
             {(data ?

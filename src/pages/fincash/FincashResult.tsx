@@ -22,6 +22,7 @@ import { CustomRadio } from '../../shared/forms/customInputs/CustomRadio';
 import { CustomCheckbox } from '../../shared/forms/customInputs/CustomCheckbox';
 import { CustomSelect, IMenuItens } from '../../shared/forms/customInputs/CustomSelect';
 import { EColumnsOrderBy, FincashService, GroupService, IResponse, OrderByObj } from '../../shared/services/api';
+import { nToBRL } from '../../shared/services/formatters';
 
 export const FincashResult: React.FC = () => {
 	const DEFAULT_LIMIT = 10
@@ -183,8 +184,8 @@ export const FincashResult: React.FC = () => {
 													<TableCell>{row.prod_name}</TableCell>
 													{/* <TableCell>{row.prod_sector}</TableCell> */}
 													<TableCell>{row.quantity}</TableCell>
-													<TableCell>{row.solded_price}</TableCell>
-													<TableCell>{row.total_value}</TableCell>
+													<TableCell>{nToBRL(row.solded_price)}</TableCell>
+													<TableCell>{nToBRL(row.total_value)}</TableCell>
 												</TableRow>
 											)
 											:

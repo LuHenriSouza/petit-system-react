@@ -7,6 +7,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { Box, Button, Paper, Skeleton, TextField, Typography } from "@mui/material";
 import { FincashService, ICashOutflow, IFincash, ISupplier, OutflowService, SupplierService } from "../../shared/services/api";
+import { nToBRL } from '../../shared/services/formatters';
 
 export const OutflowDetail: React.FC = () => {
 	const { id } = useParams();
@@ -96,7 +97,7 @@ export const OutflowDetail: React.FC = () => {
 					<Typography variant="h5" margin={1}>{outflow?.created_at ? ("Hora: " + format(outflow.created_at, 'HH:mm')) : <Skeleton sx={{ maxWidth: 200 }} />}</Typography>
 					<Typography variant="h5" margin={1}>{outflow?.type ? 'Tipo: ' + outflow.type : <Skeleton sx={{ maxWidth: 300 }} />}</Typography>
 					{supplier && (<Typography variant="h6" margin={1}>{supplier.name ? 'Fornecedor: ' + supplier.name : <Skeleton sx={{ maxWidth: 200 }} />}</Typography>)}
-					<Typography variant="h5" fontWeight={'bold'} margin={1}>{outflow?.value ? 'Valor: R$ ' + outflow.value : <Skeleton sx={{ maxWidth: 150 }} />}</Typography>
+					<Typography variant="h5" fontWeight={'bold'} margin={1}>{outflow?.value ? 'Valor: ' + nToBRL(outflow.value) : <Skeleton sx={{ maxWidth: 150 }} />}</Typography>
 				</Box>
 				<Box display={'flex'} flexDirection={'column'} gap={2} margin={2}>
 					<TextField

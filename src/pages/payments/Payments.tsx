@@ -12,6 +12,7 @@ import { FormHandles } from "@unform/core";
 import * as yup from 'yup';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from "sweetalert2";
+import { nToBRL } from "../../shared/services/formatters";
 
 
 const ROW_LIMIT = 6;
@@ -168,7 +169,7 @@ export const Payments: React.FC = () => {
 													return (
 														<TableRow key={row.id}>
 															<TableCell>{row.name}</TableCell>
-															<TableCell>R$ {row.value}</TableCell>
+															<TableCell>{nToBRL(row.value)}</TableCell>
 															<TableCell>{format(row.expiration, 'dd/MM/yyyy')}</TableCell>
 															<TableCell>
 																<Link to={'/boleto/' + row.id + '?backPage=' + page}>
