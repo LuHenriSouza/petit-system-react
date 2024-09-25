@@ -34,7 +34,7 @@ export const FincashResult: React.FC = () => {
 	const [groups, setGroups] = useState<IMenuItens[]>([]);
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
-	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'quantity', order: 'asc', sectors: [1, 2, 3, 4] });
+	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'quantity', order: 'desc', sectors: [1, 2, 3, 4] });
 
 	const search = useMemo(() => {
 		return searchParams.get('search') || ''
@@ -124,7 +124,7 @@ export const FincashResult: React.FC = () => {
 									Ordenar por:
 								</Typography>
 								<CustomSelect minWidth={150} menuItens={selectOrderItens} defaultSelected={0} onValueChange={(e) => setOrderBy({ ...orderBy, column: e as keyof typeof EColumnsOrderBy })} />
-								<CustomRadio sx={{ ml: 2.5 }} menuItens={[{ label: 'Crescente', value: 'asc' }, { label: 'Decrescente', value: 'desc' }]} onValueChange={(e) => setOrderBy({ ...orderBy, order: e as 'asc' | 'desc' })} />
+								<CustomRadio sx={{ ml: 2.5 }} menuItens={[{ label: 'Crescente', value: 'asc' }, { label: 'Decrescente', value: 'desc' }]} onValueChange={(e) => setOrderBy({ ...orderBy, order: e as 'asc' | 'desc' })} defaultChecked='desc' />
 							</Box>
 						</Box>
 						<Box display={'flex'} flexDirection={'column'} gap={2} border={1} flex={1} px={2} py={2}>
@@ -136,14 +136,16 @@ export const FincashResult: React.FC = () => {
 									Setor:
 								</Typography>
 								<Box display={'flex'} flexDirection={'column'}>
-									<CustomCheckbox menuItens={
-										[
-											{ id: '1', label: '1 - Bebidas', defaultChecked: true },
-											{ id: '2', label: '2 - Chocolates', defaultChecked: true },
-											{ id: '3', label: '3 - Salgadinhos', defaultChecked: true },
-											{ id: '4', label: '4 - Sorvetes', defaultChecked: true }
-										]
-									}
+									<CustomCheckbox
+										defaultChecked
+										menuItens={
+											[
+												{ id: '1', label: '1 - Bebidas', defaultChecked: true },
+												{ id: '2', label: '2 - Chocolates', defaultChecked: true },
+												{ id: '3', label: '3 - Salgadinhos', defaultChecked: true },
+												{ id: '4', label: '4 - Sorvetes', defaultChecked: true }
+											]
+										}
 										disabled={loading}
 										onValueChange={e => setOrderBy({ ...orderBy, sectors: e.map(e => Number(e)) })}
 										flexDirection='column'

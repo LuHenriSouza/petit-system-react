@@ -272,13 +272,13 @@ export const FincashDetail: React.FC = () => {
 								</Button>
 							</Link>
 
-							<Link to={`/caixa/dados/${id}?backPage=${backPage}`} style={{ maxWidth: 219 }}>
+							<Link to={`/caixa/dados/${id}?backPage=${backPage}`} style={{ maxWidth: 237 }}>
 								<Button
 									variant="contained"
 									size={'large'}
 								>
 									<FindInPageIcon sx={{ mr: 1 }} />
-									Análise de dados
+									Produtos vendidos
 								</Button>
 							</Link>
 						</Box>
