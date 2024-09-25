@@ -214,25 +214,41 @@ export const Stock: React.FC = () => {
 	}
 
 	const submitEdit = async () => {
-		setEditLoading(true);
-		const result = await StockService.updateById(editMode, editStock);
-		if (result instanceof Error) {
-			Swal.fire({
-				icon: "error",
-				title: "Erro ao editar estoque!",
-				showConfirmButton: true
+		setTimeout(async () => {
+			setEditLoading(true);
+			const res = await Swal.fire({
+				title: 'Tem Certeza?',
+				text: ``,
+				icon: 'warning',
+				// iconColor: theme.palette.error.main,
+				showCancelButton: true,
+				// confirmButtonColor: theme.palette.error.main,
+				cancelButtonColor: '#aaa',
+				cancelButtonText: 'Cancelar',
+				confirmButtonText: 'Editar'
 			});
-		} else {
-			setEditMode(0);
-			listStocks();
-			Swal.fire({
-				icon: "success",
-				title: "Estoque editado com sucesso!",
-				showConfirmButton: true,
-				timer: 1000
-			});
-		}
-		setEditLoading(false);
+
+			if (res.isConfirmed) {
+				const result = await StockService.updateById(editMode, editStock);
+				if (result instanceof Error) {
+					Swal.fire({
+						icon: "error",
+						title: "Erro ao editar estoque!",
+						showConfirmButton: true
+					});
+				} else {
+					setEditMode(0);
+					listStocks();
+					Swal.fire({
+						icon: "success",
+						title: "Estoque editado com sucesso!",
+						showConfirmButton: true,
+						timer: 1000
+					});
+				}
+			}
+			setEditLoading(false);
+		}, 50);
 	}
 
 	return (
