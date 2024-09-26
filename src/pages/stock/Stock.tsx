@@ -1,5 +1,7 @@
 import {
 	Box,
+	Fab,
+	Icon,
 	Paper,
 	Table,
 	Alert,
@@ -14,6 +16,7 @@ import {
 	TextField,
 	FormGroup,
 	TableHead,
+	Typography,
 	Pagination,
 	DialogTitle,
 	Autocomplete,
@@ -21,9 +24,6 @@ import {
 	DialogActions,
 	FormControlLabel,
 	DialogContentText,
-	Typography,
-	Icon,
-	Fab,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -32,8 +32,8 @@ import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
 import { CustomSelect } from '../../shared/forms/customInputs/CustomSelect';
+import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
 
 const STOCK_ROW_LIMIT = 7;
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
@@ -92,6 +92,13 @@ export const Stock: React.FC = () => {
 		setOpen(true);
 		getAllProducts();
 	};
+
+	const openAdd = (id: number, name: string) => {
+		setOpen(true);
+		getAllProducts();
+		setSelectedProd(id);
+		setSelectedProdName(name);
+	}
 
 	const handleClose = () => {
 		setOpen(false);
@@ -340,9 +347,15 @@ export const Stock: React.FC = () => {
 															</Fab>
 														</Box>
 														:
-														<Fab size="medium" color="warning" onClick={() => { setEditStock(row.stock); setEditMode(row.id); }}>
-															<Icon>edit</Icon>
-														</Fab>
+														<Box>
+
+															<Fab size="medium" color="warning" sx={{ mr: 2 }} onClick={() => { setEditStock(row.stock); setEditMode(row.id); }}>
+																<Icon>edit</Icon>
+															</Fab>
+															<Fab size="medium" color="primary" onClick={() => openAdd(row.prod_id, row.name)}>
+																<Icon>add</Icon>
+															</Fab>
+														</Box>
 												}
 											</TableCell>
 										</TableRow>

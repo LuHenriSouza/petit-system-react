@@ -12,6 +12,7 @@ const Autorization = () => {
 
 export interface IProductWithStock extends IProduct {
     stock: number;
+    prod_id: number;
 }
 
 type TStockTotalCount = {
