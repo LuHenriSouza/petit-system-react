@@ -25,6 +25,7 @@ import { Environment } from "../../shared/environment";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { FincashService, IFincash, IProduct, ISaleDetail, ISaleRaw, ProductService, SaleService } from "../../shared/services/api";
+import { nToBRL } from "../../shared/services/formatters";
 
 
 export const SaleDetail: React.FC = () => {
@@ -222,7 +223,7 @@ export const SaleDetail: React.FC = () => {
 						)}
 
 
-						<Typography variant="h6" sx={{ mt: 3, mr: 20 }}>Total: R$ {totalProductsPrice}</Typography>
+						<Typography variant="h6" sx={{ mt: 3, mr: 20 }}>Total: {nToBRL(totalProductsPrice)}</Typography>
 					</Box>
 					<Box >
 						<TextField

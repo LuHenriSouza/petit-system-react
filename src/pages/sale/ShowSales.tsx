@@ -24,6 +24,7 @@ import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
+import { nToBRL } from "../../shared/services/formatters";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
@@ -137,7 +138,7 @@ export const ShowSales: React.FC = () => {
 												<TableRow key={row.sale_id}>
 													<TableCell>{row.sale_id}</TableCell>
 													<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
-													<TableCell>R$ {row.total_value}</TableCell>
+													<TableCell>{nToBRL(row.total_value)}</TableCell>
 													<TableCell>
 														<Link to={id ? `/vendas/${row.sale_id}?back=${id}` : '/vendas/' + row.sale_id}>
 															<Fab

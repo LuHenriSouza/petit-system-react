@@ -1,4 +1,4 @@
-import { Autocomplete, Box, Button, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Button, Dialog, DialogContent, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { LayoutMain } from '../../shared/layouts';
 import { VForm } from '../../shared/forms/VForm';
 import { VSelect } from '../../shared/forms/VSelect';
@@ -13,7 +13,7 @@ import { EProdOutReason } from '../outflow/enum/EProdOutReason';
 import Swal from 'sweetalert2';
 import { useSearchParams } from 'react-router-dom';
 
-const OUTFLOW_ROW_LIMIT = 6;
+const OUTFLOW_ROW_LIMIT = 9;
 const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
 
 interface IFormData {
@@ -39,6 +39,8 @@ export const ProductOutput: React.FC = () => {
 
 	const [totalCount, setTotalCount] = useState(0);
 	const [rows, setRows] = useState<IOutputQuery[]>([]);
+
+	const [open, setOpen] = useState(0);
 
 
 	const page = useMemo(() => {
@@ -143,7 +145,7 @@ export const ProductOutput: React.FC = () => {
 	}
 
 	return (
-		<LayoutMain title="Saidas" subTitle="Adicione saídas ao caixa">
+		<LayoutMain title="Saidas" subTitle="Adicione saídas ao estoque">
 			<Grid container spacing={2}>
 				<Grid item xs={7}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
@@ -175,23 +177,39 @@ export const ProductOutput: React.FC = () => {
 															</TableCell>
 															<TableCell>{row.quantity}</TableCell>
 															<TableCell>{row.reason}</TableCell>
-															<TableCell width={220}>
-																{/* <Link to={'/saida/produto/' + row.output_id + '?backPage=' + page}>
+															{/* <Link to={'/saida/produto/' + row.output_id + '?backPage=' + page}>
 																<Fab
-																	size="medium"
-																	color="info"
-																	sx={{
-																		backgroundColor: '#5bc0de',
-																		'&:hover': { backgroundColor: '#6fd8ef' },
+																size="medium"
+																color="info"
+																sx={{
+																	backgroundColor: '#5bc0de',
+																	'&:hover': { backgroundColor: '#6fd8ef' },
 																	}}
-																>
+																	>
 																	<VisibilityRoundedIcon color="info" />
-																</Fab>
-															</Link> */}
-																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={6}>
+																	</Fab>
+																	</Link> */}
+															<TableCell
+																sx={{ maxWidth: 200, cursor: row.desc ? 'pointer' : 'default' }}
+																onClick={() => row.desc && setOpen(row.output_id)}
+															>
+																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={1}>
 																	{row.desc}
 																</Typography>
 															</TableCell>
+															<Dialog
+																open={open == row.output_id}
+																onClose={() => setOpen(0)}
+																maxWidth={'lg'}
+																sx={{
+																	"& .MuiDialog-paper":
+																		{ backgroundColor: "#fff", }
+																}}
+															>
+																<DialogContent sx={{ minHeight: 50, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+																	<Typography>{row.desc}</Typography>
+																</DialogContent>
+															</Dialog>
 														</TableRow>
 													);
 												}
@@ -200,19 +218,19 @@ export const ProductOutput: React.FC = () => {
 												NUMBER_OF_SKELETONS.map((_, index) => (
 													<TableRow key={index}>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 70 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 70 }} />
 														</TableCell>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 120 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 120 }} />
 														</TableCell>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 40 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 40 }} />
 														</TableCell>
 														<TableCell >
-															<Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 100 }} />
 														</TableCell>
 														<TableCell width={220}>
-															<Skeleton sx={{ minHeight: 40, maxWidth: 100 }} />
+															<Skeleton sx={{ minHeight: 25, maxWidth: 100 }} />
 														</TableCell>
 													</TableRow>
 												))
@@ -226,7 +244,7 @@ export const ProductOutput: React.FC = () => {
 						</Box>
 						{totalCount > 0 && (
 							<Pagination
-								sx={{ m: 1 }}
+								sx={{ m: 1, mt: 2 }}
 								disabled={loadingPage}
 								page={Number(page)}
 								count={Math.ceil(totalCount / OUTFLOW_ROW_LIMIT)}

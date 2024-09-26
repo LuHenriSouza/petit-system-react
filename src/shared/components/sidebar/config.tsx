@@ -14,89 +14,88 @@ import ShoppingCartRoundedIcon from '@mui/icons-material/ShoppingCartRounded';
 import RequestQuoteRoundedIcon from '@mui/icons-material/RequestQuoteRounded';
 
 export const items = [
-
     {
         title: 'Caixa',
         path: '/caixa',
-        icon: (
-            <ShoppingCartRoundedIcon fontSize='small' />
-        )
+        icon: (<ShoppingCartRoundedIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Produtos',
         path: '/produtos',
-        icon: (
-            <LocalOfferRoundedIcon fontSize='small' />
-        )
+        icon: (<LocalOfferRoundedIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Estoque',
         path: '/estoque',
-        icon: (
-            <ArchiveRoundedIcon fontSize='small' />
-        )
+        icon: (<ArchiveRoundedIcon fontSize='small' />),
+        role: ['admin']
     },
     {
         title: 'Grupos',
         path: '/grupos',
-        icon: (
-            <FolderRoundedIcon fontSize='small' />
-        )
+        icon: (<FolderRoundedIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Saídas',
         path: '/saidas',
-        icon: (
-            <CurrencyExchangeIcon fontSize='small' />
-        )
+        icon: (<CurrencyExchangeIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Fechar Caixa',
         path: '/fechar',
-        icon: (
-            <AllInboxIcon fontSize='small' />
-        )
+        icon: (<AllInboxIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Validades',
         path: '/validades',
-        icon: (
-            <DateRangeRoundedIcon fontSize='small' />
-        )
+        icon: (<DateRangeRoundedIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Vendas',
         path: '/vendas',
-        icon: (<LocalMallRoundedIcon fontSize='small' />)
+        icon: (<LocalMallRoundedIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Fornecedores',
         path: '/fornecedores',
-        icon: (<LocalShippingIcon fontSize='small' />)
+        icon: (<LocalShippingIcon fontSize='small' />),
+        role: ['admin']
     },
     // {
     //     title: 'Promoções',
     //     path: '/promo',
-    //     icon: (<SavingsIcon fontSize='small' />)
+    //     icon: (<SavingsIcon fontSize='small' />),
+    //     role: ['admin']
     // },
     {
         title: 'Fechamentos',
         path: '/fechamentos',
-        icon: (<RequestQuoteRoundedIcon fontSize='small' />)
+        icon: (<RequestQuoteRoundedIcon fontSize='small' />),
+        role: ['admin']
     },
     // {
     //     title: 'Vendas (todas)',
     //     path: '/vendas/admin',
-    //     icon: (<QueryStatsIcon fontSize='small' />)
+    //     icon: (<QueryStatsIcon fontSize='small' />),
+    //     role: ['admin']
     // },
     {
         title: 'Saídas (Produtos)',
         path: '/saida/produto',
-        icon: (<CallMissedOutgoingIcon fontSize='small' />)
+        icon: (<CallMissedOutgoingIcon fontSize='small' />),
+        role: ['employee', 'admin']
     },
     {
         title: 'Boletos',
         path: '/boletos',
-        icon: (<AccountBalanceIcon fontSize='small' />)
+        icon: (<AccountBalanceIcon fontSize='small' />),
+        role: ['admin']
     }
 ];

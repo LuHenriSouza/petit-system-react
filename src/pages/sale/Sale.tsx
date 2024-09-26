@@ -10,6 +10,7 @@ import AddShoppingCartRoundedIcon from '@mui/icons-material/AddShoppingCartRound
 import Swal from 'sweetalert2'
 import SettingsIcon from '@mui/icons-material/Settings';
 import FastRewindIcon from '@mui/icons-material/FastRewind';
+import { nToBRL } from "../../shared/services/formatters";
 
 const NUMBER_OF_SKELETONS_GROUP = Array(18).fill(null);
 const NUMBER_OF_SKELETONS_PROD = Array(7).fill(null);
@@ -349,7 +350,7 @@ export const Sale: React.FC = () => {
 							>
 								<AddShoppingCartRoundedIcon sx={{ mr: 1 }} /> Finalizar
 							</Button>
-							<Typography variant="h6">Total: R$ {totalPrice.toFixed(2)}</Typography>
+							<Typography variant="h6">Total: {nToBRL(totalPrice)}</Typography>
 						</Box>
 					</Paper>
 				</Grid>
@@ -393,7 +394,7 @@ export const Sale: React.FC = () => {
 													<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>{prod.code}</Typography>
 													<Typography variant="body1" ml={1} width={300} noWrap overflow={'hidden'}>{prod.name}</Typography>
 													{!products.find((pd) => pd.code == prod.code) ?
-														<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>R$ {prod.price}</Typography>
+														<Typography variant="body1" ml={1} width={150} noWrap overflow={'hidden'}>{nToBRL(prod.price)}</Typography>
 														:
 														<Box display={'flex'} ml={1} width={150}>
 															<ArrowLeftRoundedIcon

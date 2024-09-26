@@ -27,6 +27,7 @@ import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, ICashOutflow, IFincash, OutflowService, SupplierService } from "../../shared/services/api";
+import { nToBRL } from "../../shared/services/formatters";
 
 const OUTFLOW_ROW_LIMIT = 6;
 const NUMBER_OF_SKELETONS = Array(OUTFLOW_ROW_LIMIT).fill(null);
@@ -161,8 +162,8 @@ export const OutFlow: React.FC = () => {
 		if (fincash) {
 			try {
 				setLoadingSubmit(true);
-				const getNumbers = data.value.split(' ');
-				data.value = getNumbers[1];
+				const getNumbers = data.value.replace(/[^\d,.-]/g, '');
+				data.value = getNumbers.replace('.', '').replace(',', '.');
 				data.fincash_id = fincash.id;
 				const dataValidated = isSupplier ?
 					await formValidationSupplier.validate(data, { abortEarly: false })
@@ -182,7 +183,7 @@ export const OutFlow: React.FC = () => {
 					});
 					formRef.current?.setFieldValue('type', '');
 					formRef.current?.setFieldValue('supplier_id', 0);
-					formRef.current?.setFieldValue('value', 'R$ 0.00');
+					formRef.current?.setFieldValue('value', 'R$ 0,00');
 					formRef.current?.setFieldValue('desc', '');
 					setIsSupplier(false);
 					listOutflows(fincash);
@@ -240,7 +241,7 @@ export const OutFlow: React.FC = () => {
 																	{row.desc}
 																</Typography>
 															</TableCell>
-															<TableCell>R$ {row.value}</TableCell>
+															<TableCell>{nToBRL(row.value)}</TableCell>
 															<TableCell>{row.type}</TableCell>
 															<TableCell>
 																<Link to={'/saidas/' + row.id}>
@@ -324,7 +325,7 @@ export const OutFlow: React.FC = () => {
 										</Box>
 									}
 								</Box>
-								<VTextField name="value" label="Valor" valueDefault="R$ 0.00" cash sx={{ maxWidth: 170 }} autoComplete="off" />
+								<VTextField name="value" label="Valor" cash sx={{ maxWidth: 170 }} autoComplete="off" />
 								<VTextField
 									name="desc"
 									rows={4}

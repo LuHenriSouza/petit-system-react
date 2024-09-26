@@ -22,6 +22,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Environment } from "../../../shared/environment";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, IFincash, OutflowService } from "../../../shared/services/api";
+import { nToBRL } from "../../../shared/services/formatters";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
@@ -177,24 +178,24 @@ export const AllFincashs: React.FC = () => {
 															{row.diferenceLastFincash && row.diferenceLastFincash > 0 && '+'}{row.diferenceLastFincash && row.diferenceLastFincash}
 														</Typography>
 														<Typography>
-															R$ {row.value}
+															{nToBRL(row.value)}
 														</Typography>
 													</TableCell>
 													<TableCell sx={{ backgroundColor: '#eee' }}>
 														<Typography color={row.finalValue && (row.finalValue - row.value) < 0 ? '#ef0000' : '#00e000'}>
-															R$ {row.finalValue ? (row.finalValue - row.value).toFixed(2) : '........'}
+															{row.finalValue ? nToBRL(row.finalValue - row.value) : 'R$ ........'}
 														</Typography>
 													</TableCell>
 													<TableCell sx={{ backgroundColor: '#eee' }}>
 														<Typography>
-															R$ {row.finalValue ? row.finalValue : '........'}
+															{row.finalValue ? nToBRL(row.finalValue) : 'R$ ........'}
 														</Typography>
 													</TableCell>
 
 													<TableCell>
 														<Box display={'flex'} gap={1}>
 															<Typography>
-																R$ {row.totalValue == 0 ? '0.00' : row.totalValue}
+																{nToBRL(row.totalValue)}
 															</Typography>
 															{!errorLoading ?
 																(

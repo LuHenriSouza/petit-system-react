@@ -12,6 +12,7 @@ const Autorization = () => {
 
 export interface IProductWithStock extends IProduct {
     stock: number;
+    prod_id: number;
 }
 
 type TStockTotalCount = {
@@ -51,7 +52,17 @@ const create = async (prod_id: number, stock: number): Promise<number | Error> =
     }
 };
 
+const updateById = async (stock_id: number, stock: number): Promise<number | Error> => {
+    try {
+        return await Api.put('/stock/'+stock_id, { stock }, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao editar o registro.');
+    }
+};
+
 export const StockService = {
     getAll,
     create,
+    updateById,
 };
