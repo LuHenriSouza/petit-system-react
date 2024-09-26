@@ -23,13 +23,16 @@ import { FormHandles } from '@unform/core';
 import AddIcon from '@mui/icons-material/Add';
 import { VForm } from '../../shared/forms/VForm';
 import { useDebounce } from '../../shared/hooks';
+import CheckIcon from '@mui/icons-material/Check';
 import { LayoutMain } from '../../shared/layouts';
 import { Environment } from '../../shared/environment';
 import { Link, useSearchParams } from 'react-router-dom';
 import { VTextField } from '../../shared/forms/VTextField';
 import { useEffect, useMemo, useRef, useState } from 'react';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { VSelect, IMenuItens } from '../../shared/forms/VSelect';
 import { IProduct, ProductService } from '../../shared/services/api';
+import { nToBRL } from '../../shared/services/formatters';
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
@@ -70,6 +73,8 @@ export const Products: React.FC = () => {
 
     const { debounce } = useDebounce();
     const [searchParams, setSearchParams] = useSearchParams();
+
+    const [copied, setCopied] = useState('');
 
     const [isEdit, setIsEdit] = useState(0);
     const [totalCount, setTotalCount] = useState(0);
@@ -161,8 +166,8 @@ export const Products: React.FC = () => {
     const handleSubmit = async (data: IFormData) => {
         setEditLoading(true);
         try {
-            const getNumbers = data.price.split(' ');
-            data.price = getNumbers[1];
+            const getNumbers = data.price.replace(/[^\d,.-]/g, '');
+            data.price = getNumbers.replace('.', '').replace(',', '.');
             const dataValidated = await formValidation.validate(data, { abortEarly: false })
             const result = await ProductService.updateById(Number(data.id), dataValidated);
 
@@ -238,7 +243,33 @@ export const Products: React.FC = () => {
                                         isEdit !== row.id ?
                                             <TableRow key={row.id} hover>
 
-                                                {(!smDown && <TableCell>{row.code}</TableCell>)}
+                                                {(!smDown &&
+                                                    <TableCell
+                                                        onMouseDown={() => { navigator.clipboard.writeText(row.code); setCopied(row.code); }}
+                                                        onMouseLeave={() => setCopied('')}
+                                                        sx={copied != row.code ? {
+                                                            cursor: 'pointer'
+                                                        } : {
+                                                            cursor: 'default'
+                                                        }}
+                                                    >
+                                                        <Box
+                                                            display={'flex'}
+                                                            alignItems={'center'}
+                                                            gap={2}
+                                                        >
+                                                            {row.code}
+                                                            <Box>
+                                                                {
+                                                                    copied == row.code ?
+                                                                        <CheckIcon fontSize='small' />
+                                                                        :
+                                                                        <ContentCopyIcon fontSize='small' />
+                                                                }
+                                                            </Box>
+                                                        </Box>
+                                                    </TableCell>
+                                                )}
                                                 <TableCell>{row.name}</TableCell>
                                                 {(!smDown && (
                                                     <TableCell>{
@@ -250,7 +281,7 @@ export const Products: React.FC = () => {
                                                     }
                                                     </TableCell>
                                                 ))}
-                                                <TableCell>R$ {row.price}</TableCell>
+                                                <TableCell>{nToBRL(row.price)}</TableCell>
                                                 <TableCell>
                                                     {(!isEdit &&
                                                         <Fab size="medium" color="error" aria-label="add" sx={{ mr: 2, ...(smDown && { mb: 1 }) }} onClick={() => handleDelete(row.id, row.name)}>
@@ -274,7 +305,9 @@ export const Products: React.FC = () => {
                                             </TableRow >
                                             :
                                             <TableRow key={row.id} hover>
-                                                <TableCell>{row.code}</TableCell>
+                                                <TableCell>
+                                                    {row.code}
+                                                </TableCell>
                                                 <TableCell>
                                                     <Box maxWidth={330}>
                                                         <VTextField name='id' valueDefault={`${row.id}`} sx={{ display: 'none' }} />
@@ -290,7 +323,7 @@ export const Products: React.FC = () => {
                                                             name='price'
                                                             label={'Preço'}
                                                             autoComplete="off"
-                                                            valueDefault={`R$ ${row.price}`}
+                                                            valueDefault={nToBRL(row.price)}
                                                             cash
                                                         />
                                                     </Box>

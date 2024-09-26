@@ -8,7 +8,7 @@ const Api = axios.create({
         Authorization: `Bearer ${localStorage.getItem('APP_ACCESS_TOKEN')}`
     }
 });
-console.log('axios/index: '+ localStorage.getItem('APP_ACCESS_TOKEN'));
+
 Api.interceptors.response.use(
     (response) => responseInterceptor(response),
     (error) => errorInterceptor(error),

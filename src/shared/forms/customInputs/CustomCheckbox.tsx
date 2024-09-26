@@ -10,11 +10,12 @@ export interface ICheckItens {
 interface IVCheckProps {
     disabled?: boolean;
     menuItens: ICheckItens[];
+    defaultChecked?: boolean;
     flexDirection?: 'column' | 'column-reverse' | 'row' | 'row-reverse';
     onValueChange?: (selectedValues: string[]) => void;
 }
 
-export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirection = 'row', disabled, onValueChange }) => {
+export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirection = 'row', disabled, onValueChange, defaultChecked = false }) => {
     const [checked, setChecked] = useState<Record<string, boolean>>({});
 
     useEffect(() => {
@@ -23,7 +24,7 @@ export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirectio
             initialCheckedState[item.id] = item.defaultChecked ?? false;
         });
         setChecked(initialCheckedState);
-    }, []);
+    }, [menuItens]);
 
     const handleChange = (key: string, isChecked: boolean) => {
         const updatedChecked = {
@@ -33,7 +34,7 @@ export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirectio
         setChecked(updatedChecked);
 
         const selectedKeys = Object.keys(updatedChecked).filter((key) => updatedChecked[key]);
-		console.log('selected: '+ selectedKeys)
+        console.log('selected: ' + selectedKeys)
         onValueChange?.(selectedKeys);
     };
 
@@ -48,7 +49,7 @@ export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirectio
                             control={
                                 <Checkbox
                                     onChange={(e) => handleChange(item.id, e.target.checked)}
-                                    checked={checked[item.id] ?? false}
+                                    checked={checked[item.id] ?? defaultChecked}
                                     disabled={disabled}
                                 />
                             }

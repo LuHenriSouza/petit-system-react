@@ -26,11 +26,12 @@ interface IVSelectProps {
     mt?: number,
     p?: number,
     px?: number,
-    py?: number
+    py?: number,
+    size?: 'small' | 'medium';
 
 }
 
-export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaultSelected, helperText, minWidth, onValueChange, m, mx, my, mt, p, px, py, maxWidth }) => {
+export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaultSelected, helperText, minWidth, onValueChange, m, mx, my, mt, p, px, py, maxWidth, size = 'medium' }) => {
 
     const [value, setValue] = useState(defaultSelected !== undefined ? menuItens[defaultSelected].value : '');
 
@@ -60,6 +61,7 @@ export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaul
                     value={value}
                     label={label}
                     onChange={handleChange}
+                    size={size}
                 >
                     {
                         menuItens.map((item) => (

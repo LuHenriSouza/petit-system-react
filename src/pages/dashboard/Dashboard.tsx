@@ -10,6 +10,7 @@ import { LayoutMain } from '../../shared/layouts';
 import { BarChart, LineChart, PieChart } from '@mui/x-charts';
 import { FincashService, ProductService } from '../../shared/services/api';
 import { CustomSelect } from '../../shared/forms/customInputs/CustomSelect';
+import { nToBRL } from '../../shared/services/formatters';
 export const Dashboard: React.FC = () => {
 
 	const daysOfWeek = {
@@ -35,12 +36,26 @@ export const Dashboard: React.FC = () => {
 	const [loadingMonth, setLoadingMonth] = useState(true);
 	const [perMonth, setPerMonth] = useState<{ date: (number | string)[], value: number[], invoicing: number[] }>({ date: [], value: [], invoicing: [] });
 	const [loadingSector, setLoadingSector] = useState(true);
-	const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
-	const [sectorProdRelation, setSectorProdRelation] = useState<{ id: number, value: number, label: string }[]>([]);
-	const [sectorProdValue, setSectorProdValue] = useState<{ id: number, value: number, label: string }[]>([]);
-	const [sectorPercentValue, setSectorPercentValue] = useState<Record<string, number>>({});
-	const [sectorPercentRelation, setSectorPercentRelation] = useState<Record<string, number>>({});
-	const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
+
+	// INVOICING
+	const [sectorInvoicing, setSectorInvoicing] = useState<{ id: number, value: number, label: string }[]>([]);
+	const [sectorPercentInvoicing, setSectorPercentInvoicing] = useState<Record<string, number>>({});
+	const [totalInvoicing, setTotalInvoicing] = useState(0);
+
+	// STOCK QUANTITY
+	const [sectorSTOCK, setSectorSTOCK] = useState<{ id: number, value: number, label: string }[]>([]);
+	const [sectorPercentSTOCK, setSectorPercentSTOCK] = useState<Record<string, number>>({});
+	const [totalStock, setTotalStock] = useState(0);
+
+	// STOCK VALUE PREDICTION
+	const [sectorPrediction, setSectorPrediction] = useState<{ id: number, value: number, label: string }[]>([]);
+	const [sectorPercentPrediction, setSectorPercentPrediction] = useState<Record<string, number>>({});
+	const [totalPrediction, setTotalPrediction] = useState(0);
+
+	// const [sectorProdQnt, setSectorProdQnt] = useState<{ id: number, value: number, label: string }[]>([]);
+	// const [sectorProdRelation, setSectorProdRelation] = useState<{ id: number, value: number, label: string }[]>([]);
+	// const [sectorPercentRelation, setSectorPercentRelation] = useState<Record<string, number>>({});
+	// const [sectorPercent, setSectorPercent] = useState<Record<string, number>>({});
 
 	useEffect(() => {
 		getSectorData();
@@ -68,31 +83,9 @@ export const Dashboard: React.FC = () => {
 		try {
 			setLoadingSector(true);
 
-			// QUANTITY
-			const resultQNT = await ProductService.getQuantityBySector();
-			if (resultQNT instanceof Error) return;
-			const objQNT = resultQNT.map((i) => {
-				return {
-					id: i.sector,
-					value: i.quantity,
-					label:
-						i.sector == 1 ? 'Bebidas'
-							: i.sector == 2 ? 'Chocolates'
-								: i.sector == 3 ? 'Salgadinhos'
-									: i.sector == 4 ? 'Sorvetes' : 'Erro'
-				}
-			});
-			setSectorProdQnt(objQNT)
-
-			const percentQNT: Record<string, number> = {}
-			const totalQNT = objQNT.map((i) => i.value).reduce((a, b) => a + b);
-			for (const o of objQNT) {
-				percentQNT[o.label] = o.value * 100 / totalQNT;
-			}
-			setSectorPercent(percentQNT);
 
 
-			// VALUE
+			// INVOICING
 			const resultVAL = await ProductService.getValueBySector();
 			if (resultVAL instanceof Error) return;
 			const objVAL = resultVAL.map((i) => {
@@ -106,31 +99,105 @@ export const Dashboard: React.FC = () => {
 									: i.sector == 4 ? 'Sorvetes' : 'Erro'
 				}
 			});
-			setSectorProdValue(objVAL)
+			setSectorInvoicing(objVAL);
 			const percentVAL: Record<string, number> = {}
 			const totalVAL = objVAL.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			setTotalInvoicing(totalVAL);
 			for (const o of objVAL) {
 				percentVAL[o.label] = o.value * 100 / totalVAL;
 			}
-			setSectorPercentValue(percentVAL);
+			setSectorPercentInvoicing(percentVAL);
 
+
+			// STOCK QUANTITY
+			const resultSTOCK = await ProductService.getStockBySector();
+			if (resultSTOCK instanceof Error) return;
+			const objSTOCK = resultSTOCK.map((i) => {
+				return {
+					id: i.sector,
+					value: i.stock,
+					label:
+						i.sector == 1 ? 'Bebidas'
+							: i.sector == 2 ? 'Chocolates'
+								: i.sector == 3 ? 'Salgadinhos'
+									: i.sector == 4 ? 'Sorvetes' : 'Erro'
+				}
+			});
+			setSectorSTOCK(objSTOCK);
+			const percentSTOCK: Record<string, number> = {}
+			const totalSTOCK = objSTOCK.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			setTotalStock(totalSTOCK);
+			for (const o of objSTOCK) {
+				percentSTOCK[o.label] = o.value * 100 / totalSTOCK;
+			}
+			setSectorPercentSTOCK(percentSTOCK);
+
+
+
+			// STOCK VALUE PREDICTION
+			const resultINV = await ProductService.getStockValueBySector();
+			if (resultINV instanceof Error) return;
+			const objINV = resultINV.map((i) => {
+				return {
+					id: i.sector,
+					value: i.value,
+					label:
+						i.sector == 1 ? 'Bebidas'
+							: i.sector == 2 ? 'Chocolates'
+								: i.sector == 3 ? 'Salgadinhos'
+									: i.sector == 4 ? 'Sorvetes' : 'Erro'
+				}
+			});
+			setSectorPrediction(objINV)
+			const percentINV: Record<string, number> = {}
+			const totalINV = objINV.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			setTotalPrediction(totalINV);
+			for (const o of objINV) {
+				percentINV[o.label] = o.value * 100 / totalINV;
+			}
+			setSectorPercentPrediction(percentINV);
+
+
+
+			// QUANTITY
+			// const resultQNT = await ProductService.getQuantityBySector();
+			// if (resultQNT instanceof Error) return;
+			// const objQNT = resultQNT.map((i) => {
+			// 	return {
+			// 		id: i.sector,
+			// 		value: i.quantity,
+			// 		label:
+			// 			i.sector == 1 ? 'Bebidas'
+			// 				: i.sector == 2 ? 'Chocolates'
+			// 					: i.sector == 3 ? 'Salgadinhos'
+			// 						: i.sector == 4 ? 'Sorvetes' : 'Erro'
+			// 	}
+			// });
+			// setSectorProdQnt(objQNT)
+			// const percentQNT: Record<string, number> = {}
+			// const totalQNT = objQNT.map((i) => i.value).reduce((a, b) => a + b);
+			// for (const o of objQNT) {
+			// 	percentQNT[o.label] = o.value * 100 / totalQNT;
+			// }
+			// setSectorPercent(percentQNT);
 
 			// RELATION
-			const objarr = []
-			for (let i = 0; i < objQNT.length; i++) {
-				objarr.push({
-					id: objQNT[i].id,
-					value: objVAL[i].value / objQNT[i].value,
-					label: objQNT[i].label
-				});
-			}
-			setSectorProdRelation(objarr);
-			const record: Record<string, number> = {}
-			const total = objarr.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
-			for (const o of objarr) {
-				record[o.label] = o.value * 100 / total;
-			}
-			setSectorPercentRelation(record);
+			// const objarr = []
+			// for (let i = 0; i < objQNT.length; i++) {
+			// 	objarr.push({
+			// 		id: objQNT[i].id,
+			// 		value: objVAL[i].value / objQNT[i].value,
+			// 		label: objQNT[i].label
+			// 	});
+			// }
+			// setSectorProdRelation(objarr);
+			// const record: Record<string, number> = {}
+			// const total = objarr.map((i) => i.value).reduce((a, b) => Number(a) + Number(b));
+			// for (const o of objarr) {
+			// 	record[o.label] = o.value * 100 / total;
+			// }
+			// setSectorPercentRelation(record);
+
 
 		} catch (e) {
 			console.log(e);
@@ -236,11 +303,11 @@ export const Dashboard: React.FC = () => {
 													{formatDateWithCustomDay(new Date(axisValue))}
 													<hr />
 													<Box display={'flex'} alignItems={'center'} gap={1}>
-														<Box sx={{ backgroundColor: series[0].color, width: 13, height: 13 }} />{`Registrado: R$ ${value[dataIndex]}`}
+														<Box sx={{ backgroundColor: series[0].color, width: 13, height: 13 }} />{`Registrado: ${nToBRL(Number(value[dataIndex]))}`}
 													</Box>
 													<hr />
 													<Box display={'flex'} alignItems={'center'} gap={1}>
-														<Box sx={{ backgroundColor: series[1].color, width: 13, height: 13 }} />{`Faturamento: R$ ${invoicing[dataIndex]}`}
+														<Box sx={{ backgroundColor: series[1].color, width: 13, height: 13 }} />{`Faturamento: ${nToBRL(Number(invoicing[dataIndex]))}`}
 													</Box>
 												</Typography>
 											</Box>
@@ -288,15 +355,15 @@ export const Dashboard: React.FC = () => {
 							<Box pl={2.5} mt={3} display={'flex'} flexDirection={'column'}>
 								<Box>
 									<Typography variant='h6'>
-										Relação Faturamento/Quantidade:
+										Estoque:
 									</Typography>
 									<PieChart
 										loading={loadingSector}
 										sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
-										colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
+										colors={['#1E90FF', 'goldenrod', '#32CD32', '#aA4Bf2']}
 										series={[
 											{
-												data: sectorProdRelation,
+												data: sectorSTOCK,
 												highlightScope: { faded: 'global', highlighted: 'item' },
 												faded: { innerRadius: 30, additionalRadius: -5, color: 'gray' },
 												innerRadius: 30,
@@ -308,7 +375,7 @@ export const Dashboard: React.FC = () => {
 												cx: 150,
 												cy: 150,
 												arcLabel(item) {
-													if (item.label) return `${sectorPercentRelation[item.label].toFixed(1)}%`
+													if (item.label) return `${sectorPercentSTOCK[item.label].toFixed(1)}%`
 													return '';
 												},
 											},
@@ -327,6 +394,9 @@ export const Dashboard: React.FC = () => {
 										}}
 										height={300}
 									/>
+									<Typography variant='h6' ml={29}>
+										Total: {totalStock}
+									</Typography>
 								</Box>
 								<Box>
 									<Typography variant='h6'>
@@ -335,10 +405,10 @@ export const Dashboard: React.FC = () => {
 									<PieChart
 										loading={loadingSector}
 										sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
-										colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
+										colors={['#1E90FF', 'goldenrod', '#32CD32', '#aA4Bf2']}
 										series={[
 											{
-												data: sectorProdValue,
+												data: sectorInvoicing,
 												highlightScope: { faded: 'global', highlighted: 'item' },
 												faded: { innerRadius: 30, additionalRadius: -5, color: 'gray' },
 												innerRadius: 30,
@@ -350,7 +420,7 @@ export const Dashboard: React.FC = () => {
 												cx: 150,
 												cy: 150,
 												arcLabel(item) {
-													if (item.label) return `${sectorPercentValue[item.label].toFixed(1)}%`
+													if (item.label) return `${sectorPercentInvoicing[item.label].toFixed(1)}%`
 													return '';
 												},
 											},
@@ -369,18 +439,21 @@ export const Dashboard: React.FC = () => {
 										}}
 										height={300}
 									/>
+									<Typography variant='h6' ml={20}>
+										Total: {nToBRL(totalInvoicing)}
+									</Typography>
 								</Box>
 								<Box>
 									<Typography variant='h6'>
-										Quantidade:
+										Potencial:
 									</Typography>
 									<PieChart
 										loading={loadingSector}
 										sx={{ fontFamily: 'Roboto, Helvetica, Arial, sans-serif', }}
-										colors={['goldenrod', '#32CD32', '#1E90FF', '#aA4Bf2']}
+										colors={['#1E90FF', 'goldenrod', '#32CD32', '#aA4Bf2']}
 										series={[
 											{
-												data: sectorProdQnt,
+												data: sectorPrediction,
 												highlightScope: { faded: 'global', highlighted: 'item' },
 												faded: { innerRadius: 30, additionalRadius: -5, color: 'gray' },
 												innerRadius: 30,
@@ -392,7 +465,7 @@ export const Dashboard: React.FC = () => {
 												cx: 150,
 												cy: 150,
 												arcLabel(item) {
-													if (item.label) return `${sectorPercent[item.label].toFixed(1)}%`
+													if (item.label) return `${sectorPercentPrediction[item.label].toFixed(1)}%`
 													return '';
 												},
 											},
@@ -411,6 +484,9 @@ export const Dashboard: React.FC = () => {
 										}}
 										height={300}
 									/>
+									<Typography>
+										Total: {totalPrediction}
+									</Typography>
 								</Box>
 							</Box>
 						</Box>
