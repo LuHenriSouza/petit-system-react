@@ -125,6 +125,7 @@ export const FincashDetail: React.FC = () => {
 	const cardSubmit = async (data: IFormData) => {
 		setCardLoading(true);
 		try {
+			data.card = data.card.replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.');
 			if (fincash) {
 				const swal = await Swal.fire({
 					title: 'Tem Certeza?',
@@ -138,7 +139,6 @@ export const FincashDetail: React.FC = () => {
 					confirmButtonText: 'Confirmar'
 				});
 				if (swal.isConfirmed) {
-					data.card = data.card.split(' ')[1];
 					const dataValidated = await formValidation.validate(data, { abortEarly: false });
 
 					const result = await FincashService.registerCardValue(dataValidated.card, fincash.id);
