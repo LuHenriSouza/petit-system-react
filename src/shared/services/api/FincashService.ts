@@ -10,6 +10,14 @@ const Autorization = () => {
     }
 }
 
+export interface IResponseData {
+    day: Date;
+    first_id: number;
+    total_card_value: number;
+    total_registered_value: number;
+    total_invoicing: number;
+}
+
 export interface IFincash {
     id: number,
 
@@ -19,6 +27,8 @@ export interface IFincash {
     obs?: string | null,
     totalValue?: number | null,
     cardValue?: number | null,
+    invoicing?: number | null,
+    profit?: number | null,
     diferenceLastFincash?: number | null,
 
     break?: number | null,
@@ -103,6 +113,7 @@ export interface OrderByObj {
     column: keyof typeof EColumnsOrderBy;
     order: 'asc' | 'desc',
     sectors: number[],
+    group_id?: number,
 }
 
 const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
@@ -261,6 +272,34 @@ const getSaleDataByFincash = async (id: number, orderBy: OrderByObj, page: numbe
     }
 };
 
+const getDataByDate = async (start: Date, end: Date): Promise<IResponseData[] | Error> => {
+    try {
+        const urlRelativa = `/data?start=${start.toISOString()}&end=${end.toISOString()}`;
+        const { data } = await Api.get(urlRelativa, Autorization());
+        if (data) {
+            return data;
+        }
+        return new Error('Erro ao achar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao procurar registro.');
+    }
+};
+
+// const getCurrentMonth = async (): Promise<IResponseData[] | Error> => {
+//     try {
+//         const urlRelativa = `/data/month/current`;
+//         const { data } = await Api.get(urlRelativa, Autorization());
+//         if (data) {
+//             return data;
+//         }
+//         return new Error('Erro ao achar o registro.');
+//     } catch (error) {
+//         console.error(error);
+//         return new Error((error as { message: string }).message || 'Erro ao procurar registro.');
+//     }
+// };
+
 // const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
 //         await Api.put(`/product/${id}`, dados, Autorization());
@@ -289,6 +328,7 @@ export const FincashService = {
     getOpenFincash,
     getLastFincash,
     getDetailedData,
+    getDataByDate,
     getTotalByFincash,
     registerCardValue,
     getSaleDataByFincash,

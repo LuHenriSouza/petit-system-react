@@ -1,5 +1,7 @@
 import {
 	Box,
+	Fab,
+	Icon,
 	Paper,
 	Table,
 	Alert,
@@ -14,6 +16,7 @@ import {
 	TextField,
 	FormGroup,
 	TableHead,
+	Typography,
 	Pagination,
 	DialogTitle,
 	Autocomplete,
@@ -29,8 +32,8 @@ import { useDebounce } from "../../shared/hooks";
 import { LayoutMain } from "../../shared/layouts";
 import { useSearchParams } from "react-router-dom";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { CustomSelect } from '../../shared/forms/customInputs/CustomSelect';
 import { IProductWithStock, ProductService, StockService, ValidityService } from "../../shared/services/api";
-
 
 const STOCK_ROW_LIMIT = 7;
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
@@ -50,14 +53,18 @@ export const Stock: React.FC = () => {
 
 
 	const [open, setOpen] = useState(false);
+	const [editMode, setEditMode] = useState(0);
 	const [qntStock, setQntStock] = useState(0);
 	const [loading, setLoading] = useState(true);
+	const [editStock, setEditStock] = useState(0);
 	const [errorQnt, setErrorQnt] = useState(false);
 	const [totalCount, setTotalCount] = useState(0);
 	const [errorDate, setErrorDate] = useState(false);
 	const [openSnack, setOpenSnack] = useState(false);
 	const [selectedProd, setSelectedProd] = useState(0);
 	const [loadingPage, setLoadingPage] = useState(true);
+	const [orderBy, setOrderBy] = useState('updated_at');
+	const [editLoading, setEditLoading] = useState(false);
 	const [errorSelect, setErrorSelect] = useState(false);
 	const [validityDate, setValidityDate] = useState<Date>();
 	const [rows, setRows] = useState<IProductWithStock[]>([]);
@@ -79,12 +86,19 @@ export const Stock: React.FC = () => {
 			listStocks();
 		})
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [stockPage, stockSearch]);
+	}, [stockPage, stockSearch, orderBy]);
 
 	const handleClickOpen = () => {
 		setOpen(true);
 		getAllProducts();
 	};
+
+	const openAdd = (id: number, name: string) => {
+		setOpen(true);
+		getAllProducts();
+		setSelectedProd(id);
+		setSelectedProdName(name);
+	}
 
 	const handleClose = () => {
 		setOpen(false);
@@ -112,7 +126,7 @@ export const Stock: React.FC = () => {
 		try {
 			setLoadingPage(true);
 			setLoading(true);
-			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch);
+			const response = await StockService.getAll(Number(stockPage), STOCK_ROW_LIMIT, stockSearch, orderBy);
 			if (response instanceof Error) {
 				alert("Ocorreu algum erro");
 			} else {
@@ -198,11 +212,50 @@ export const Stock: React.FC = () => {
 						} else {
 							setOpenSnack(true);
 						}
+						setValidityDate(undefined);
 					}
 				}
 			}
 		});
 
+	}
+
+	const submitEdit = async () => {
+		setTimeout(async () => {
+			setEditLoading(true);
+			const res = await Swal.fire({
+				title: 'Tem Certeza?',
+				text: ``,
+				icon: 'warning',
+				// iconColor: theme.palette.error.main,
+				showCancelButton: true,
+				// confirmButtonColor: theme.palette.error.main,
+				cancelButtonColor: '#aaa',
+				cancelButtonText: 'Cancelar',
+				confirmButtonText: 'Editar'
+			});
+
+			if (res.isConfirmed) {
+				const result = await StockService.updateById(editMode, editStock);
+				if (result instanceof Error) {
+					Swal.fire({
+						icon: "error",
+						title: "Erro ao editar estoque!",
+						showConfirmButton: true
+					});
+				} else {
+					setEditMode(0);
+					listStocks();
+					Swal.fire({
+						icon: "success",
+						title: "Estoque editado com sucesso!",
+						showConfirmButton: true,
+						timer: 1000
+					});
+				}
+			}
+			setEditLoading(false);
+		}, 50);
 	}
 
 	return (
@@ -212,13 +265,27 @@ export const Stock: React.FC = () => {
 				variant="elevation"
 			>
 				<Box display={'flex'} justifyContent={'space-between'}>
-					<TextField
-						size="small"
-						placeholder={'Pesquisar'}
-						value={stockSearch}
-						onChange={(event) => { setSearchParams((old) => { old.set('stockSearch', event.target.value); old.delete('stockPage'); return old; }) }}
-						autoComplete="off"
-					/>
+					<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} gap={10}>
+						<TextField
+							size="small"
+							placeholder={'Pesquisar'}
+							value={stockSearch}
+							onChange={(event) => { setSearchParams((old) => { old.set('stockSearch', event.target.value); old.delete('stockPage'); return old; }) }}
+							autoComplete="off"
+						/>
+						<Box display={'flex'} alignItems={'center'}>
+							<Typography mr={3}>
+								Ordenar Por:
+							</Typography>
+							<CustomSelect
+								size="small"
+								menuItens={[{ text: 'Ultima atualização', value: 'updated_at' }, { text: 'Estoque', value: 'stock' }]}
+								onValueChange={(e) => setOrderBy(e)}
+								minWidth={200}
+								defaultSelected={0}
+							/>
+						</Box>
+					</Box>
 					<Button variant="contained" onClick={handleClickOpen}><AddIcon sx={{ mr: 1 }} />Adicionar</Button>
 				</Box>
 			</Paper>
@@ -226,13 +293,14 @@ export const Stock: React.FC = () => {
 				sx={{ backgroundColor: "#fff", px: 3, py: 3, mr: 5, mb: 1 }}
 				variant="elevation"
 			>
-				<Box minHeight={460} m={1}>
+				<Box minHeight={440} m={1}>
 					<Table>
 						<TableHead>
 							<TableRow>
 								<TableCell width={200}>Código</TableCell>
 								<TableCell>Produto</TableCell>
 								<TableCell>Estoque</TableCell>
+								<TableCell>Ações</TableCell>
 							</TableRow>
 						</TableHead>
 						<TableBody>
@@ -246,7 +314,50 @@ export const Stock: React.FC = () => {
 										>
 											<TableCell>{row.code}</TableCell>
 											<TableCell>{row.name}</TableCell>
-											<TableCell>{row.stock}</TableCell>
+											<TableCell>
+												{
+													row.id == editMode ?
+														<Box maxWidth={80}>
+															<TextField
+																autoFocus
+																name='stock'
+																label={'Estoque'}
+																autoComplete="off"
+																value={editStock}
+																inputProps={{ type: 'number' }}
+																onChange={(e) => setEditStock(Number(e.target.value))}
+																onKeyDown={(e) => {
+																	if (e.code === 'Enter' || e.key === 'Enter') submitEdit();
+																}}
+															/>
+														</Box>
+														:
+														row.stock
+												}
+											</TableCell>
+											<TableCell>
+												{
+													row.id == editMode ?
+														<Box>
+															<Fab size="medium" color="error" sx={{ mr: 2 }} onClick={() => setEditMode(0)}>
+																<Icon>close</Icon>
+															</Fab>
+															<Fab size="medium" color="success" disabled={editLoading} onClick={submitEdit}>
+																<Icon>check</Icon>
+															</Fab>
+														</Box>
+														:
+														<Box>
+
+															<Fab size="medium" color="warning" sx={{ mr: 2 }} onClick={() => { setEditStock(row.stock); setEditMode(row.id); }}>
+																<Icon>edit</Icon>
+															</Fab>
+															<Fab size="medium" color="primary" onClick={() => openAdd(row.prod_id, row.name)}>
+																<Icon>add</Icon>
+															</Fab>
+														</Box>
+												}
+											</TableCell>
 										</TableRow>
 									)
 								)

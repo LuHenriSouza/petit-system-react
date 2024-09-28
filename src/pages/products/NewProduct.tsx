@@ -71,8 +71,8 @@ export const NewProduct: React.FC = () => {
 	const handleSubmit = async (data: IFormData) => {
 		setLoading(true);
 		try {
-			const getNumbers = data.price.split(' ');
-			data.price = getNumbers[1];
+			const getNumbers = data.price.replace(/[^\d,.-]/g, '');
+			data.price = getNumbers.replace('.', '').replace(',', '.');
 			const dataValidated = await formValidation.validate(data, { abortEarly: false })
 			const result = await ProductService.create(dataValidated);
 
@@ -90,7 +90,7 @@ export const NewProduct: React.FC = () => {
 						formRef.current?.setFieldValue('code', '');
 						formRef.current?.setFieldValue('name', '');
 						formRef.current?.setFieldValue('sector', 0);
-						formRef.current?.setFieldValue('price', 'R$ 0.00');
+						formRef.current?.setFieldValue('price', 'R$ 0,00');
 						inputCode.current?.focus();
 					},
 				});
@@ -158,7 +158,6 @@ export const NewProduct: React.FC = () => {
 									inputRef={inputPrice}
 									onKeyDown={e => handleKeyDownPrice(e)}
 									autoComplete="off"
-									valueDefault='R$ 0.00'
 									cash
 								/>
 							</Box>

@@ -41,6 +41,8 @@ export const Validity: React.FC = () => {
 	const inputDate = useRef<HTMLInputElement>();
 
 	const [prodTotalCount, setProdTotalCount] = useState(0);
+	const [loadingPageProd, setLoadingPageProd] = useState(false);
+	const [loadingPageVal, setLoadingPageVal] = useState(false);
 	const [prodRows, setProdRows] = useState<IProduct[]>([]);
 	const [prodSelectedRow, setProdSelectedRow] = useState(0);
 
@@ -61,10 +63,12 @@ export const Validity: React.FC = () => {
 	}, [prodPage, prodSearch])
 
 	const listProducts = async () => {
+		setLoadingPageProd(true);
 		const response = await ProductService.getAll(Number(prodPage), prodSearch, PRODUCT_ROW_LIMIT);
 		if (response instanceof Error) return alert('Erro ao procurar por produtos');
 		setProdRows(response.data);
 		setProdTotalCount(response.totalCount);
+		setLoadingPageProd(false);
 	}
 
 
@@ -82,6 +86,7 @@ export const Validity: React.FC = () => {
 	}, [ValidityPage, prodSelectedRow])
 
 	const listValidities = async () => {
+		setLoadingPageVal(true);
 		if (prodSelectedRow) {
 			const response = await ValidityService.getAllByProd(Number(ValidityPage), VALIDITY_ROW_LIMIT, prodSelectedRow);
 			if (response instanceof Error) return alert('Erro ao procurar por validades');
@@ -93,6 +98,7 @@ export const Validity: React.FC = () => {
 			setValRows(response.data);
 			setValTotalCount(response.totalCount);
 		}
+		setLoadingPageVal(false);
 	}
 
 
@@ -265,6 +271,7 @@ export const Validity: React.FC = () => {
 										return old;
 									})
 								}
+								disabled={loadingPageProd}
 							/>
 						)}
 
@@ -339,7 +346,7 @@ export const Validity: React.FC = () => {
 											<TableCell>{val.code}</TableCell>
 											<TableCell>{val.name}</TableCell>
 											<TableCell>
-												<Typography variant="body1" color={() => dateColorFinder(new Date(val.validity))}>
+												<Typography variant="body1" color={dateColorFinder(new Date(val.validity))}>
 													{format(val.validity, 'dd/MM/yyyy ')}{handleText(new Date(val.validity))}
 												</Typography>
 											</TableCell>
@@ -372,6 +379,7 @@ export const Validity: React.FC = () => {
 										return old;
 									})
 								}
+								disabled={loadingPageVal}
 							/>
 						)}
 					</Paper>

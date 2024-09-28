@@ -31,6 +31,7 @@ import { useSearchParams } from "react-router-dom";
 import RemoveIcon from "@mui/icons-material/Remove";
 import { useEffect, useMemo, useState } from "react";
 import { IGroup, IProduct, GroupService, ProductService } from "../../shared/services/api";
+import { nToBRL } from "../../shared/services/formatters";
 
 const PROD_ROW_LIMIT = 7;
 const GROUP_ROW_LIMIT = 5;
@@ -550,7 +551,7 @@ export const Groups: React.FC = () => {
                                       ? "4 - Sorvetes"
                                       : `${prod.sector} - Desconhecido`}
                             </TableCell>
-                            <TableCell>R$ {prod.price}</TableCell>
+                            <TableCell>{nToBRL(prod.price)}</TableCell>
                             <TableCell>
                               <Fab
                                 size="medium"

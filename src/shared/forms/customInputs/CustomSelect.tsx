@@ -17,18 +17,21 @@ interface IVSelectProps {
     label?: string,
     helperText?: string,
     minWidth?: number,
+    maxWidth?: number,
     defaultSelected?: number,
     onValueChange?: (selectedValue: string) => void;
     m?: number,
     mx?: number,
     my?: number,
+    mt?: number,
     p?: number,
     px?: number,
-    py?: number
+    py?: number,
+    size?: 'small' | 'medium';
 
 }
 
-export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaultSelected, helperText, minWidth, onValueChange, m, mx, my, p, px, py }) => {
+export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaultSelected, helperText, minWidth, onValueChange, m, mx, my, mt, p, px, py, maxWidth, size = 'medium' }) => {
 
     const [value, setValue] = useState(defaultSelected !== undefined ? menuItens[defaultSelected].value : '');
 
@@ -38,7 +41,7 @@ export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaul
     };
 
     return (
-        <Box sx={{ minWidth, m, mx, my, p, px, py }}>
+        <Box sx={{ minWidth, m, mx, my, mt, p, px, py, maxWidth }}>
             <FormControl fullWidth>
                 <InputLabel id="demo-simple-select-label">{label}</InputLabel>
                 <Select
@@ -58,6 +61,7 @@ export const CustomSelect: React.FC<IVSelectProps> = ({ menuItens, label, defaul
                     value={value}
                     label={label}
                     onChange={handleChange}
+                    size={size}
                 >
                     {
                         menuItens.map((item) => (

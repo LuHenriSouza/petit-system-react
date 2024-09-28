@@ -18,6 +18,7 @@ import { format } from "date-fns";
 import './../../shared/css/sweetAlert.css';
 import { FormHandles } from "@unform/core";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from '@mui/icons-material/Edit';
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import HistoryIcon from '@mui/icons-material/History';
@@ -28,6 +29,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, ICashOutflow, IFincash, OutflowService } from "../../shared/services/api";
+import { nToBRL } from "../../shared/services/formatters";
 
 const OUTFLOW_ROW_LIMIT = 5;
 
@@ -78,7 +80,8 @@ export const FincashDetail: React.FC = () => {
 				}
 				if (fincash.finalValue == null) fincash.finalValue = 0;
 				if (fincash.totalValue == null) fincash.totalValue = 0;
-				if (fincash.cardValue == null) fincash.cardValue = 0;
+				if (fincash.cardValue == null || reload == 2) fincash.cardValue = 0;
+
 				setFincash(fincash);
 
 			} catch (e) {
@@ -122,10 +125,11 @@ export const FincashDetail: React.FC = () => {
 	const cardSubmit = async (data: IFormData) => {
 		setCardLoading(true);
 		try {
+			data.card = data.card.replace(/[^\d,.-]/g, '').replace('.', '').replace(',', '.');
 			if (fincash) {
 				const swal = await Swal.fire({
 					title: 'Tem Certeza?',
-					text: `Registrar Cartão no Valor de "R$ ${data.card}" ?`,
+					text: `Registrar Cartão no Valor de "${nToBRL(Number(data.card))}" ?`,
 					icon: 'question',
 					iconColor: '#512DA8',
 					showCancelButton: true,
@@ -135,7 +139,6 @@ export const FincashDetail: React.FC = () => {
 					confirmButtonText: 'Confirmar'
 				});
 				if (swal.isConfirmed) {
-					data.card = data.card.split(' ')[1];
 					const dataValidated = await formValidation.validate(data, { abortEarly: false });
 
 					const result = await FincashService.registerCardValue(dataValidated.card, fincash.id);
@@ -219,7 +222,6 @@ export const FincashDetail: React.FC = () => {
 								<Typography variant="h5" mx={1}>
 									Vendas em Dinheiro:
 								</Typography>
-
 								<Typography variant="h5" color={
 									fincash?.finalValue &&
 										(outflows?.total || outflows?.total == 0) &&
@@ -234,38 +236,50 @@ export const FincashDetail: React.FC = () => {
 												:
 												fincash?.finalValue &&
 												(outflows?.total || outflows?.total == 0) &&
-												'R$ +' + ((fincash.finalValue - fincash.value) + outflows.total).toFixed(2)
+												'+' + nToBRL((fincash.finalValue - fincash.value) + outflows.total)
 											:
 											'0.00'
 									}
 								</Typography>
 							</Box>
 						}
+						{
+							fincash?.cardValue !== 0 &&
+							<Box display={'flex'} mt={3}>
+								<Typography variant="h5" mx={1}>
+									Faturamento:
+								</Typography>
+								<Typography variant="h5" color={!fincash?.invoicing || fincash.invoicing < 0 ? '#e00' : '#00e000'}>
+									{
+										fincash?.invoicing ?
+											nToBRL(Number(fincash.invoicing))
+											:
+											'R$ 0,00'
+									}
+								</Typography>
+							</Box>
+						}
 						<Typography variant="h5" fontWeight={'bold'} margin={1} mt={5}>
-							Total: R$ {fincash?.totalValue ? fincash.totalValue : '0.00'}
+							Total: {fincash?.totalValue ? nToBRL(fincash.totalValue) : 'R$ 0,00'}
 						</Typography>
-						<Box display={'flex'} flexDirection={'column'}>
-							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`}>
+						<Box display={'flex'} flexDirection={'column'} mt={5} gap={2}>
+							<Link to={`/vendas/caixa/${id}?backPage=${backPage}`} style={{ maxWidth: 245 }}>
 								<Button
 									variant="contained"
 									size={'large'}
-									sx={{ mt: 5 }}
-
 								>
 									<HistoryIcon sx={{ mr: 1 }} />
 									Histórico de Vendas
 								</Button>
 							</Link>
 
-							<Link to={`/caixa/dados/${id}?backPage=${backPage}`}>
+							<Link to={`/caixa/dados/${id}?backPage=${backPage}`} style={{ maxWidth: 237 }}>
 								<Button
 									variant="contained"
 									size={'large'}
-									sx={{ mt: 2 }}
-
 								>
 									<FindInPageIcon sx={{ mr: 1 }} />
-									Análise de dados
+									Produtos vendidos
 								</Button>
 							</Link>
 						</Box>
@@ -278,7 +292,7 @@ export const FincashDetail: React.FC = () => {
 							<Box minWidth={400}>
 								<Box display={'flex'}>
 									<Typography variant="h5" margin={1}>
-										Início: R$ {fincash?.value}
+										Início: {fincash?.value ? nToBRL(fincash.value) : 'R$ 0,00'}
 									</Typography>
 									<Typography variant='body2' fontSize={18} color={fincash?.diferenceLastFincash && fincash?.diferenceLastFincash < 0 ? '#ef0000' : '#00e000'}>
 										{fincash?.diferenceLastFincash && fincash?.diferenceLastFincash > 0 && '+'}{fincash?.diferenceLastFincash && fincash?.diferenceLastFincash}
@@ -292,7 +306,7 @@ export const FincashDetail: React.FC = () => {
 												Variação:
 											</Typography>
 											<Typography variant="h5" color={fincash?.finalValue && (fincash.finalValue - fincash.value) < 0 ? '#ef0000' : '#00e000'}>
-												R$ {fincash?.finalValue && (fincash.finalValue - fincash.value) > 0 && '+'}{fincash?.finalValue ? (fincash.finalValue - fincash.value).toFixed(2) : ''}
+												{fincash?.finalValue && (fincash.finalValue - fincash.value) > 0 && '+'}{fincash?.finalValue ? nToBRL(fincash.finalValue - fincash.value) : 'R$ 0,00'}
 											</Typography>
 										</>
 									}
@@ -301,7 +315,7 @@ export const FincashDetail: React.FC = () => {
 									fincash?.isFinished &&
 									<>
 										<Typography variant="h5" margin={1}>
-											Fim: R$ {fincash?.finalValue}
+											Fim: {fincash?.finalValue ? nToBRL(fincash.finalValue) : 'R$ 0,00'}
 										</Typography>
 										{
 
@@ -316,7 +330,7 @@ export const FincashDetail: React.FC = () => {
 													sx={{ backgroundColor: '#e00000' }}
 												>
 													<Typography variant="h5" color={'#fff'}>
-														Mínimo de saídas não registradas: R$ {((fincash.finalValue - fincash.value) + outflows.total).toFixed(2)}
+														Mínimo de saídas não registradas: {nToBRL((fincash.finalValue - fincash.value) + outflows.total)}
 													</Typography>
 												</Box>
 												:
@@ -336,7 +350,7 @@ export const FincashDetail: React.FC = () => {
 													sx={{ backgroundColor: '#e0a000' }}
 												>
 													<Typography variant="h5" color={'#fff'}>
-														Mínimo de vendas não registradas: R$ {(((fincash.finalValue - fincash.value) + outflows.total) - fincash.totalValue).toFixed(2)}
+														Mínimo de vendas não registradas: {nToBRL(((fincash.finalValue - fincash.value) + outflows.total) - fincash.totalValue)}
 													</Typography>
 												</Box>
 												:
@@ -357,12 +371,11 @@ export const FincashDetail: React.FC = () => {
 											!fincash?.cardValue ?
 												<>
 													<Box display={'flex'} gap={1} mt={1}>
-														<VForm placeholder={''} onSubmit={cardSubmit} ref={formRef}>
+														<VForm onSubmit={cardSubmit} ref={formRef}>
 															<VTextField
 																name={'card'}
 																label={'Valor'}
 																autoComplete="off"
-																valueDefault='R$ 0.00'
 																cash
 															/>
 														</VForm>
@@ -370,21 +383,43 @@ export const FincashDetail: React.FC = () => {
 															<AddIcon />
 														</Button>
 													</Box>
-													<Typography variant="h5" mt={4} color={'#e93000'}>
-														Insira o valor do cartão
-													</Typography>
+													{reload == 2 ?
+														<Button variant="contained" onClick={() => setReload(1)} sx={{ mt: 3 }}>
+															<ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar
+														</Button>
+														:
+														<Typography variant="h5" mt={4} color={'#e93000'}>
+															Insira o valor do cartão
+														</Typography>
+													}
 												</>
 												:
 												<Box>
-													<Typography variant="h5" m={1}>
-														Cartão: R$ {fincash.cardValue}
-													</Typography>
+													<Box display={'flex'} gap={2}>
+														<Typography variant="h5" m={1}>
+															Cartão: {nToBRL(fincash.cardValue)}
+														</Typography>
+														<Fab
+															size="small"
+															onClick={() => {
+																fincash.cardValue = null;
+																setFincash(fincash);
+																setReload(2);
+															}}
+															sx={{
+																backgroundColor: '#fa0',
+																'&:hover': { backgroundColor: '#fc5' },
+															}}
+														>
+															<EditIcon color='info' />
+														</Fab>
+													</Box>
 													<Box display={'flex'}>
 														<Typography variant="h5" mx={1}>
 															Quebra:
 														</Typography>
 														<Typography variant="h5" color={fincash.break && fincash.break < 0 ? '#ef0000' : '#00e000'}>
-															R$ {fincash.break && fincash.break < 0 ? '' : '+'}{fincash.break}
+															{fincash.break && fincash.break < 0 ? '' : '+'}{nToBRL(fincash.break)}
 														</Typography>
 													</Box>
 													{
@@ -400,7 +435,7 @@ export const FincashDetail: React.FC = () => {
 															sx={{ backgroundColor: '#e0a000' }}
 														>
 															<Typography variant="h5" color={'#fff'}>
-																Mínimo de vendas não registradas: R$ {(fincash.totalValue - fincash.cardValue).toFixed(2)}
+																Mínimo de vendas não registradas: {nToBRL(fincash.totalValue - fincash.cardValue)}
 															</Typography>
 														</Box>
 													}
@@ -432,7 +467,7 @@ export const FincashDetail: React.FC = () => {
 												</TableCell>
 												<TableCell>
 													<Typography variant="h5">
-														R$ {outflow.value}
+														{nToBRL(outflow.value)}
 													</Typography>
 												</TableCell>
 												<TableCell>
@@ -472,7 +507,7 @@ export const FincashDetail: React.FC = () => {
 
 						<Box mb={5}>
 							<Typography variant="h5">
-								Total: R$ {outflows?.total.toFixed(2)}
+								Total: {nToBRL(outflows?.total)}
 							</Typography>
 						</Box>
 					</Box>

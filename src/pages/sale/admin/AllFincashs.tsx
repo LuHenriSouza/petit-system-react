@@ -22,6 +22,7 @@ import { Link, useSearchParams } from "react-router-dom";
 import { Environment } from "../../../shared/environment";
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, IFincash, OutflowService } from "../../../shared/services/api";
+import { nToBRL } from "../../../shared/services/formatters";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
@@ -51,8 +52,10 @@ export const AllFincashs: React.FC = () => {
 	const [searchParams, setSearchParams] = useSearchParams();
 
 	const [rows, setRows] = useState<IFincash[]>([]);
+	const [fincashOpen, setFincashOpen] = useState<IFincash>();
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
+	const [errorLoading, setErrorLoading] = useState(true);
 	const [erros, setErros] = useState<Record<string, EFincashErrors[]>>();
 
 	const page = useMemo(() => {
@@ -70,26 +73,30 @@ export const AllFincashs: React.FC = () => {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [page]);
 
+	useEffect(() => {
+		FincashErrorCalculator(rows, fincashOpen);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [rows, fincashOpen]);
+
 	const listFincashs = async () => {
 		setLoading(true);
 		try {
 			const result = await FincashService.getAll(Number(page), '', NUMBER_OF_SKELETONS.length);
-			if (result instanceof Error) {
-				alert(result.message);
-			} else {
-				const fincashs = result.data;
-				const fincashOpen = await FincashService.getOpenFincash();
-				if (!(fincashOpen instanceof Error)) {
-					const total = await FincashService.getTotalByFincash(fincashOpen.id);
-					if (!(total instanceof Error)) {
-						if (fincashs[0].id == fincashOpen.id) fincashs[0].totalValue = total;
-					}
+			if (result instanceof Error) return alert(result.message);
+
+			const fincashs = result.data;
+			const fincashOpen = await FincashService.getOpenFincash();
+
+			if (!(fincashOpen instanceof Error)) {
+				const total = await FincashService.getTotalByFincash(fincashOpen.id);
+				if (!(total instanceof Error)) {
+					if (fincashs[0].id == fincashOpen.id) fincashs[0].totalValue = total;
 				}
-				setTotalCount(result.totalCount);
-				setRows(fincashs);
-				const errors = await FincashErrorCalculator(fincashs, fincashOpen);
-				setErros(errors);
+				setFincashOpen(fincashOpen);
 			}
+			setRows(fincashs);
+			setTotalCount(result.totalCount);
+
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -98,16 +105,18 @@ export const AllFincashs: React.FC = () => {
 	};
 
 
-	const FincashErrorCalculator = async (fincashs: IFincash[], fincashOpen: IFincash | Error): Promise<Record<string, EFincashErrors[]>> => {
+	const FincashErrorCalculator = async (fincashs: IFincash[], fincashOpen?: IFincash | Error) => {
+		setErrorLoading(true);
 		const erros: Record<string, EFincashErrors[]> = {}
-		for (const fincash of fincashs) {
+		for (const fincash of fincashs) { //FINCASH ITERATOR
 			const outflowTotal = await OutflowService.getTotalByFincash(fincash.id);
 			if ((outflowTotal instanceof Error)) { console.log(fincash.id); continue; }
+
+			if (!(fincashOpen instanceof Error)) if (Number(fincash.id) == Number(fincashOpen?.id)) continue;
 
 			if (!erros[fincash.id]) {
 				erros[fincash.id] = [];
 			}
-			if (!(fincashOpen instanceof Error)) if (Number(fincash.id) == Number(fincashOpen.id)) continue;
 
 			if (fincash.finalValue == null) fincash.finalValue = 0;
 			if (fincash.totalValue == null) fincash.totalValue = 0;
@@ -120,7 +129,8 @@ export const AllFincashs: React.FC = () => {
 				if (((fincash.finalValue - fincash.value) + Number(outflowTotal)) > fincash.totalValue) erros[fincash.id].push(EFincashErrors.CashSaleError);
 			}
 		}
-		return erros;
+		setErros(erros);
+		setErrorLoading(false);
 	}
 
 	return (
@@ -168,39 +178,54 @@ export const AllFincashs: React.FC = () => {
 															{row.diferenceLastFincash && row.diferenceLastFincash > 0 && '+'}{row.diferenceLastFincash && row.diferenceLastFincash}
 														</Typography>
 														<Typography>
-															R$ {row.value}
+															{nToBRL(row.value)}
 														</Typography>
 													</TableCell>
 													<TableCell sx={{ backgroundColor: '#eee' }}>
 														<Typography color={row.finalValue && (row.finalValue - row.value) < 0 ? '#ef0000' : '#00e000'}>
-															R$ {row.finalValue ? (row.finalValue - row.value).toFixed(2) : '........'}
+															{row.finalValue ? nToBRL(row.finalValue - row.value) : 'R$ ........'}
 														</Typography>
 													</TableCell>
 													<TableCell sx={{ backgroundColor: '#eee' }}>
 														<Typography>
-															R$ {row.finalValue ? row.finalValue : '........'}
+															{row.finalValue ? nToBRL(row.finalValue) : 'R$ ........'}
 														</Typography>
 													</TableCell>
 
 													<TableCell>
 														<Box display={'flex'} gap={1}>
 															<Typography>
-																R$ {row.totalValue == 0 ? '0.00' : row.totalValue}
+																{nToBRL(row.totalValue)}
 															</Typography>
-															{
-																erros &&
-																erros[row.id].includes(EFincashErrors.CardSaleError) &&
-																<Box height={10} width={10} borderRadius={90} border={1} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+															{!errorLoading ?
+																(
+																	erros &&
+																	erros[row.id] &&
+																	erros[row.id].includes(EFincashErrors.CardSaleError) &&
+																	<Box height={10} width={10} borderRadius={90} border={1} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+																) : (
+																	<Skeleton sx={{ maxHeight: 10, maxWidth: 10, borderRadius: 90 }} />
+																)
 															}
-															{
-																erros &&
-																erros[row.id].includes(EFincashErrors.CashOutError) &&
-																<Box height={10} width={10} border={1} borderRadius={90} sx={{ backgroundColor: EErrorsColor.HighError }} />
+															{!errorLoading ?
+																(
+																	erros &&
+																	erros[row.id] &&
+																	erros[row.id].includes(EFincashErrors.CashOutError) &&
+																	<Box height={10} width={10} border={1} borderRadius={90} sx={{ backgroundColor: EErrorsColor.HighError }} />
+																) : (
+																	<Skeleton sx={{ maxHeight: 10, maxWidth: 10, borderRadius: 90 }} />
+																)
 															}
-															{
-																erros &&
-																erros[row.id].includes(EFincashErrors.CashSaleError) &&
-																<Box height={10} width={10} border={1} borderRadius={90} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+															{!errorLoading ?
+																(
+																	erros &&
+																	erros[row.id] &&
+																	erros[row.id].includes(EFincashErrors.CashSaleError) &&
+																	<Box height={10} width={10} border={1} borderRadius={90} sx={{ backgroundColor: EErrorsColor.MediumError }} />
+																) : (
+																	<Skeleton sx={{ maxHeight: 10, maxWidth: 10, borderRadius: 90 }} />
+																)
 															}
 														</Box>
 													</TableCell>

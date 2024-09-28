@@ -21,7 +21,8 @@ import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { CustomRadio } from '../../shared/forms/customInputs/CustomRadio';
 import { CustomCheckbox } from '../../shared/forms/customInputs/CustomCheckbox';
 import { CustomSelect, IMenuItens } from '../../shared/forms/customInputs/CustomSelect';
-import { EColumnsOrderBy, FincashService, IResponse, OrderByObj } from '../../shared/services/api';
+import { EColumnsOrderBy, FincashService, GroupService, IResponse, OrderByObj } from '../../shared/services/api';
+import { nToBRL } from '../../shared/services/formatters';
 
 export const FincashResult: React.FC = () => {
 	const DEFAULT_LIMIT = 10
@@ -31,9 +32,10 @@ export const FincashResult: React.FC = () => {
 	const { debounce } = useDebounce();
 
 	const [rows, setRows] = useState<IResponse[]>();
+	const [groups, setGroups] = useState<IMenuItens[]>([]);
 	const [totalCount, setTotalCount] = useState(0);
 	const [loading, setLoading] = useState(true);
-	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'quantity', order: 'asc', sectors: [1, 2, 3, 4] });
+	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'quantity', order: 'desc', sectors: [1, 2, 3, 4] });
 
 	const search = useMemo(() => {
 		return searchParams.get('search') || ''
@@ -80,11 +82,12 @@ export const FincashResult: React.FC = () => {
 	const listData = async () => {
 		try {
 			setLoading(true);
-			const result = await FincashService.getSaleDataByFincash(Number(id), orderBy, Number(page), DEFAULT_LIMIT, search);
-			if (result instanceof Error) return;
-			setRows(result.data);
-			setTotalCount(result.totalCount);
-
+			const [data, groups] = await Promise.all([FincashService.getSaleDataByFincash(Number(id), orderBy, Number(page), DEFAULT_LIMIT, search), GroupService.getAll(1, '', 999999)]);
+			if (data instanceof Error) return;
+			setRows(data.data);
+			setTotalCount(data.totalCount);
+			if (groups instanceof Error) return;
+			setGroups(groups.data.map((g) => { return { value: String(g.id), text: g.name } }));
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -122,7 +125,7 @@ export const FincashResult: React.FC = () => {
 									Ordenar por:
 								</Typography>
 								<CustomSelect minWidth={150} menuItens={selectOrderItens} defaultSelected={0} onValueChange={(e) => setOrderBy({ ...orderBy, column: e as keyof typeof EColumnsOrderBy })} />
-								<CustomRadio sx={{ ml: 2.5 }} menuItens={[{ label: 'Crescente', value: 'asc' }, { label: 'Decrescente', value: 'desc' }]} onValueChange={(e) => setOrderBy({ ...orderBy, order: e as 'asc' | 'desc' })} />
+								<CustomRadio sx={{ ml: 2.5 }} menuItens={[{ label: 'Crescente', value: 'asc' }, { label: 'Decrescente', value: 'desc' }]} onValueChange={(e) => setOrderBy({ ...orderBy, order: e as 'asc' | 'desc' })} defaultChecked='desc' />
 							</Box>
 						</Box>
 						<Box display={'flex'} flexDirection={'column'} gap={2} border={1} flex={1} px={2} py={2}>
@@ -134,19 +137,27 @@ export const FincashResult: React.FC = () => {
 									Setor:
 								</Typography>
 								<Box display={'flex'} flexDirection={'column'}>
-									<CustomCheckbox menuItens={
-										[
-											{ id: '1', label: '1 - Bebidas', defaultChecked: true },
-											{ id: '2', label: '2 - Chocolates', defaultChecked: true },
-											{ id: '3', label: '3 - Salgadinhos', defaultChecked: true },
-											{ id: '4', label: '4 - Sorvetes', defaultChecked: true }
-										]
-									}
+									<CustomCheckbox
+										defaultChecked
+										menuItens={
+											[
+												{ id: '1', label: '1 - Bebidas', defaultChecked: true },
+												{ id: '2', label: '2 - Chocolates', defaultChecked: true },
+												{ id: '3', label: '3 - Salgadinhos', defaultChecked: true },
+												{ id: '4', label: '4 - Sorvetes', defaultChecked: true }
+											]
+										}
 										disabled={loading}
 										onValueChange={e => setOrderBy({ ...orderBy, sectors: e.map(e => Number(e)) })}
 										flexDirection='column'
 									/>
 								</Box>
+							</Box>
+							<Box display={'flex'} alignItems={'center'} mt={2}>
+								<Typography mr={3}>
+									Grupo:
+								</Typography>
+								<CustomSelect menuItens={[{ text: 'Todos', value: ' ' }, ...groups]} onValueChange={(e) => setOrderBy({ ...orderBy, group_id: Number(e) })} minWidth={250} defaultSelected={0}/>
 							</Box>
 						</Box>
 					</Grid>
@@ -173,8 +184,8 @@ export const FincashResult: React.FC = () => {
 													<TableCell>{row.prod_name}</TableCell>
 													{/* <TableCell>{row.prod_sector}</TableCell> */}
 													<TableCell>{row.quantity}</TableCell>
-													<TableCell>{row.solded_price}</TableCell>
-													<TableCell>{row.total_value}</TableCell>
+													<TableCell>{nToBRL(row.solded_price)}</TableCell>
+													<TableCell>{nToBRL(row.total_value)}</TableCell>
 												</TableRow>
 											)
 											:

@@ -9,6 +9,7 @@ import { VTextField } from "../../shared/forms/VTextField";
 import OpenInBrowserIcon from '@mui/icons-material/OpenInBrowser';
 import { FincashService, IFincash } from "../../shared/services/api";
 import { Box, Button, Paper, Typography, useTheme, useMediaQuery } from "@mui/material";
+import { nToBRL } from '../../shared/services/formatters';
 
 
 interface IFormDataValidated {
@@ -49,7 +50,7 @@ export const NewFincash: React.FC = () => {
             setOpenFincash(result);
 
             if (!(lastFincash instanceof Error))
-                formRef.current?.setFieldValue('value', `R$ ${lastFincash.finalValue}`);
+                formRef.current?.setFieldValue('value', `${nToBRL(lastFincash.finalValue)}`);
         }
         if (!smDown) {
             fetchData();
@@ -65,8 +66,8 @@ export const NewFincash: React.FC = () => {
 
     const handleSubmit = async (data: IFormData) => {
         try {
-            const getNumbers = data.value.split(' ');
-            data.value = getNumbers[1];
+            const getNumbers = data.value.replace(/[^\d,.-]/g, '');
+            data.value = getNumbers.replace('.', '').replace(',', '.');
             data.obs = data.obs.trim();
             const dataValidated = await formValidation.validate(data, { abortEarly: false });
 
@@ -125,14 +126,14 @@ export const NewFincash: React.FC = () => {
         <LayoutMain title="Novo Caixa" subTitle="Abrir um novo caixa">
             <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                 <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
-                <VForm onSubmit={handleSubmit} placeholder={''} ref={formRef}>
+                <VForm onSubmit={handleSubmit}ref={formRef}>
                     <Box display={'flex'} flexDirection={'column'} marginBottom={4} maxWidth={900}>
                         <Box display={'flex'} gap={7} >
                             <Box width={300}>
                                 <VTextField label={'Nome'} name="opener" onKeyDown={handleKeyDownName} tabIndex={901} />
                             </Box>
                             <Box width={300}>
-                                <VTextField label={'Valor'} name="value" valueDefault="R$ 0.00" cash inputRef={inputRefValue} onKeyDown={handleKeyDownValue} tabIndex={902} />
+                                <VTextField label={'Valor'} name="value" cash inputRef={inputRefValue} onKeyDown={handleKeyDownValue} tabIndex={902} />
                             </Box>
                             <Button variant="contained" size="large" sx={{ width: 120 }} onClick={() => formRef.current?.submitForm()} tabIndex={904}><OpenInBrowserIcon sx={{ mr: 1 }} />Abrir</Button>
                         </Box>

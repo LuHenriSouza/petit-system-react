@@ -6,9 +6,10 @@ export const errorInterceptor = (error: AxiosError) => {
     }
 
     if (error.response?.status === 401) {
-        console.log('axios/errorInterceptor: ' + localStorage.getItem('APP_ACCESS_TOKEN'));
-        if (!localStorage.getItem('APP_ACCESS_TOKEN')) {
-            localStorage.removeItem('APP_ACCESS_TOKEN')
+        const data = error.response.data as { errors: { default: string } };
+        if (data.errors.default == 'INVALID TOKEN') {
+            localStorage.removeItem('APP_ACCESS_TOKEN');
+            window.location.reload();
             return Promise.reject(new Error('Não Autorizado.'));
         }
     }

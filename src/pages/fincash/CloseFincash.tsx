@@ -8,6 +8,7 @@ import SportsScoreRoundedIcon from '@mui/icons-material/SportsScoreRounded';
 import Swal from "sweetalert2";
 import { FincashService, IFincash } from "../../shared/services/api";
 import { useNavigate } from "react-router-dom";
+import { nToBRL } from "../../shared/services/formatters";
 
 interface IFinishParams {
 	FinalTotalValue: string
@@ -105,11 +106,11 @@ export const CloseFincash: React.FC = () => {
 	};
 
 	const handleSubmitValue = async (data: IFinishParams) => {
-		const getNumbers = data.FinalTotalValue.split(' ');
-		const value = getNumbers[1];
+		const getNumbers = data.FinalTotalValue.replace(/[^\d,.-]/g, '');
+		const value = getNumbers.replace('.', '').replace(',', '.');
 		Swal.fire({
 			title: 'Fechar Caixa',
-			text: `Tem certeza que deseja fechar o caixa com "R$ ${value}" ?`,
+			text: `Tem certeza que deseja fechar o caixa com "${nToBRL(Number(value))}" ?`,
 			icon: 'warning',
 			allowEnterKey: false,
 			showCancelButton: true,
@@ -141,7 +142,7 @@ export const CloseFincash: React.FC = () => {
 
 		Swal.fire({
 			title: 'Fechar Caixa',
-			text: `Tem certeza que deseja fechar o caixa com "R$ ${updatedTotalValue}" ?`,
+			text: `Tem certeza que deseja fechar o caixa com "${nToBRL(Number(updatedTotalValue))}" ?`,
 			icon: 'warning',
 			allowEnterKey: false,
 			showCancelButton: true,
@@ -172,13 +173,13 @@ export const CloseFincash: React.FC = () => {
 		<LayoutMain title="Fechamentos" subTitle="Feche o caixa">
 			<Box display={'flex'} gap={2}>
 				<Paper sx={{ backgroundColor: '#fff', px: 3, py: 1, mr: 5, width: '50%' }} variant="elevation">
-					<VForm onSubmit={handleSubmitValue} placeholder={''} ref={formValueRef}>
+					<VForm onSubmit={handleSubmitValue} ref={formValueRef}>
 						<Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
 							<Typography variant="h4" fontWeight={'bold'} mt={5} ml={5}>
 								Valor Final
 							</Typography>
 							<Box display={'flex'} gap={5} justifyContent={'center'} maxWidth={'100%'} m={5} mb={8}>
-								<VTextField name="FinalTotalValue" fullWidth={false} cash valueDefault="R$ 0.00" />
+								<VTextField name="FinalTotalValue" fullWidth={false} cash />
 								<Button
 									variant="contained"
 									onClick={() => formValueRef.current?.submitForm()}
@@ -195,7 +196,7 @@ export const CloseFincash: React.FC = () => {
 					OU
 				</Typography>
 				<Paper sx={{ backgroundColor: '#fff', px: 3, py: 1, mr: 5, width: '50%' }} variant="elevation">
-					<VForm onSubmit={handleSubmitCalc} placeholder={''} ref={formCalcRef}>
+					<VForm onSubmit={handleSubmitCalc} ref={formCalcRef}>
 						<Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
 							<Typography variant="h4" fontWeight={'bold'} mt={5} ml={5}>
 								Calculadora
@@ -261,7 +262,7 @@ export const CloseFincash: React.FC = () => {
 								</Box>
 							</Box>
 							<Box display={'flex'} justifyContent={'space-between'} alignItems={'center'} gap={0} m={2} ml={8} mr={12} mt={4} maxWidth={'100%'}>
-								<Typography variant="h5">Total: R$ {totalValue}</Typography>
+								<Typography variant="h5">Total: {nToBRL(Number(totalValue))}</Typography>
 								<Button
 									variant="contained"
 									onClick={() => formCalcRef.current?.submitForm()}

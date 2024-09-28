@@ -12,6 +12,7 @@ const Autorization = () => {
 
 export interface IProductWithStock extends IProduct {
     stock: number;
+    prod_id: number;
 }
 
 type TStockTotalCount = {
@@ -19,9 +20,9 @@ type TStockTotalCount = {
     totalCount: number;
 }
 
-const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, filter = ''): Promise<TStockTotalCount | Error> => {
+const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, filter = '', orderBy = 'updated_at'): Promise<TStockTotalCount | Error> => {
     try {
-        const urlRelativa = `/stock?page=${page}&limit=${limit}&filter=${filter}`;
+        const urlRelativa = `/stock?page=${page}&limit=${limit}&filter=${filter}&orderBy=${orderBy}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
@@ -51,7 +52,17 @@ const create = async (prod_id: number, stock: number): Promise<number | Error> =
     }
 };
 
+const updateById = async (stock_id: number, stock: number): Promise<number | Error> => {
+    try {
+        return await Api.put('/stock/'+stock_id, { stock }, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao editar o registro.');
+    }
+};
+
 export const StockService = {
     getAll,
     create,
+    updateById,
 };
