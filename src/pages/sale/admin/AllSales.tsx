@@ -1,19 +1,19 @@
-import {
-	// Box,
-	// Fab,
-	Paper,
-	// Table,
-	// useTheme,
-	// TableRow,
-	// TableCell,
-	// TableBody,
-	// TableHead,
-	// Pagination,
-	// Typography,
-	// useMediaQuery,
-	// TableContainer,
-	// Skeleton,
-} from "@mui/material";
+// import {
+// 	Box,
+// 	Fab,
+// 	Paper,
+// 	Table,
+// 	useTheme,
+// 	TableRow,
+// 	TableCell,
+// 	TableBody,
+// 	TableHead,
+// 	Pagination,
+// 	Typography,
+// 	useMediaQuery,
+// 	TableContainer,
+// 	Skeleton,
+// } from "@mui/material";
 // import Swal from "sweetalert2";
 // import { format } from 'date-fns';
 import { LayoutMain } from "../../../shared/layouts";
@@ -63,8 +63,10 @@ export const AllSales: React.FC = () => {
 	return (
 		<>
 			<LayoutMain title="Vendas" subTitle={"Gerencie todas as vendas"}>
-				<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-					{/* <Box minHeight={625}>
+				<>
+				</>
+				{/* <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
+					<Box minHeight={625}>
 						<TableContainer>
 							<Table sx={{ minWidth: 650 }} aria-label="simple table">
 								<TableHead>
@@ -148,8 +150,8 @@ export const AllSales: React.FC = () => {
 								/>
 							</TableCell>
 						</TableRow>
-					)} */}
-				</Paper>
+					)}
+				</Paper> */}
 			</LayoutMain >
 		</>
 	);
