@@ -233,7 +233,7 @@ const prodOutput = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | '
 
 const getAllOutputs = async (page = 1, limit = 7): Promise<IProdOutputResponse | Error> => {
     try {
-        const urlRelativa = `/ product - output / getall ? page = ${page} & limit=${limit}`;
+        const urlRelativa = `/product-output/getall?page=${page}&limit=${limit}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {
