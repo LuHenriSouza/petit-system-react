@@ -173,7 +173,7 @@ export const CloseFincash: React.FC = () => {
 		<LayoutMain title="Fechamentos" subTitle="Feche o caixa">
 			<Box display={'flex'} gap={2}>
 				<Paper sx={{ backgroundColor: '#fff', px: 3, py: 1, mr: 5, width: '50%' }} variant="elevation">
-					<VForm onSubmit={handleSubmitValue} placeholder={''} ref={formValueRef}>
+					<VForm onSubmit={handleSubmitValue} ref={formValueRef}>
 						<Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
 							<Typography variant="h4" fontWeight={'bold'} mt={5} ml={5}>
 								Valor Final
@@ -196,7 +196,7 @@ export const CloseFincash: React.FC = () => {
 					OU
 				</Typography>
 				<Paper sx={{ backgroundColor: '#fff', px: 3, py: 1, mr: 5, width: '50%' }} variant="elevation">
-					<VForm onSubmit={handleSubmitCalc} placeholder={''} ref={formCalcRef}>
+					<VForm onSubmit={handleSubmitCalc} ref={formCalcRef}>
 						<Box display={'flex'} flexDirection={'column'} justifyContent={'center'}>
 							<Typography variant="h4" fontWeight={'bold'} mt={5} ml={5}>
 								Calculadora

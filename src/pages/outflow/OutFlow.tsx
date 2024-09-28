@@ -302,7 +302,7 @@ export const OutFlow: React.FC = () => {
 				<Grid item xs={6}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Typography variant="h5" sx={{ m: 2 }}>Nova Saída:</Typography>
-						<VForm ref={formRef} onSubmit={handleSubmit} placeholder={''}>
+						<VForm ref={formRef} onSubmit={handleSubmit}>
 							<Box display={'flex'} flexDirection={'column'} gap={3} margin={3}>
 								<Box display={'flex'} gap={5}>
 									<Box width={200}>

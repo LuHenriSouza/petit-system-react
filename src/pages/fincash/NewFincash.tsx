@@ -126,7 +126,7 @@ export const NewFincash: React.FC = () => {
         <LayoutMain title="Novo Caixa" subTitle="Abrir um novo caixa">
             <Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
                 <Typography variant={'h5'} sx={{ my: 3, ml: 1 }}>Dados:</Typography>
-                <VForm onSubmit={handleSubmit} placeholder={''} ref={formRef}>
+                <VForm onSubmit={handleSubmit}ref={formRef}>
                     <Box display={'flex'} flexDirection={'column'} marginBottom={4} maxWidth={900}>
                         <Box display={'flex'} gap={7} >
                             <Box width={300}>

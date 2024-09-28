@@ -371,7 +371,7 @@ export const FincashDetail: React.FC = () => {
 											!fincash?.cardValue ?
 												<>
 													<Box display={'flex'} gap={1} mt={1}>
-														<VForm placeholder={''} onSubmit={cardSubmit} ref={formRef}>
+														<VForm onSubmit={cardSubmit} ref={formRef}>
 															<VTextField
 																name={'card'}
 																label={'Valor'}

@@ -346,7 +346,7 @@ export const Validity: React.FC = () => {
 											<TableCell>{val.code}</TableCell>
 											<TableCell>{val.name}</TableCell>
 											<TableCell>
-												<Typography variant="body1" color={() => dateColorFinder(new Date(val.validity))}>
+												<Typography variant="body1" color={dateColorFinder(new Date(val.validity))}>
 													{format(val.validity, 'dd/MM/yyyy ')}{handleText(new Date(val.validity))}
 												</Typography>
 											</TableCell>
