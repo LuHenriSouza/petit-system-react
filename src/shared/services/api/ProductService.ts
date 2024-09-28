@@ -36,7 +36,7 @@ export interface IProdOutput {
 
     desc?: string,
     fincash_id?: number,
-    
+
     created_at: Date,
     updated_at: Date,
     deleted_at?: Date
@@ -48,14 +48,14 @@ export interface IOutputQuery {
     quantity: number,
     reason: string,
     desc?: string,
-	created_at: Date,
-	updated_at: Date,
-		
+    created_at: Date,
+    updated_at: Date,
+
     prod_id: number,
     prod_code: string,
-	prod_name: string,
-	prod_sector: number,
-	prod_price: number
+    prod_name: string,
+    prod_sector: number,
+    prod_price: number
 }
 
 interface IProdOutputResponse {
@@ -174,9 +174,9 @@ const getQuantityBySector = async (): Promise<{ sector: number, quantity: number
     }
 }
 
-const getValueBySector = async (): Promise<{ sector: number, value: number }[] | Error> => {
+const getValueBySector = async (start: Date, end: Date): Promise<{ sector: number, value: number }[] | Error> => {
     try {
-        const { data } = await Api.get('/product/per-value', Autorization());
+        const { data } = await Api.get(`/product/per-value?start=${start.toISOString()}&end=${end.toISOString()}`, Autorization());
         if (data) {
             return data;
         }
@@ -231,9 +231,9 @@ const prodOutput = async (prod_output: Omit<IProdOutput, 'id' | 'created_at' | '
     }
 }
 
-const getAllOutputs = async (page = 1, limit = 7): Promise<IProdOutputResponse | Error> =>{
+const getAllOutputs = async (page = 1, limit = 7): Promise<IProdOutputResponse | Error> => {
     try {
-        const urlRelativa = `/product-output/getall?page=${page}&limit=${limit}`;
+        const urlRelativa = `/ product - output / getall ? page = ${page} & limit=${limit}`;
         const { data, headers } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return {

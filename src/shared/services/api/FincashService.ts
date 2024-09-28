@@ -11,11 +11,11 @@ const Autorization = () => {
 }
 
 export interface IResponseData {
-    id: number;
-    cardValue: number;
-    totalValue: number;
-    invoicing: number;
-    finalDate: Date;
+    day: Date;
+    first_id: number;
+    total_card_value: number;
+    total_registered_value: number;
+    total_invoicing: number;
 }
 
 export interface IFincash {
@@ -272,9 +272,9 @@ const getSaleDataByFincash = async (id: number, orderBy: OrderByObj, page: numbe
     }
 };
 
-const getCurrentMonth = async (): Promise<IResponseData[] | Error> => {
+const getDataByDate = async (start: Date, end: Date): Promise<IResponseData[] | Error> => {
     try {
-        const urlRelativa = `/data/month/current`;
+        const urlRelativa = `/data?start=${start.toISOString()}&end=${end.toISOString()}`;
         const { data } = await Api.get(urlRelativa, Autorization());
         if (data) {
             return data;
@@ -285,6 +285,20 @@ const getCurrentMonth = async (): Promise<IResponseData[] | Error> => {
         return new Error((error as { message: string }).message || 'Erro ao procurar registro.');
     }
 };
+
+// const getCurrentMonth = async (): Promise<IResponseData[] | Error> => {
+//     try {
+//         const urlRelativa = `/data/month/current`;
+//         const { data } = await Api.get(urlRelativa, Autorization());
+//         if (data) {
+//             return data;
+//         }
+//         return new Error('Erro ao achar o registro.');
+//     } catch (error) {
+//         console.error(error);
+//         return new Error((error as { message: string }).message || 'Erro ao procurar registro.');
+//     }
+// };
 
 // const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
 //     try {
@@ -314,7 +328,7 @@ export const FincashService = {
     getOpenFincash,
     getLastFincash,
     getDetailedData,
-    getCurrentMonth,
+    getDataByDate,
     getTotalByFincash,
     registerCardValue,
     getSaleDataByFincash,
