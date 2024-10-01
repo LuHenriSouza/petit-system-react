@@ -96,10 +96,20 @@ export const Dashboard: React.FC = () => {
 					setLineChartInvoicing(0);
 					setLastFetch(dateToFetch);
 				}
+
+				const fincashOpen = await FincashService.getOpenFincash();
+				if (!(fincashOpen instanceof Error)) {
+					const total = await FincashService.getTotalByFincash(fincashOpen.id);
+					if (!(total instanceof Error)) {
+						if (response[response.length - 1].first_id == fincashOpen.id) response[response.length - 1].total_registered_value = total;
+					}
+				}
+
 				const value = response.map((i) => i.total_registered_value);
 				const LineChartInvoicing = response.map((i) => i.total_invoicing).reduce((a, b) => Number(a) + Number(b));
 				const date = response.map((i) => new Date(i.day).getTime());
 				const invoicing = response.map((i) => i.total_invoicing);
+
 				setPerMonth({ date, value, invoicing })
 				setLineChartInvoicing(LineChartInvoicing);
 				setLastFetch(dateToFetch);
