@@ -3,6 +3,7 @@ import {
 	Fab,
 	Paper,
 	Table,
+	Button,
 	Skeleton,
 	useTheme,
 	TableRow,
@@ -13,18 +14,18 @@ import {
 	Typography,
 	useMediaQuery,
 	TableContainer,
-	Button,
 } from "@mui/material";
 import Swal from "sweetalert2";
 import { format } from 'date-fns';
 import { LayoutMain } from "../../shared/layouts";
+import BlockIcon from '@mui/icons-material/Block';
 import { useEffect, useMemo, useState } from "react";
 import { Environment } from "../../shared/environment";
+import { nToBRL } from "../../shared/services/formatters";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { FincashService, IFincash, IGetSales, SaleService } from "../../shared/services/api";
-import { nToBRL } from "../../shared/services/formatters";
 
 const NUMBER_OF_SKELETONS = Array(7).fill(null);
 
@@ -104,6 +105,62 @@ export const ShowSales: React.FC = () => {
 
 	}
 
+	const handleCancelSale = (id: number) => {
+		let timerInterval: number; // Usa 'number' para o intervalo no navegador
+
+		Swal.fire({
+			title: 'Cancelar Venda?',
+			text: `CUIDADO! Não será possível reverter esta ação!`,
+			icon: 'warning',
+			iconColor: theme.palette.error.main,
+			showCancelButton: true,
+			confirmButtonColor: theme.palette.error.main,
+			cancelButtonColor: '#aaa',
+			cancelButtonText: 'Cancelar',
+			confirmButtonText: 'Prosseguir',
+			didOpen: () => {
+				const confirmButton = Swal.getConfirmButton();
+				if (confirmButton) {
+					confirmButton.disabled = true; // Desabilita o botão inicialmente
+
+					let timeLeft = 7;
+					confirmButton.textContent = `Prosseguir (${timeLeft})`;
+
+					// Timer de 5 segundos
+					timerInterval = window.setInterval(() => {
+						timeLeft--;
+						confirmButton.textContent = `Prosseguir (${timeLeft})`;
+
+						if (timeLeft === 0) {
+							clearInterval(timerInterval);
+							confirmButton.textContent = 'Prosseguir';
+							confirmButton.disabled = false; // Habilita o botão após o timer
+						}
+					}, 1000);
+				}
+			},
+			willClose: () => {
+				clearInterval(timerInterval); // Limpa o intervalo quando o modal fechar
+			}
+		}).then((result) => {
+			if (result.isConfirmed) {
+				SaleService.cancelSale(id).then((result) => {
+					if (result instanceof Error) {
+						alert(result.message);
+					} else {
+						Swal.fire({
+							title: 'Sucesso!',
+							text: 'Venda cancelada.',
+							icon: 'success',
+						});
+						if (fincash) listSales(fincash.id);
+					}
+				});
+			}
+		});
+	};
+
+
 	return (
 		<>
 			<LayoutMain title="Vendas" subTitle={"Gerencie as vendas do caixa"}>
@@ -128,6 +185,7 @@ export const ShowSales: React.FC = () => {
 										<TableCell>Valor</TableCell>
 										<TableCell>Ações</TableCell>
 										<TableCell>Observações</TableCell>
+										{!id && <TableCell sx={{ width: 80 }}>Cancelamento</TableCell>}
 									</TableRow>
 								</TableHead>
 
@@ -135,7 +193,15 @@ export const ShowSales: React.FC = () => {
 									{!loading ?
 										rows?.map(
 											(row) => (
-												<TableRow key={row.sale_id}>
+												<TableRow
+													key={row.sale_id}
+													sx={
+														row.deleted_at ?
+															{ backgroundColor: '#ff222222', '&:hover': { backgroundColor: '#ff22223a' } }
+															:
+															{ '&:hover': { backgroundColor: '#1111' } }
+													}
+												>
 													<TableCell>{row.sale_id}</TableCell>
 													<TableCell>{format(row.created_at, 'HH:mm:ss')}</TableCell>
 													<TableCell>{nToBRL(row.total_value)}</TableCell>
@@ -143,8 +209,6 @@ export const ShowSales: React.FC = () => {
 														<Link to={id ? `/vendas/${row.sale_id}?back=${id}` : '/vendas/' + row.sale_id}>
 															<Fab
 																size="medium"
-																color="info"
-																onClick={() => console.log('Clique no ícone')}
 																sx={{
 																	backgroundColor: '#5bc0de',
 																	'&:hover': { backgroundColor: '#6fd8ef' },
@@ -159,6 +223,21 @@ export const ShowSales: React.FC = () => {
 															{row.obs}
 														</Typography>
 													</TableCell>
+													{
+														!id &&
+														<TableCell>
+															{
+																!row.deleted_at &&
+																<Fab
+																	size="medium"
+																	color="error"
+																	onClick={() => handleCancelSale(row.sale_id)}
+																>
+																	<BlockIcon />
+																</Fab>
+															}
+														</TableCell>
+													}
 												</TableRow>
 											)
 										)

@@ -153,6 +153,7 @@ export const SaleDetail: React.FC = () => {
 			<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 				<Box minHeight={550} margin={5}>
 					<Typography variant="h4" margin={1}>{sale?.created_at ? format(sale.created_at, 'dd/MM/yyyy - HH:mm:ss') : <Skeleton sx={{ maxWidth: 400 }} />}</Typography>
+					{sale?.deleted_at && < Typography variant="h4" margin={1} color="#E11">(VENDA CANCELADA)</Typography>}
 					<Typography variant="h5" margin={1}>{fincash?.opener ? 'Caixa: ' + fincash.opener : <Skeleton sx={{ maxWidth: 100 }} />}</Typography>
 					<Typography variant="h6" margin={1}>Produtos:</Typography>
 					<TableContainer sx={{ minHeight: 428 }}>
