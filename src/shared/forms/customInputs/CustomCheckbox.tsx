@@ -24,7 +24,7 @@ export const CustomCheckbox: React.FC<IVCheckProps> = ({ menuItens, flexDirectio
             initialCheckedState[item.id] = item.defaultChecked ?? false;
         });
         setChecked(initialCheckedState);
-    }, [menuItens]);
+    }, []);
 
     const handleChange = (key: string, isChecked: boolean) => {
         const updatedChecked = {
