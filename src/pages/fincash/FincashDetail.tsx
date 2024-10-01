@@ -68,9 +68,9 @@ export const FincashDetail: React.FC = () => {
 		const fetchData = async () => {
 			try {
 
-				const CompleteFetch = await FincashService.getDetailedData(Number(id));
+				const CompleteFetch = await FincashService.getById(Number(id));
 				if (CompleteFetch instanceof Error) return 'Fincash not found';
-				const fincash = CompleteFetch.data.data.fincash;
+				const fincash = CompleteFetch;
 				fincash.obs && setDesc(fincash.obs);
 				if (!fincash.isFinished) {
 					const result = await FincashService.getTotalByFincash(fincash.id);

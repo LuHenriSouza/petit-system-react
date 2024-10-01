@@ -13,6 +13,7 @@ export interface IGetSales {
     sale_id: number,
     obs: string,
     created_at: Date,
+    deleted_at?: Date,
     total_value: number,
 }
 
@@ -22,6 +23,7 @@ export interface ISaleRaw {
     fincash_id: number,
     created_at: Date,
     updated_at: Date,
+    deleted_at?: Date,
 
 }
 
@@ -157,11 +159,21 @@ const getSalesByFincash = async (fincash_id: number, page = 1, limit = Environme
     }
 };
 
+const cancelSale = async (id: number) => {
+    try {
+        await Api.delete(`/sale/${id}`, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao apagar o registro.');
+    }
+};
+
 export const SaleService = {
     create,
     getById,
     getSales,
     createObs,
+    cancelSale,
     getAllById,
     getSalesByFincash,
 };
