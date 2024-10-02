@@ -22,6 +22,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import HistoryIcon from '@mui/icons-material/History';
+import { nToBRL } from "../../shared/services/formatters";
 import { VTextField } from "../../shared/forms/VTextField";
 import FindInPageIcon from '@mui/icons-material/FindInPage';
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -29,7 +30,6 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { FincashService, ICashOutflow, IFincash, OutflowService } from "../../shared/services/api";
-import { nToBRL } from "../../shared/services/formatters";
 
 const OUTFLOW_ROW_LIMIT = 5;
 
@@ -201,6 +201,12 @@ export const FincashDetail: React.FC = () => {
 					<Link to={backPage ? `/fechamentos?page=${backPage}` : '/fechamentos'}>
 						<Button variant="contained"> <ReplyAllRoundedIcon sx={{ mr: 1 }} /> Voltar </Button>
 					</Link>
+					{
+						fincash?.isFinished &&
+						<Link to={`/caixa/editar/${id}?backPage=${backPage}`}>
+							<Button variant="contained"> <EditIcon sx={{ mr: 1 }} /> Editar Caixa </Button>
+						</Link>
+					}
 				</Box>
 			</Paper>
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1 }}>
