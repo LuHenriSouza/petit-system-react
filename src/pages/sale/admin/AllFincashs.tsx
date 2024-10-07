@@ -29,7 +29,26 @@ const NUMBER_OF_SKELETONS = Array(7).fill(null);
 export const AllFincashs: React.FC = () => {
 	const theme = useTheme();
 	const smDown = useMediaQuery(theme.breakpoints.down('sm'));
-	// const navigate = useNavigate();
+
+	const daysOfWeek = {
+		'Sun': 'Dom',
+		'Mon': 'Seg',
+		'Tue': 'Ter',
+		'Wed': 'Qua',
+		'Thu': 'Qui',
+		'Fri': 'Sex',
+		'Sat': 'Sab',
+	};
+
+	const formatDateWithCustomDay = (date: Date, formatString: string) => {
+		// Obter o nome do dia da semana em inglês
+		const dayOfWeek = format(date, 'EEE') as keyof typeof daysOfWeek;
+		// Mapear o nome do dia da semana para o formato desejado
+		const abbreviatedDay = daysOfWeek[dayOfWeek] || '';
+		// Formatando a data final
+		const formattedDate = format(date, formatString);
+		return `${formattedDate} - ${abbreviatedDay}`;
+	};
 
 	const { debounce } = useDebounce();
 
@@ -160,7 +179,7 @@ export const AllFincashs: React.FC = () => {
 												<TableRow key={row.id}>
 													<TableCell>
 														<Typography>
-															{`${format(row.created_at, 'dd/MM/yy')}`}
+															{`${formatDateWithCustomDay(row.created_at, 'dd/MM/yy')}`}
 														</Typography>
 													</TableCell>
 													<TableCell sx={{ maxWidth: 40 }}>
