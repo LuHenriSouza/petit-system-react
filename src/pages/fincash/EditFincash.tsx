@@ -4,19 +4,18 @@ import {
 	Table,
 	Paper,
 	Button,
+	Dialog,
+	Divider,
 	TableRow,
-	Skeleton,
 	TableCell,
 	TextField,
 	TableBody,
 	Typography,
 	Pagination,
-	Divider,
-	Dialog,
 	DialogTitle,
+	DialogActions,
 	DialogContent,
 	DialogContentText,
-	DialogActions,
 } from "@mui/material";
 import * as yup from 'yup';
 import Swal from 'sweetalert2';
@@ -28,17 +27,15 @@ import EditIcon from '@mui/icons-material/Edit';
 import { VForm } from "../../shared/forms/VForm";
 import { LayoutMain } from "../../shared/layouts";
 import DeleteIcon from '@mui/icons-material/Delete';
-import HistoryIcon from '@mui/icons-material/History';
-import { nToBRL } from "../../shared/services/formatters";
 import { VTextField } from "../../shared/forms/VTextField";
-import FindInPageIcon from '@mui/icons-material/FindInPage';
+import { EOutflowType } from "../outflow/enum/EOutflowType";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
+import { BRLToN, nToBRL } from "../../shared/services/formatters";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
+import { IBodyOutflow, TEditBodyProps } from "../../shared/types/EditOutflow";
 import { FincashService, ICashOutflow, IFincash, OutflowService, SupplierService } from "../../shared/services/api";
-import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
-import { EOutflowType } from "../outflow/enum/EOutflowType";
 
 const OUTFLOW_ROW_LIMIT = 5;
 
@@ -46,12 +43,10 @@ export const EditFincash: React.FC = () => {
 	const { id } = useParams();
 
 	const [loading, setLoading] = useState(true);
-	const [cardLoading, setCardLoading] = useState(false);
 	const [reload, setReload] = useState(0);
 	const [fincash, setFincash] = useState<IFincash>();
 	const [outflows, setOutflows] = useState<{ outflows: ICashOutflow[], total: number }>();
 
-	const EditFormRef = useRef<FormHandles>(null);
 
 	const [outflowTotalCount, setOutflowTotalCount] = useState(0);
 	const [loadingOutflows, setLoadingoutflows] = useState(false);
@@ -66,19 +61,18 @@ export const EditFincash: React.FC = () => {
 		return searchParams.get('backPage');
 	}, [searchParams]);
 
-	useEffect(() => {
+	useEffect(() => {	// FETCH DATA (OUTFLOW)
 		if (fincash) {
 			listOutflow(fincash.id);
 		}
 	}, [outflowPage, fincash]);
 
-	useEffect(() => {
+	useEffect(() => { // FETCH DATA (FINCASH)
 		const fetchData = async () => {
 			try {
 
-				const CompleteFetch = await FincashService.getById(Number(id));
-				if (CompleteFetch instanceof Error) return 'Fincash not found';
-				const fincash = CompleteFetch;
+				const fincash = await FincashService.getById(Number(id));
+				if (fincash instanceof Error) return 'Fincash not found';
 				if (!fincash.isFinished) {
 					const result = await FincashService.getTotalByFincash(fincash.id);
 					if (!(result instanceof Error)) {
@@ -117,20 +111,59 @@ export const EditFincash: React.FC = () => {
 		} catch (e) { console.error(e) } finally { setLoadingoutflows(false); }
 	}
 
-	interface IFormDataValidated {
-		card: number;
-	}
+	// FINCASH ENVIRONMENT
 
-	interface IFormData {
-		card: string;
-	}
-
-	const formValidation: yup.Schema<IFormDataValidated> = yup.object().shape({
-		card: yup.number().required().min(0)
+	const fincashValidation = yup.object().shape({
+		name: yup.string().required().max(100),
+		value: yup.number().required(),
+		finalValue: yup.number().required(),
+		cardValue: yup.number().required(),
+		obs: yup.string().nullable().max(200)
 	});
 
+	const EditFormRef = useRef<FormHandles>(null);
+
+
+	// const submitFincash = async (data: IFincash) => {
+	// 	try {
+	// 		await fincashValidation.validate(data, { abortEarly: false });
+	// 		const response = await FincashService.updateDescById(Number(id), data);
+	// 		if (response instanceof Error) return alert('Erro ao editar caixa');
+	// 		Swal.fire({
+	// 			icon: 'success',
+	// 			title: 'Sucesso',
+	// 			text: 'Caixa editado com sucesso'
+	// 		});
+	// 		setReload(reload + 1);
+	// 	} catch (errors) {
+	// 		if (errors instanceof yup.ValidationError) {
+	// 			const validatenErrors: { [key: string]: string } = {};
+	// 			errors.inner.forEach((e) => {
+	// 				if (!e.path) return;
+	// 				validatenErrors[e.path] = e.message;
+	// 			});
+
+	// 			EditFormRef.current?.setErrors(validatenErrors)
+	// 			return;
+	// 		}
+	// 	}
+	// }
 
 	// MODAL ENVIRONMENT
+
+	const bodyValidation = yup.object().shape({
+		type: yup.string().required().oneOf(Object.values(EOutflowType)),
+		value: yup.number().required().moreThan(0),
+		desc: yup.string().nullable().max(200),
+		supplier_id: yup.number().nullable().moreThan(0)
+	});
+	const bodyValidationSupplier = yup.object().shape({
+		type: yup.string().required().oneOf(Object.values(EOutflowType)),
+		value: yup.number().required().moreThan(0),
+		desc: yup.string().nullable().max(200),
+		supplier_id: yup.number().moreThan(0)
+	});
+
 	const selectManuItens: IMenuItens[] = [
 		{ text: 'Alimentação', value: EOutflowType.Alimentacao },
 		{ text: 'Transporte', value: EOutflowType.Transporte },
@@ -139,19 +172,19 @@ export const EditFincash: React.FC = () => {
 		{ text: 'Outro', value: EOutflowType.Outro }
 	];
 
-	const OutflowFormRef = useRef<FormHandles>(null);
-	const [outflowLoading, setOutflowLoading] = useState(false);
-	const [isSupplier, setIsSupplier] = useState(false);
 	const [open, setOpen] = useState(false);
-	const [editOutflow, setEditOutflow] = useState<ICashOutflow>();
+	const OutflowFormRef = useRef<FormHandles>(null);
+	const [isSupplier, setIsSupplier] = useState(false);
+	const [outflowLoading, setOutflowLoading] = useState(false);
 	const [suppliers, setSuppliers] = useState<IMenuItens[]>([]);
+	const [editOutflow, setEditOutflow] = useState<ICashOutflow>();
 
 	const handleOpen = (outflow?: ICashOutflow) => {
+		getSuppliersOneTime();
 		setEditOutflow(outflow);
 		if (outflow?.type == EOutflowType.Fornecedor)
 			setIsSupplier(true);
 		setOpen(true);
-
 	}
 
 	const handleClose = () => {
@@ -162,27 +195,124 @@ export const EditFincash: React.FC = () => {
 		}, 500)
 	}
 
+	const getSuppliersOneTime = async () => {
+		try {
+			if (suppliers.length <= 0) {
+				const result = await SupplierService.getAll(undefined, undefined, 99999)
+				if (result instanceof Error) {
+					alert('Erro ao buscar Fornecedores');
+				} else {
+					result.data.map((data) => {
+						const object = { text: data.name, value: `${data.id}` }
+						setSuppliers((old) => [...old, object]);
+					})
+				}
+			}
+		} catch (e) {
+			alert(e);
+		}
+	}
+
 	const handleValueChange = async (selectedValue: string) => {
-		if (selectedValue === EOutflowType.Fornecedor) {
+		if (selectedValue === EOutflowType.Fornecedor)
 			setIsSupplier(true);
-			try {
-				if (suppliers.length <= 0) {
-					const result = await SupplierService.getAll(undefined, undefined, 99999)
-					if (result instanceof Error) {
-						alert('Erro ao buscar Fornecedores');
-					} else {
-						result.data.map((data) => {
-							const object = { text: data.name, value: `${data.id}` }
-							setSuppliers((old) => [...old, object]);
-						})
+		else
+			setIsSupplier(false);
+	}
+
+	const mountOBJ = (data: IBodyOutflow): { obj: TEditBodyProps, body: { type: string, value: number, desc?: string | null, supplier_id?: number } } => {
+		const body = {
+			type: data.type,
+			value: BRLToN(data.value.toString()),
+			desc: data.desc,
+			supplier_id: isSupplier ? Number(data.supplier_id) : 0
+		}
+		return {
+			obj: editOutflow ?
+				{
+					type: 'update',
+					content: {
+						outflow_id: editOutflow.id,
+						body: {
+							...body
+						}
 					}
 				}
-			} catch (e) {
-				alert(e);
-			}
-		} else {
-			setIsSupplier(false);
+				:
+				{
+					type: 'add',
+					content: {
+						fincash_id: Number(id),
+						body: {
+							...body
+						}
+					}
+				},
+			body,
 		}
+	}
+
+	const submitOutflow = async (data: IBodyOutflow) => {
+		try {
+			setOutflowLoading(true);
+			const { body, obj } = mountOBJ(data);
+			if (body.type == EOutflowType.Fornecedor)
+				await bodyValidationSupplier.validate(body, { abortEarly: false })
+			else
+				await bodyValidation.validate(body, { abortEarly: false })
+
+			console.log(obj)
+			const response = await OutflowService.editOutflow(obj);
+			if (response instanceof Error) return alert('Erro ao editar saída');
+			Swal.fire({
+				icon: 'success',
+				title: 'Sucesso',
+				text: 'Saída editada com sucesso'
+			});
+			handleClose();
+			setReload(reload + 1);
+		} catch (errors) {
+			if (errors instanceof yup.ValidationError) {
+				const validatenErrors: { [key: string]: string } = {};
+				errors.inner.forEach((e) => {
+					if (!e.path) return;
+					validatenErrors[e.path] = e.message;
+				});
+
+				OutflowFormRef.current?.setErrors(validatenErrors)
+				return;
+			}
+		} finally {
+			setOutflowLoading(false);
+		}
+	}
+
+	const handleDelete = (outflow_id: number) => {
+		Swal.fire({
+			title: 'Deseja realmente excluir?',
+			text: 'Essa ação não pode ser desfeita',
+			icon: 'warning',
+			showCancelButton: true,
+			confirmButtonColor: '#d33',
+			cancelButtonColor: '#3085d6',
+			confirmButtonText: 'Sim, excluir',
+			cancelButtonText: 'Cancelar'
+		}).then(async (result) => {
+			if (result.isConfirmed) {
+				try {
+					const response = await OutflowService.editOutflow({ type: 'delete', content: { outflow_id } });
+					if (response instanceof Error) return alert('Erro ao excluir saída');
+					Swal.fire({
+						icon: 'success',
+						title: 'Sucesso',
+						text: 'Saída excluída com sucesso'
+					});
+					setReload(reload + 1);
+				} catch (e) {
+					console.error(e);
+				}
+			}
+		});
 	}
 
 	return (
@@ -279,6 +409,7 @@ export const EditFincash: React.FC = () => {
 													<Fab
 														size="small"
 														color="error"
+														onClick={() => handleDelete(outflow.id)}
 													>
 														<DeleteIcon color="info" />
 													</Fab>
@@ -327,7 +458,7 @@ export const EditFincash: React.FC = () => {
 						{editOutflow ? 'Editar' : 'Adicionar'} saída
 					</DialogContentText>
 					<Box minHeight={100} px={3}>
-						<VForm ref={OutflowFormRef} onSubmit={() => { }}>
+						<VForm ref={OutflowFormRef} onSubmit={submitOutflow}>
 							<Box display={'flex'} flexDirection={'column'} gap={3} margin={3} minWidth={540}>
 								<Box display={'flex'} gap={5}>
 									<Box width={200}>

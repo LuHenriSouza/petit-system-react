@@ -1,5 +1,6 @@
 
 import { Environment } from '../../environment';
+import { TEditBodyProps } from '../../types/EditOutflow';
 import { Api } from './axios-config';
 
 const Autorization = () => {
@@ -108,11 +109,21 @@ const getTotalByFincash = async (fincash_id: number): Promise<number | Error> =>
 //     }
 // };
 
+const editOutflow = async (body: TEditBodyProps): Promise<void | Error> => {
+    try {
+        await Api.post('/cashoutflow/edit', body, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao editar o registro.');
+    }
+}
+
 
 export const OutflowService = {
     create,
     getById,
     getAllById,
+    editOutflow,
     updateDescById,
     getTotalByFincash,
     // deleteById,
