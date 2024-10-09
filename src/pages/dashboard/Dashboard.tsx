@@ -78,9 +78,6 @@ export const Dashboard: React.FC = () => {
 	}, [])
 
 	useEffect(() => {
-		console.log('-------------------------------------------------')
-		console.log(dateToFetch[0])
-		console.log(dateToFetch[1])
 		getSectorInvoicingByDate();
 		getDataByDate();
 	}, [att])
@@ -100,14 +97,18 @@ export const Dashboard: React.FC = () => {
 				let total: number | Error = 0;
 				const fincashOpen = await FincashService.getOpenFincash();
 				if (!(fincashOpen instanceof Error)) {
-					total = await FincashService.getTotalByFincash(fincashOpen.id);
-					if (!(total instanceof Error)) {
-						if (response[response.length - 1].first_id == fincashOpen.id) response[response.length - 1].total_registered_value = total;
+					if (fincashOpen.created_at >= dateToFetch[0] && fincashOpen.created_at <= dateToFetch[1]) {
+						total = await FincashService.getTotalByFincash(fincashOpen.id);
+						if (!(total instanceof Error)) {
+							if (response[response.length - 1].first_id == fincashOpen.id) response[response.length - 1].total_registered_value = total;
+						}
 					}
 				}
 				if (total instanceof Error) total = 0;
 				const value = response.map((i) => i.total_registered_value);
-				const LineChartInvoicing = response.map((i) => i.total_invoicing).reduce((a, b) => Number(a) + Number(b), total);
+				console.log(response);
+				const LineChartInvoicing = response.map((i) => i.total_invoicing).reduce((a, b) => { console.log(a, b); return Number(a ?? 0) + Number(b ?? 0) }, total);
+				console.log(lineChartInvoicing, 'aqui');
 				const date = response.map((i) => new Date(i.day).getTime());
 				const invoicing = response.map((i) => i.total_invoicing);
 

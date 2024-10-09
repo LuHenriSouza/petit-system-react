@@ -59,18 +59,21 @@ export const SideBar: React.FC<ISideBarProps> = ({ children }) => {
 					</Link>
 
 					<Divider sx={{ backgroundColor: "rgb(255,255,255,0.2)", }} />
-					<SideNavItem
-						key='Dashboard'
-						title='Dashboard'
-						path='/dashboard'
-						icon={(<DashboardRoundedIcon fontSize='small' />)}
-						clicked={smDown ? toggleDrawerOpen : undefined}
-						active={(location.pathname === '/dashboard')}
+					{
+						['admin'].includes(role) &&
+						<Box>
+							<SideNavItem
+								key='Dashboard'
+								title='Dashboard'
+								path='/dashboard'
+								icon={(<DashboardRoundedIcon fontSize='small' />)}
+								clicked={smDown ? toggleDrawerOpen : undefined}
+								active={(location.pathname === '/dashboard')}
 
-					/>
-
-
-					<Divider sx={{ backgroundColor: "rgb(255,255,255,0.2)", }} />
+							/>
+							<Divider sx={{ backgroundColor: "rgb(255,255,255,0.2)", }} />
+						</Box>
+					}
 
 					<Box
 						component="nav"
@@ -106,7 +109,7 @@ export const SideBar: React.FC<ISideBarProps> = ({ children }) => {
 								<>
 									{Array(9).fill(null).map((_, i) =>
 										<Box p={1} key={i}>
-											<Skeleton sx={{ minHeight: 50, backgroundColor:'#eeeeee33' }} />
+											<Skeleton sx={{ minHeight: 50, backgroundColor: '#eeeeee33' }} />
 										</Box>
 									)}
 								</>

@@ -19,7 +19,7 @@ interface IVSelectProps {
     label: string,
     name: string,
     messageError?: string,
-    defaultSelected?: number,
+    defaultSelected?: number | string,
     onValueChange?: (selectedValue: string) => void;
 }
 

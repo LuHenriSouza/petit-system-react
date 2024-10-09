@@ -16,6 +16,7 @@ import {
     SaleDetail,
     Promotions,
     AllFincashs,
+    EditFincash,
     CloseFincash,
     UpdateProduct,
     OutflowDetail,
@@ -50,6 +51,7 @@ export const AppRoutes = () => {
             <Route path="/vendas/:id" element={<SaleDetail />} />
             <Route path="/vendas/admin" element={<AllSales />} />
             <Route path="/caixa/dados/:id" element={<FincashResult />} />
+            <Route path="/caixa/editar/:id" element={<EditFincash />} />
 
             {/* Saidas */}
             <Route path="/saidas" element={<OutFlow />} />
