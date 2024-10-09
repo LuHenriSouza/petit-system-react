@@ -116,6 +116,15 @@ export interface OrderByObj {
     group_id?: number,
 }
 
+export interface IFincashUpdate {
+    opener: string,
+    value: number,
+    finalValue: number,
+    cardValue: number,
+    obs?: string,
+}
+
+
 const create = async (dados: Omit<IFincash, 'id' | 'created_at' | 'updated_at' | 'isFinished'>): Promise<number | Error> => {
     try {
         const { data } = await Api.post<IFincash>('/fincash', dados, Autorization());
@@ -286,6 +295,15 @@ const getDataByDate = async (start: Date, end: Date): Promise<IResponseData[] | 
     }
 };
 
+const updateById = async (id: number, dados: IFincashUpdate): Promise<void | Error> => {
+    try {
+        await Api.put(`/fincash/${id}`, dados, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
+    }
+};
+
 // const getCurrentMonth = async (): Promise<IResponseData[] | Error> => {
 //     try {
 //         const urlRelativa = `/data/month/current`;
@@ -300,14 +318,6 @@ const getDataByDate = async (start: Date, end: Date): Promise<IResponseData[] | 
 //     }
 // };
 
-// const updateById = async (id: number, dados: Omit<IProduct, 'id' | 'created_at' | 'updated_at' | 'code'>): Promise<void | Error> => {
-//     try {
-//         await Api.put(`/product/${id}`, dados, Autorization());
-//     } catch (error) {
-//         console.error(error);
-//         return new Error((error as { message: string }).message || 'Erro ao atualizar o registro.');
-//     }
-// };
 
 // const deleteById = async (id: number): Promise<void | Error> => {
 //     try {
@@ -324,6 +334,7 @@ export const FincashService = {
     create,
     getAll,
     getById,
+    updateById,
     updateObsById,
     getOpenFincash,
     getLastFincash,
