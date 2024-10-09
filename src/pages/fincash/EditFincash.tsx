@@ -35,7 +35,7 @@ import { BRLToN, nToBRL } from "../../shared/services/formatters";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 import ReplyAllRoundedIcon from '@mui/icons-material/ReplyAllRounded';
 import { IBodyOutflow, TEditBodyProps } from "../../shared/types/EditOutflow";
-import { FincashService, ICashOutflow, IFincash, OutflowService, SupplierService } from "../../shared/services/api";
+import { FincashService, ICashOutflow, IFincash, IFincashUpdate, OutflowService, SupplierService } from "../../shared/services/api";
 
 const OUTFLOW_ROW_LIMIT = 5;
 
@@ -114,40 +114,62 @@ export const EditFincash: React.FC = () => {
 	// FINCASH ENVIRONMENT
 
 	const fincashValidation = yup.object().shape({
-		name: yup.string().required().max(100),
+		opener: yup.string().required().max(100),
 		value: yup.number().required(),
 		finalValue: yup.number().required(),
 		cardValue: yup.number().required(),
-		obs: yup.string().nullable().max(200)
+		obs: yup.string().max(200)
 	});
 
 	const EditFormRef = useRef<FormHandles>(null);
 
+	const submitFincash = async (data: IFincashUpdate) => {
+		try {
+			const result = await Swal.fire({
+				title: 'Deseja realmente editar?',
+				text: 'Editar Caixa?',
+				icon: 'warning',
+				showCancelButton: true,
+				confirmButtonColor: 'primary',
+				cancelButtonColor: 'gray',
+				confirmButtonText: 'Sim, editar',
+				cancelButtonText: 'Cancelar'
+			});
+			if (!result.isConfirmed) return;
+			setLoading(true);
+			const obj: IFincashUpdate = {
+				opener: data.opener,
+				value: BRLToN(data.value.toString()),
+				finalValue: BRLToN(data.finalValue.toString()),
+				cardValue: BRLToN(data.cardValue.toString()),
+				obs: data.obs,
+			}
+			console.log(obj)
+			await fincashValidation.validate(obj, { abortEarly: false });
+			const response = await FincashService.updateById(Number(id), obj);
+			if (response instanceof Error) return Swal.fire('Erro ao editar caixa', '', 'error');
+			Swal.fire({
+				icon: 'success',
+				title: 'Sucesso',
+				text: 'Caixa editado com sucesso'
+			});
+			setReload(reload + 1);
 
-	// const submitFincash = async (data: IFincash) => {
-	// 	try {
-	// 		await fincashValidation.validate(data, { abortEarly: false });
-	// 		const response = await FincashService.updateDescById(Number(id), data);
-	// 		if (response instanceof Error) return alert('Erro ao editar caixa');
-	// 		Swal.fire({
-	// 			icon: 'success',
-	// 			title: 'Sucesso',
-	// 			text: 'Caixa editado com sucesso'
-	// 		});
-	// 		setReload(reload + 1);
-	// 	} catch (errors) {
-	// 		if (errors instanceof yup.ValidationError) {
-	// 			const validatenErrors: { [key: string]: string } = {};
-	// 			errors.inner.forEach((e) => {
-	// 				if (!e.path) return;
-	// 				validatenErrors[e.path] = e.message;
-	// 			});
+		} catch (errors) {
+			if (errors instanceof yup.ValidationError) {
+				const validatenErrors: { [key: string]: string } = {};
+				errors.inner.forEach((e) => {
+					if (!e.path) return;
+					validatenErrors[e.path] = e.message;
+				});
 
-	// 			EditFormRef.current?.setErrors(validatenErrors)
-	// 			return;
-	// 		}
-	// 	}
-	// }
+				EditFormRef.current?.setErrors(validatenErrors)
+				return;
+			}
+		} finally {
+			setLoading(false);
+		}
+	};
 
 	// MODAL ENVIRONMENT
 
@@ -155,8 +177,8 @@ export const EditFincash: React.FC = () => {
 		type: yup.string().required().oneOf(Object.values(EOutflowType)),
 		value: yup.number().required().moreThan(0),
 		desc: yup.string().nullable().max(200),
-		supplier_id: yup.number().nullable().moreThan(0)
 	});
+
 	const bodyValidationSupplier = yup.object().shape({
 		type: yup.string().required().oneOf(Object.values(EOutflowType)),
 		value: yup.number().required().moreThan(0),
@@ -216,8 +238,10 @@ export const EditFincash: React.FC = () => {
 	const handleValueChange = async (selectedValue: string) => {
 		if (selectedValue === EOutflowType.Fornecedor)
 			setIsSupplier(true);
-		else
+		else {
 			setIsSupplier(false);
+			OutflowFormRef.current?.setFieldValue('supplier_id', undefined);
+		}
 	}
 
 	const mountOBJ = (data: IBodyOutflow): { obj: TEditBodyProps, body: { type: string, value: number, desc?: string | null, supplier_id?: number } } => {
@@ -225,7 +249,7 @@ export const EditFincash: React.FC = () => {
 			type: data.type,
 			value: BRLToN(data.value.toString()),
 			desc: data.desc,
-			supplier_id: isSupplier ? Number(data.supplier_id) : 0
+			supplier_id: isSupplier ? Number(data.supplier_id) : undefined
 		}
 		return {
 			obj: editOutflow ?
@@ -258,10 +282,15 @@ export const EditFincash: React.FC = () => {
 			const { body, obj } = mountOBJ(data);
 			if (body.type == EOutflowType.Fornecedor)
 				await bodyValidationSupplier.validate(body, { abortEarly: false })
-			else
+			else {
 				await bodyValidation.validate(body, { abortEarly: false })
+			}
 
-			console.log(obj)
+			if (obj.type == 'add' || obj.type == 'update') {
+				if (obj.content.body.type !== EOutflowType.Fornecedor)
+					obj.content.body.supplier_id = null;
+			}
+
 			const response = await OutflowService.editOutflow(obj);
 			if (response instanceof Error) return alert('Erro ao editar saída');
 			Swal.fire({
@@ -272,6 +301,7 @@ export const EditFincash: React.FC = () => {
 			handleClose();
 			setReload(reload + 1);
 		} catch (errors) {
+			console.log(errors);
 			if (errors instanceof yup.ValidationError) {
 				const validatenErrors: { [key: string]: string } = {};
 				errors.inner.forEach((e) => {
@@ -280,6 +310,7 @@ export const EditFincash: React.FC = () => {
 				});
 
 				OutflowFormRef.current?.setErrors(validatenErrors)
+				console.log(validatenErrors)
 				return;
 			}
 		} finally {
@@ -330,10 +361,10 @@ export const EditFincash: React.FC = () => {
 			<Paper sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1 }}>
 				<Box margin={5} display={'flex'} justifyContent={'space-between'}>
 					{fincash ?
-						<VForm onSubmit={() => { }} ref={EditFormRef}>
+						<VForm onSubmit={submitFincash} ref={EditFormRef}>
 							<Box minWidth={780}>
 								{/* <Box maxWidth={500}> */}
-								<VTextField name="name" label={'Nome'} valueDefault={fincash.opener} disabled={loading} />
+								<VTextField name="opener" label={'Nome'} valueDefault={fincash.opener} disabled={loading} />
 								<Divider sx={{ my: 4 }} />
 								<Box gap={2} display={'flex'} >
 									<VTextField name="value" label={'Início'} cash valueDefault={nToBRL(fincash.value)} disabled={loading} />
@@ -354,7 +385,14 @@ export const EditFincash: React.FC = () => {
 									autoComplete="off"
 									disabled={loading}
 								/>
-								<Button variant="contained" size="large" sx={{ mt: 2 }} fullWidth disabled={loading} onClick={() => { }}>
+								<Button
+									variant="contained"
+									size="large"
+									sx={{ mt: 2 }}
+									fullWidth
+									disabled={loading}
+									onClick={EditFormRef.current?.submitForm}
+								>
 									EDITAR CAIXA
 								</Button>
 							</Box>
@@ -490,7 +528,6 @@ export const EditFincash: React.FC = () => {
 									fullWidth
 									multiline
 									label="Descrição"
-									id="elevation-multiline-static"
 									autoComplete="off"
 									valueDefault={editOutflow?.desc ?? undefined}
 								/>
