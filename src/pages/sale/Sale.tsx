@@ -110,6 +110,15 @@ export const Sale: React.FC = () => {
 	};
 
 
+	useEffect(() => {
+		if (lastResult) {
+			const index = products.findIndex((p) => p.code === lastResult.code);
+			if (index === -1) {
+				setLastResult(products[products.length - 1]);
+			}
+		}
+	}, [products]);
+
 	const handleEnter = async (e: React.KeyboardEvent<HTMLDivElement>) => {
 		setNotFound(false);
 		if (e.code === 'Enter' || e.key === 'Enter') {
@@ -140,6 +149,30 @@ export const Sale: React.FC = () => {
 			if (!code.trim() && !lastResult) return;
 			if (!code.trim() && lastResult) {
 				handleQuantityChange(lastResult.code, 1)
+			}
+		}
+
+		if (e.code === 'ArrowUp' || e.key === 'ArrowUp') {
+			if (!code.trim() && !lastResult) return;
+			if (!code.trim() && lastResult) {
+				const index = products.findIndex((p) => p.code === lastResult.code);
+				if (index !== -1) {
+					if (products[index - 1]) {
+						setLastResult(products[index - 1]);
+					}
+				}
+			}
+		}
+
+		if (e.code === 'ArrowDown' || e.key === 'ArrowDown') {
+			if (!code.trim() && !lastResult) return;
+			if (!code.trim() && lastResult) {
+				const index = products.findIndex((p) => p.code === lastResult.code);
+				if (index !== -1) {
+					if (products[index + 1]) {
+						setLastResult(products[index + 1]);
+					}
+				}
 			}
 		}
 	};
@@ -294,12 +327,27 @@ export const Sale: React.FC = () => {
 											<TableRow
 												key={row.code}
 												hover
-												sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-												onClick={()=>setLastResult(row)}
+												sx={row.code == lastResult?.code ? { border: 2, borderColor: '#512da8' } : {}}
+												onClick={() => setLastResult(row)}
 											>
-												<TableCell>{row.code}</TableCell>
-												<TableCell>{row.name}</TableCell>
-												<TableCell>{row.price}</TableCell>
+												<TableCell>
+													<Typography fontSize={15}>
+														{row.code}
+													</Typography>
+												</TableCell>
+												<TableCell>
+													<Typography fontSize={15}>
+														{row.name}
+													</Typography>
+												</TableCell>
+												<TableCell>
+													<Typography fontSize={12}>
+														{row.price}
+													</Typography>
+													<Typography fontSize={15}>
+														{(row.price * (row.quantity ?? 1)).toFixed(2)}
+													</Typography>
+												</TableCell>
 												<TableCell>
 													<Box display={'flex'} gap={1}>
 														<ArrowLeftRoundedIcon
