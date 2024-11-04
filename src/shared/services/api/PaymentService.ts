@@ -28,10 +28,18 @@ interface IPaymentTotalCount {
     totalCount: number,
 }
 
-const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS): Promise<IPaymentTotalCount | Error> => {
+type TColumnsOrderBy = 'expiration' | 'created_at';
+
+export interface OrderByObj {
+    column: TColumnsOrderBy;
+    order: 'asc' | 'desc';
+    supplier_id?: number;
+}
+
+const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, orderBy: OrderByObj): Promise<IPaymentTotalCount | Error> => {
     try {
-        const urlRelativa = `/payment?page=${page}&limit=${limit}`;
-        const { data, headers } = await Api.get(urlRelativa, Autorization());
+        const urlRelativa = `/payment/get?page=${page}&limit=${limit}`;
+        const { data, headers } = await Api.post(urlRelativa, orderBy, Autorization());
         if (data) {
             return {
                 data,
@@ -86,9 +94,25 @@ const getById = async (id: number): Promise<IPaymentResponse | Error> => {
     }
 };
 
+const getTotalByDate = async (start: Date, end: Date): Promise<number | Error> => {
+    try {
+        const { data } = await Api.get(`/payment/total?start=${start.toISOString()}&end=${end.toISOString()}`, Autorization());
+
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
 export const PaymentService = {
     getAll,
     create,
     getById,
     deleteById,
+    getTotalByDate
 };
