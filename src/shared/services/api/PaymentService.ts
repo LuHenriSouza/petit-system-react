@@ -94,9 +94,25 @@ const getById = async (id: number): Promise<IPaymentResponse | Error> => {
     }
 };
 
+const getTotalByDate = async (start: Date, end: Date): Promise<number | Error> => {
+    try {
+        const { data } = await Api.get(`/payment/total?start=${start.toISOString()}&end=${end.toISOString()}`, Autorization());
+
+        if (data) {
+            return data;
+        }
+
+        return new Error('Erro ao consultar o registro.');
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao consultar o registro.');
+    }
+};
+
 export const PaymentService = {
     getAll,
     create,
     getById,
     deleteById,
+    getTotalByDate
 };

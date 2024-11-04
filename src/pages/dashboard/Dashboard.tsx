@@ -11,7 +11,7 @@ import { endOfMonth, format, startOfMonth } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { LayoutMain } from '../../shared/layouts';
 import { LineChart, PieChart } from '@mui/x-charts';
-import { FincashService, ProductService } from '../../shared/services/api';
+import { FincashService, PaymentService, ProductService } from '../../shared/services/api';
 import { nToBRL } from '../../shared/services/formatters';
 import { CustomDatePicker } from '../../shared/forms/customInputs/CustomDatePicker';
 import { DateRange } from '@mui/x-date-pickers-pro';
@@ -251,6 +251,15 @@ export const Dashboard: React.FC = () => {
 		}
 	}
 
+	const [totalPayments, setTotalPayments] = useState(0);
+	useEffect(() => {
+		(async () => {
+			if (!dateToFetch[0] || !dateToFetch[1]) return;
+			const result = await PaymentService.getTotalByDate(dateToFetch[0], dateToFetch[1]);
+			if (result instanceof Error) return;
+			setTotalPayments(result);
+		})();
+	}, [att]);
 	return (
 		<LayoutMain title="Dashboard" subTitle=''>
 			<Grid container gap={2}>
@@ -258,10 +267,10 @@ export const Dashboard: React.FC = () => {
 					<Box gap={5} display={'flex'} flexDirection={'column'}>
 						<CustomPaper borderColor='blueviolet' border>
 							<Typography variant='h5'>
-								Rendimento Mensal
+								Potencial
 							</Typography>
 							<Typography pl={2} pt={1} variant='h6'>
-								R$ 1.000,00
+								{nToBRL(totalPrediction)}
 							</Typography>
 						</CustomPaper>
 						<CustomPaper borderColor='blueviolet' border>
@@ -272,12 +281,12 @@ export const Dashboard: React.FC = () => {
 								{totalStock}
 							</Typography>
 						</CustomPaper>
-						<CustomPaper borderColor='blueviolet' border>
+						<CustomPaper borderColor='#a00' border>
 							<Typography variant='h5'>
-								Potencial
+								Gastos (Boleto)
 							</Typography>
 							<Typography pl={2} pt={1} variant='h6'>
-								{nToBRL(totalPrediction)}
+								{nToBRL(totalPayments)}
 							</Typography>
 						</CustomPaper>
 					</Box>
