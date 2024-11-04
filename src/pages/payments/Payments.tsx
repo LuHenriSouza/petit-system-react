@@ -4,7 +4,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { Link, useSearchParams } from "react-router-dom";
 import { VForm } from "../../shared/forms/VForm";
 import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
-import { format } from 'date-fns';
+import { addDays, differenceInDays, format, isDate, startOfDay } from 'date-fns';
 import { VTextField } from "../../shared/forms/VTextField";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IPaymentResponse, PaymentService, SupplierService } from "../../shared/services/api";
@@ -13,6 +13,8 @@ import * as yup from 'yup';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from "sweetalert2";
 import { nToBRL } from "../../shared/services/formatters";
+import { OrderByObj } from "../../shared/services/api/PaymentService";
+import { CustomSelect } from "../../shared/forms/customInputs/CustomSelect";
 
 
 const ROW_LIMIT = 6;
@@ -29,6 +31,7 @@ export const Payments: React.FC = () => {
 	const [totalCount, setTotalCount] = useState(0);
 	const [loadingPage, setLoadingPage] = useState(false);
 	const [fetchError, setFetchError] = useState(false);
+	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'expiration', order: 'asc' });
 	const [loadingSubmit, setLoadingSubmit] = useState(false);
 	const [rows, setRows] = useState<IPaymentResponse[]>([]);
 
@@ -57,16 +60,16 @@ export const Payments: React.FC = () => {
 			}
 		}
 		fetchSup();
-	}, [])
+	}, []);
 
 	useEffect(() => {
 		listPayments();
-	}, [page])
+	}, [page, orderBy]);
 
 	const listPayments = async () => {
 		setLoading(true);
 		setLoadingPage(true);
-		const result = await PaymentService.getAll(Number(page), ROW_LIMIT);
+		const result = await PaymentService.getAll(Number(page), ROW_LIMIT, orderBy);
 		if (result instanceof Error) {
 			alert(result.message);
 		} else {
@@ -75,6 +78,33 @@ export const Payments: React.FC = () => {
 		}
 		setLoading(false);
 		setLoadingPage(false);
+	}
+
+	const handleOrderByChange = (value: string, type: 'order' | 'fornecedor') => {
+		if (type === 'order') {
+			if (value === 'expiration') {
+				setOrderBy((old) => ({ ...old, column: 'expiration', order: 'asc' }));
+			} else {
+				setOrderBy((old) => ({ ...old, column: 'created_at', order: 'desc' }));
+			}
+		} else {
+			if (value === ' ') {
+				setOrderBy((old) => ({ ...old, supplier_id: undefined }));
+			} else {
+				setOrderBy((old) => ({ ...old, supplier_id: Number(value) }));
+			}
+		}
+	}
+
+	const getColorByDate = (date: Date) => {
+		const today = startOfDay(new Date());
+		const expiration = startOfDay(date);
+
+		const diference = differenceInDays(today, expiration);
+
+		if (diference == 0) return '#fb0';
+		else if (expiration < today) return '#f00';
+		else return 'textSecondary';
 	}
 
 	const handleRemove = async (id: number) => {
@@ -143,17 +173,37 @@ export const Payments: React.FC = () => {
 			setLoadingSubmit(false);
 		}
 	}
+
 	return (
 		<LayoutMain title="Boletos" subTitle="Gerencie seus boletos">
 			<Grid container spacing={2}>
 				<Grid item xs={7}>
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
-						<Typography variant="h5" sx={{ m: 2 }}>Boletos:</Typography>
+						<Box display={'flex'} justifyContent={'space-between'}>
+							<Typography variant="h5" sx={{ m: 2 }}>Boletos:</Typography>
+							<Box display={'flex'} gap={2} margin={2}>
+								<CustomSelect
+									label="Ordenar por"
+									menuItens={[{ text: 'Vencimento', value: 'expiration' }, { text: 'Data', value: 'created_at' }]}
+									defaultSelected={0}
+									onValueChange={(e) => handleOrderByChange(e, 'order')}
+									minWidth={200}
+								/>
+								<CustomSelect
+									label="Fornecedor"
+									menuItens={[{ text: 'Todos', value: ' ' }, ...suppliers]}
+									defaultSelected={0}
+									onValueChange={(e) => handleOrderByChange(e, 'fornecedor')}
+									minWidth={200}
+								/>
+							</Box>
+						</Box>
 						<Box minHeight={550}>
 							<TableContainer>
 								<Table>
 									<TableHead>
 										<TableRow>
+											<TableCell>Data</TableCell>
 											<TableCell>Fornecedor</TableCell>
 											<TableCell>Valor</TableCell>
 											<TableCell>Vencimento</TableCell>
@@ -168,9 +218,26 @@ export const Payments: React.FC = () => {
 												(row) => {
 													return (
 														<TableRow key={row.id}>
-															<TableCell>{row.name}</TableCell>
-															<TableCell>{nToBRL(row.value)}</TableCell>
-															<TableCell>{format(row.expiration, 'dd/MM/yyyy')}</TableCell>
+															<TableCell>
+																<Typography>
+																	{format(row.created_at, 'dd/MM')}
+																</Typography>
+															</TableCell>
+															<TableCell>
+																<Typography>
+																	{row.name}
+																</Typography>
+															</TableCell>
+															<TableCell>
+																<Typography>
+																	{nToBRL(row.value)}
+																</Typography>
+															</TableCell>
+															<TableCell>
+																<Typography color={getColorByDate(row.expiration)}>
+																	{format(row.expiration, 'dd/MM/yyyy')}
+																</Typography>
+															</TableCell>
 															<TableCell>
 																<Link to={'/boleto/' + row.id + '?backPage=' + page}>
 																	<Fab
