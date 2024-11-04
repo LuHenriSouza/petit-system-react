@@ -28,10 +28,18 @@ interface IPaymentTotalCount {
     totalCount: number,
 }
 
-const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS): Promise<IPaymentTotalCount | Error> => {
+type TColumnsOrderBy = 'expiration' | 'created_at';
+
+export interface OrderByObj {
+    column: TColumnsOrderBy;
+    order: 'asc' | 'desc';
+    supplier_id?: number;
+}
+
+const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, orderBy: OrderByObj): Promise<IPaymentTotalCount | Error> => {
     try {
-        const urlRelativa = `/payment?page=${page}&limit=${limit}`;
-        const { data, headers } = await Api.get(urlRelativa, Autorization());
+        const urlRelativa = `/payment/get?page=${page}&limit=${limit}`;
+        const { data, headers } = await Api.post(urlRelativa, orderBy, Autorization());
         if (data) {
             return {
                 data,
