@@ -97,7 +97,7 @@ const getById = async (id: number): Promise<IPaymentResponse | Error> => {
 const getTotalByDate = async (start: Date, end: Date): Promise<number | Error> => {
     try {
         const { data } = await Api.get(`/payment/total?start=${start.toISOString()}&end=${end.toISOString()}`, Autorization());
-
+        if (data == null) return 0;
         if (data) {
             return data;
         }
