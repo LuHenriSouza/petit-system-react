@@ -4,7 +4,7 @@ import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { Link, useSearchParams } from "react-router-dom";
 import { VForm } from "../../shared/forms/VForm";
 import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
-import { addDays, differenceInDays, format, isDate, startOfDay } from 'date-fns';
+import { differenceInDays, format, startOfDay } from 'date-fns';
 import { VTextField } from "../../shared/forms/VTextField";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { IPaymentResponse, PaymentService, SupplierService } from "../../shared/services/api";
@@ -13,7 +13,7 @@ import * as yup from 'yup';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Swal from "sweetalert2";
 import { nToBRL } from "../../shared/services/formatters";
-import { OrderByObj } from "../../shared/services/api/PaymentService";
+import { OrderByPayment } from "../../shared/services/api/PaymentService";
 import { CustomSelect } from "../../shared/forms/customInputs/CustomSelect";
 
 
@@ -31,7 +31,7 @@ export const Payments: React.FC = () => {
 	const [totalCount, setTotalCount] = useState(0);
 	const [loadingPage, setLoadingPage] = useState(false);
 	const [fetchError, setFetchError] = useState(false);
-	const [orderBy, setOrderBy] = useState<OrderByObj>({ column: 'expiration', order: 'asc' });
+	const [orderBy, setOrderBy] = useState<OrderByPayment>({ column: 'expiration', order: 'asc' });
 	const [loadingSubmit, setLoadingSubmit] = useState(false);
 	const [rows, setRows] = useState<IPaymentResponse[]>([]);
 
