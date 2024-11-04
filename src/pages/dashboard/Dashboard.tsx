@@ -258,6 +258,7 @@ export const Dashboard: React.FC = () => {
 			const result = await PaymentService.getTotalByDate(dateToFetch[0], dateToFetch[1]);
 			if (result instanceof Error) return;
 			setTotalPayments(result);
+			console.log('result', result);
 		})();
 	}, [att]);
 	return (

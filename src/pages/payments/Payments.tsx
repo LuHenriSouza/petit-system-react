@@ -94,6 +94,7 @@ export const Payments: React.FC = () => {
 				setOrderBy((old) => ({ ...old, supplier_id: Number(value) }));
 			}
 		}
+		setSearchParams({ page: '1' }, { replace: true });
 	}
 
 	const getColorByDate = (date: Date) => {
