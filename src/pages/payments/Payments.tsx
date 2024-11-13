@@ -1,20 +1,40 @@
-import { Alert, Box, Button, Fab, Grid, Pagination, Paper, Skeleton, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography, useTheme } from "@mui/material";
-import { LayoutMain } from "../../shared/layouts";
-import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
-import { Link, useSearchParams } from "react-router-dom";
+import {
+	Box,
+	Fab,
+	Grid,
+	Paper,
+	Table,
+	Alert,
+	Button,
+	Skeleton,
+	TableRow,
+	useTheme,
+	TableBody,
+	TableCell,
+	TableHead,
+	Pagination,
+	Typography,
+	TableContainer,
+} from "@mui/material";
+import * as yup from 'yup';
+import Swal from "sweetalert2";
+import { FormHandles } from "@unform/core";
+import UndoIcon from '@mui/icons-material/Undo';
 import { VForm } from "../../shared/forms/VForm";
-import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
-import { differenceInDays, format, startOfDay } from 'date-fns';
+import { LayoutMain } from "../../shared/layouts";
+import DeleteIcon from '@mui/icons-material/Delete';
+import PaymentsIcon from '@mui/icons-material/Payments';
+import { Link, useSearchParams } from "react-router-dom";
+import { nToBRL } from "../../shared/services/formatters";
 import { VTextField } from "../../shared/forms/VTextField";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { IPaymentResponse, PaymentService, SupplierService } from "../../shared/services/api";
-import { FormHandles } from "@unform/core";
-import * as yup from 'yup';
-import DeleteIcon from '@mui/icons-material/Delete';
-import Swal from "sweetalert2";
-import { nToBRL } from "../../shared/services/formatters";
+import { differenceInDays, format, startOfDay } from 'date-fns';
+import { IMenuItens, VSelect } from "../../shared/forms/VSelect";
+import VisibilityRoundedIcon from '@mui/icons-material/VisibilityRounded';
 import { OrderByPayment } from "../../shared/services/api/PaymentService";
 import { CustomSelect } from "../../shared/forms/customInputs/CustomSelect";
+import { CustomCheckbox } from "../../shared/forms/customInputs/CustomCheckbox";
+import { IPaymentResponse, PaymentService, SupplierService } from "../../shared/services/api";
 
 
 const ROW_LIMIT = 6;
@@ -31,7 +51,7 @@ export const Payments: React.FC = () => {
 	const [totalCount, setTotalCount] = useState(0);
 	const [loadingPage, setLoadingPage] = useState(false);
 	const [fetchError, setFetchError] = useState(false);
-	const [orderBy, setOrderBy] = useState<OrderByPayment>({ column: 'expiration', order: 'asc' });
+	const [orderBy, setOrderBy] = useState<OrderByPayment>({ column: 'expiration', order: 'asc', show: { EXPIRED: true } });
 	const [loadingSubmit, setLoadingSubmit] = useState(false);
 	const [rows, setRows] = useState<IPaymentResponse[]>([]);
 
@@ -109,6 +129,8 @@ export const Payments: React.FC = () => {
 	}
 
 	const handleRemove = async (id: number) => {
+		let timerInterval: number;
+
 		Swal.fire({
 			title: 'Tem Certeza?',
 			icon: 'warning',
@@ -117,7 +139,32 @@ export const Payments: React.FC = () => {
 			confirmButtonColor: theme.palette.error.main,
 			cancelButtonColor: '#aaa',
 			cancelButtonText: 'Cancelar',
-			confirmButtonText: 'Deletar'
+			confirmButtonText: 'Apagar',
+			didOpen: () => {
+				const confirmButton = Swal.getConfirmButton();
+				if (confirmButton) {
+					confirmButton.disabled = true; // Desabilita o botão inicialmente
+
+					let timeLeft = 3;
+					confirmButton.textContent = `Apagar (${timeLeft})`;
+
+					// Timer de 5 segundos
+					timerInterval = window.setInterval(() => {
+						timeLeft--;
+						confirmButton.textContent = `Apagar (${timeLeft})`;
+
+						if (timeLeft === 0) {
+							clearInterval(timerInterval);
+							confirmButton.textContent = 'Apagar';
+							confirmButton.disabled = false; // Habilita o botão após o timer
+						}
+					}, 1000);
+				}
+			},
+			willClose: () => {
+				clearInterval(timerInterval); // Limpa o intervalo quando o modal fechar
+			}
+
 		}).then(async (result) => {
 			if (result.isConfirmed) {
 				const response = await PaymentService.deleteById(id);
@@ -135,6 +182,28 @@ export const Payments: React.FC = () => {
 				listPayments();
 			}
 		});
+	}
+
+	const handlePay = async (id: number) => {
+		const response = await PaymentService.markWithPaid(id);
+
+		if (response instanceof Error) {
+			console.error("Ocorreu algum erro no momento da atualização do cadastro!");
+		} else {
+			Swal.fire({
+				icon: "success",
+				title: "Boleto marcado como pago !",
+				showConfirmButton: false,
+				timer: 1000,
+			});
+		}
+		listPayments();
+	}
+
+	const handlePayRollback = async (id: number) => {
+		const response = await PaymentService.unmarkWithPaid(id);
+		if (response instanceof Error) console.error("Ocorreu algum erro no momento da atualização do cadastro!");
+		listPayments();
 	}
 
 	const handleSubmit = async (data: { supplier_id: number, desc?: string, code: string }) => {
@@ -182,21 +251,37 @@ export const Payments: React.FC = () => {
 					<Paper variant="elevation" sx={{ backgroundColor: '#fff', mr: 4, px: 3, py: 1, mt: 1, width: 'auto' }}>
 						<Box display={'flex'} justifyContent={'space-between'}>
 							<Typography variant="h5" sx={{ m: 2 }}>Boletos:</Typography>
-							<Box display={'flex'} gap={2} margin={2}>
-								<CustomSelect
-									label="Ordenar por"
-									menuItens={[{ text: 'Vencimento', value: 'expiration' }, { text: 'Data', value: 'created_at' }]}
-									defaultSelected={0}
-									onValueChange={(e) => handleOrderByChange(e, 'order')}
-									minWidth={200}
+							<Box display={'flex'} gap={2} margin={2} alignItems={'center'}>
+								<CustomCheckbox
+									menuItens={
+										[
+											{ id: '1', label: 'Mostrar Pagos', defaultChecked: false },
+											{ id: '2', label: 'Ocultar Vencidos', defaultChecked: false },
+										]
+									}
+									disabled={loading}
+									onValueChange={e => {
+										setOrderBy((old) => ({ ...old, show: { PAID: e.includes('1'), EXPIRED: !e.includes('2') } }));
+										setSearchParams({ page: '1' }, { replace: true });
+									}}
+									flexDirection='column'
 								/>
-								<CustomSelect
-									label="Fornecedor"
-									menuItens={[{ text: 'Todos', value: ' ' }, ...suppliers]}
-									defaultSelected={0}
-									onValueChange={(e) => handleOrderByChange(e, 'fornecedor')}
-									minWidth={200}
-								/>
+								<Box display={'flex'} gap={2} margin={2}>
+									<CustomSelect
+										label="Ordenar por"
+										menuItens={[{ text: 'Vencimento', value: 'expiration' }, { text: 'Data', value: 'created_at' }]}
+										defaultSelected={0}
+										onValueChange={(e) => handleOrderByChange(e, 'order')}
+										minWidth={200}
+									/>
+									<CustomSelect
+										label="Fornecedor"
+										menuItens={[{ text: 'Todos', value: ' ' }, ...suppliers]}
+										defaultSelected={0}
+										onValueChange={(e) => handleOrderByChange(e, 'fornecedor')}
+										minWidth={200}
+									/>
+								</Box>
 							</Box>
 						</Box>
 						<Box minHeight={550}>
@@ -209,7 +294,7 @@ export const Payments: React.FC = () => {
 											<TableCell>Valor</TableCell>
 											<TableCell>Vencimento</TableCell>
 											<TableCell>Ações</TableCell>
-											<TableCell>Descrição</TableCell>
+											<TableCell>Marcar Pago</TableCell>
 										</TableRow>
 									</TableHead>
 
@@ -218,7 +303,13 @@ export const Payments: React.FC = () => {
 											!loading ? rows.map(
 												(row) => {
 													return (
-														<TableRow key={row.id}>
+														<TableRow
+															key={row.id}
+															sx={
+																row.paid &&
+																{ backgroundColor: '#38f75522' }
+															}
+														>
 															<TableCell>
 																<Typography>
 																	{format(row.created_at, 'dd/MM')}
@@ -265,10 +356,33 @@ export const Payments: React.FC = () => {
 																	<DeleteIcon color="info" />
 																</Fab>
 															</TableCell>
-															<TableCell sx={{ maxWidth: 120 }}>
-																<Typography noWrap overflow="hidden" textOverflow="ellipsis" marginRight={1}>
-																	{row.desc}
-																</Typography>
+															<TableCell>
+																{
+																	!row.paid ?
+																		<Fab
+																			size="medium"
+																			color="success"
+																			onClick={() => handlePay(row.id)}
+																			sx={{
+																				backgroundColor: '#28a745',
+																				'&:hover': { backgroundColor: '#38b755' },
+																			}}
+																		>
+																			<PaymentsIcon color="info" />
+																		</Fab>
+																		:
+																		<Fab
+																			size="medium"
+																			color="success"
+																			onClick={() => handlePayRollback(row.id)}
+																			sx={{
+																				backgroundColor: '#28a745',
+																				'&:hover': { backgroundColor: '#38b755' },
+																			}}
+																		>
+																			<UndoIcon color="info" />
+																		</Fab>
+																}
 															</TableCell>
 														</TableRow>
 													);
@@ -287,6 +401,7 @@ export const Payments: React.FC = () => {
 															<Skeleton sx={{ minHeight: 40, maxWidth: 80 }} />
 														</TableCell>
 														<TableCell >
+															<Fab disabled size='medium' sx={{ mr: 2 }}></Fab>
 															<Fab disabled size='medium' sx={{ mr: 2 }}></Fab>
 															<Fab disabled size='medium'></Fab>
 														</TableCell>

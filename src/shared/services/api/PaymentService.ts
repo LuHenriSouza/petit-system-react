@@ -21,6 +21,7 @@ export interface IPayment {
 
 export interface IPaymentResponse extends IPayment {
     name: string,
+    paid?: Date,
 }
 
 interface IPaymentTotalCount {
@@ -34,6 +35,10 @@ export interface OrderByPayment {
     column: TColumnsOrderBy;
     order: 'asc' | 'desc';
     supplier_id?: number;
+    show?: {
+        PAID?: boolean,
+        EXPIRED?: boolean,
+    };
 }
 
 const getAll = async (page = 1, limit = Environment.LIMITE_DE_LINHAS, orderBy: OrderByPayment): Promise<IPaymentTotalCount | Error> => {
@@ -79,6 +84,24 @@ const deleteById = async (id: number) => {
     }
 }
 
+const markWithPaid = async (id: number) => {
+    try {
+        await Api.put(`/payment/paid/${id}`, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao pagar o registro.');
+    }
+}
+
+const unmarkWithPaid = async (id: number) => {
+    try {
+        await Api.put(`/payment/back/${id}`, Autorization());
+    } catch (error) {
+        console.error(error);
+        return new Error((error as { message: string }).message || 'Erro ao pagar o registro.');
+    }
+}
+
 const getById = async (id: number): Promise<IPaymentResponse | Error> => {
     try {
         const { data } = await Api.get(`/payment/${id}`, Autorization());
@@ -114,5 +137,7 @@ export const PaymentService = {
     create,
     getById,
     deleteById,
-    getTotalByDate
+    markWithPaid,
+    getTotalByDate,
+    unmarkWithPaid,
 };
